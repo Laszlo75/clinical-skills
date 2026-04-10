@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Claude Code local state
+.claude/
+
+# Packaged skills (distributed via GitHub releases)
+*.skill
+
+# literature-search output files (generated in user workspace)
+*_Evidence_Summary_*.md
+*_Evidence_Summary_*.docx
+*_References.bib
+*_PMIDs.txt
+
+# protocol-reviewer output files (generated in user workspace)
+*_Review_*.md
+*_Review_*.docx
+
+# Hidden reference ledger — canonical internal handoff artifact
+.literature_search_ledger.yaml
+
+# Legacy ledger filenames from pre-1.0 layouts — keep ignored so stray
+# files from old searches never get committed
+*_References.yaml
+_working_ledger.yaml
+
+# protocol-reviewer local evaluation register (contains review-specific
+# audit data; must never be committed to a public repo)
+reviews/
+
+# Development scratch files
+IMPROVEMENT_PLAN.md
