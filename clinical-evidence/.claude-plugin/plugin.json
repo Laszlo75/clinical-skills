@@ -1,7 +1,7 @@
 {
   "name": "clinical-evidence",
-  "version": "1.0.0",
-  "description": "Clinical evidence synthesis and protocol review. Two co-designed skills: literature-search gathers PubMed/Scholar Gateway/guideline evidence into a verified reference ledger; protocol-reviewer consumes that ledger (invisibly) to cross-reference an uploaded clinical protocol against current guidelines and published evidence. Designed for UK NHS clinical context with ISO 42001 transparency disclaimers.",
+  "version": "1.1.0",
+  "description": "Clinical evidence synthesis and protocol review. Three co-designed skills — literature-search, research-summary, protocol-reviewer — share a single evidence-search agent that gathers and verifies PubMed/Scholar Gateway/guideline evidence into a hidden reference ledger. literature-search is the user-facing search trigger; research-summary writes a narrative evidence summary from the ledger; protocol-reviewer reviews an uploaded clinical protocol against it. The ledger handoff is invisible to the researcher. Designed for UK NHS clinical context with ISO 42001 transparency disclaimers.",
   "author": {
     "name": "Laszlo Szabo",
     "url": "https://github.com/Laszlo75"

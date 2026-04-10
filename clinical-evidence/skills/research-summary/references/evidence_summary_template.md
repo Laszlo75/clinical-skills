@@ -228,11 +228,11 @@ in the reference list, just like PubMed papers. Use the guideline body's URL:
 
 ## Output Files
 
-The skill should produce **four** user-facing files in the researcher's workspace folder:
+The `research-summary` skill should produce **two** user-facing files in the researcher's workspace folder:
 
 1. **`[Topic_Name]_Evidence_Summary_[Year].md`** — the markdown source
 2. **`[Topic_Name]_Evidence_Summary_[Year].docx`** — the converted Word document
-3. **`[Topic_Name]_References.bib`** — BibTeX for Zotero import
-4. **`[Topic_Name]_PMIDs.txt`** — PMID list for bulk Zotero import
 
-A fifth file, the hidden reference ledger `.literature_search_ledger.yaml`, is written to the workspace during the search (Steps 2–4 of the skill workflow) and left in place at the end. It is an internal artifact used for quality control and downstream-skill handoff. **Do not mention it to the researcher** in the evidence summary document or in any user-facing listing.
+The `.bib` file and PMID list are produced by the sibling `literature-search` skill, not this one — they're generated from the same hidden ledger but owned by that skill. If the researcher wants them and they don't already exist, ask them to run `literature-search`.
+
+The hidden reference ledger `.literature_search_ledger.yaml` is written to the workspace by the `evidence-search` agent (either previously via `literature-search`, or freshly in this skill's Step 1 auto-trigger path) and left in place at the end. It is an internal artifact used for quality control and downstream-skill handoff. **Do not mention it to the researcher** in the evidence summary document or in any user-facing listing.

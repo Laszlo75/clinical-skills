@@ -137,17 +137,24 @@ confirmation so the researcher can course-correct if they want to:
 
 Do not mention the file, the path, or the word "YAML".
 
-**If the ledger does not exist:** auto-trigger literature-search.
+**If the ledger does not exist:** dispatch the `evidence-search` agent.
 
-1. Read `../literature-search/SKILL.md` with the Read tool. If that file is missing,
-   stop and tell the researcher in plain language: "I don't have any recent evidence to
-   work from and I can't find the literature-search skill to run one. Please install
-   literature-search alongside this skill."
-2. Tell the researcher: "I'll search the literature on *[clinical domain]* before
-   reviewing the protocol. This may take several minutes."
-3. Follow the literature-search workflow in full — do not skip steps. The reference
-   integrity verification in its Step 4 is essential for review quality.
-4. When the search finishes, the ledger will be at the canonical path. Loop back to 2b.
+1. Tell the researcher: "I'll search the literature on *[clinical domain]* before
+   reviewing the protocol. This may take several minutes and runs in an isolated
+   context to keep our main conversation clean."
+2. Use the **Agent tool** with `subagent_type: "evidence-search"`. Your prompt to the
+   agent must include: the clinical domain, key topics extracted from the protocol in
+   Step 1, any relevant guideline bodies, the plugin version read from
+   `../../.claude-plugin/plugin.json`, and an explicit instruction to write the ledger
+   to `<workspace>/.literature_search_ledger.yaml`.
+3. Wait for the agent's short structured summary. When it returns, the ledger will be
+   at the canonical path. Loop back to 2b to validate and load it.
+
+If the Agent tool reports that `evidence-search` is not a known subagent (unexpected on
+a normal `clinical-evidence` plugin install), fall back to reading
+`../literature-search/SKILL.md` and following that workflow in the main context. Warn
+the researcher that the search will take longer and consume more context. This is a
+graceful-degradation path; with a normal install the agent path is preferred.
 
 ### 2b. Validate
 

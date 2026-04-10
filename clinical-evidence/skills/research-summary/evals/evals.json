@@ -1,0 +1,26 @@
+{
+  "skill_name": "research-summary",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write the narrative evidence summary document now. I already ran a literature search in this workspace earlier today on CMV prophylaxis in solid organ transplant recipients.",
+      "expected_output": "Should silently discover the hidden .literature_search_ledger.yaml in the workspace, run the validator (exit 0), re-read the ledger from disk, and write a structured evidence summary as Markdown followed by pandoc conversion to .docx. Should NOT dispatch the evidence-search agent (ledger already present). Should produce exactly two user-facing files: [Topic]_Evidence_Summary_[Year].md and .docx. Should NOT produce .bib or PMID files. Transparency disclaimer should include ledger_schema_version, search_date, and the clinical-evidence plugin version. Should not mention YAML, file paths, or the ledger to the user.",
+      "files": [],
+      "notes": "Tests the discover-existing-ledger path. A pre-existing .literature_search_ledger.yaml for CMV prophylaxis must be present in the workspace."
+    },
+    {
+      "id": 2,
+      "prompt": "Produce a narrative evidence summary document on perioperative DOAC management in patients undergoing elective surgery. I'm a consultant anaesthetist in the UK.",
+      "expected_output": "Should find no ledger in the workspace, dispatch the evidence-search agent with the topic and relevant guideline bodies (NICE, BSH), wait for the agent's short structured summary, run the validator against the returned ledger (exit 0), then write the evidence summary .md + .docx. Main conversation should stay compact during the agent invocation — PubMed and Scholar Gateway tool calls should not appear at the top level. Final output should be 2 user-facing files (.md and .docx). Should not mention the agent, the ledger, or YAML to the user.",
+      "files": [],
+      "notes": "Tests the auto-trigger path — no pre-existing ledger. Exercises the agent invocation contract from a consumer skill end-to-end. Requires PubMed MCP and Scholar Gateway configured."
+    },
+    {
+      "id": 3,
+      "prompt": "Write the evidence summary for the literature search I just ran on warm autoimmune haemolytic anaemia.",
+      "expected_output": "Should discover the workspace's ledger but encounter a validator failure (exit 1) — the fixture ledger is deliberately malformed (e.g., a free-text grade string instead of the structured grade object). Should translate the validator ERROR lines into plain language for the researcher and offer to re-dispatch the evidence-search agent to rebuild the ledger. Should NOT attempt to write the evidence summary from the invalid ledger.",
+      "files": [],
+      "notes": "Tests validator exit-1 handling and graceful re-invocation offer. A pre-existing but structurally invalid .literature_search_ledger.yaml for warm AIHA must be present in the workspace."
+    }
+  ]
+}
