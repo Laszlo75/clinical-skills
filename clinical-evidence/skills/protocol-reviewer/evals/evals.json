@@ -1,0 +1,40 @@
+{
+  "skill_name": "protocol-reviewer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "This is our old ABO incompatible transplant protocol from 2009. Have a look and make suggestions how I can improve it, anything needs changing, amending. I'm a consultant transplant surgeon in the UK. I ran a literature search on ABOi kidney transplantation in this workspace earlier — use that.",
+      "expected_output": "A structured .docx review document covering rituximab dosing, titre targets, antibody removal methods, immunosuppression, and monitoring. Should silently discover the hidden .literature_search_ledger.yaml, run the validator, and cross-reference the ledger's BTS guidelines and PubMed references. Recommendations should be UK-focused with BTS evidence grades (copied verbatim from grade.display). Should produce .bib and PMID list. Should not mention YAML, file paths, or the ledger to the user.",
+      "files": [],
+      "notes": "Tests the discover-existing-ledger path. A pre-existing .literature_search_ledger.yaml for ABOi transplantation must be present in the workspace."
+    },
+    {
+      "id": 2,
+      "prompt": "I've uploaded our department's perioperative anticoagulation protocol for patients on warfarin. It was last updated in 2018. I did a literature search on this yesterday in the same workspace — can you review the protocol now? We're a district general hospital in England.",
+      "expected_output": "Review document covering bridging anticoagulation, DOACs as alternatives, perioperative INR management, reversal agents, and AF/VTE risk stratification. Should silently pick up the hidden ledger, validate it, and cross-reference NICE and BSH guidelines. Should produce .bib and PMID list files. Transparency disclaimer should include ledger_schema_version, search_date, and the clinical-evidence plugin version.",
+      "files": [],
+      "notes": "Tests discover-existing-ledger path. A pre-existing .literature_search_ledger.yaml for perioperative anticoagulation must be present."
+    },
+    {
+      "id": 3,
+      "prompt": "Here's our unit's CMV prophylaxis protocol for solid organ transplant recipients, written in 2016. I already ran the evidence search in this folder earlier today. Cross-reference and tell me what needs updating.",
+      "expected_output": "Review covering valganciclovir prophylaxis vs pre-emptive, duration, letermovir evidence in SOT, maribavir for refractory CMV, donor/recipient serostatus risk stratification. Should silently use the hidden ledger, cross-reference BTS guidelines and recent literature. Should produce .bib and PMID list.",
+      "files": [],
+      "notes": "Tests discover-existing-ledger path. A pre-existing .literature_search_ledger.yaml for CMV prophylaxis must be present."
+    },
+    {
+      "id": 4,
+      "prompt": "Here's our old ABO incompatible transplant protocol from 2009. Can you review it and tell me what needs updating? I'm a consultant transplant surgeon in a UK teaching hospital.",
+      "expected_output": "Should auto-trigger literature-search (no ledger in the workspace). After the search completes, the hidden ledger should exist, the validator should pass, and the review should be generated. Should produce the 4 literature-search user-facing outputs (.md, .docx, .bib, .txt) AND the 4 protocol-reviewer outputs (.md, .docx, .bib, .txt). Review should cover rituximab dosing, titre targets, antibody removal, immunosuppression, monitoring. UK-focused with BTS evidence grades.",
+      "files": [],
+      "notes": "Tests the auto-trigger path — no pre-existing ledger in the workspace. Requires PubMed MCP and Scholar Gateway to be configured. The ledger must not appear in the user-facing file list shown to the clinician."
+    },
+    {
+      "id": 5,
+      "prompt": "I'm a consultant haematologist. Here's our 2017 unit protocol for managing warm autoimmune haemolytic anaemia. I've already searched the evidence in this workspace — please review the protocol.",
+      "expected_output": "Review document covering steroid first-line therapy, rituximab dosing (standard vs low-dose), splenectomy indications, IVIG role, and monitoring. Should silently use the hidden ledger, cross-reference BSH guidelines and recent literature. Should produce .bib and PMID list. Tests generalisation of cross-referencing logic to haematology domain outside transplant.",
+      "files": [],
+      "notes": "Tests discover-existing-ledger path in a non-transplant domain. A pre-existing .literature_search_ledger.yaml for warm AIHA must be present."
+    }
+  ]
+}

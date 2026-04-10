@@ -1,0 +1,14 @@
+# Local evaluation register — contains review-specific audit data
+# that should not be committed to a public repository
+reviews/
+
+# Build artifacts
+*.skill
+
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+.Rproj.user

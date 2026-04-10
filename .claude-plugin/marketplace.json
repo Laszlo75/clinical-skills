@@ -1,0 +1,34 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clinical-skills",
+  "version": "1.0.0",
+  "description": "Clinical skills for evidence synthesis and protocol review. UK NHS context. ISO 42001 compliant.",
+  "owner": {
+    "name": "Laszlo Szabo",
+    "url": "https://github.com/Laszlo75"
+  },
+  "plugins": [
+    {
+      "name": "clinical-evidence",
+      "version": "1.0.0",
+      "description": "Systematic literature search and clinical protocol review against current guidelines. Bundles two skills that share a verified reference ledger: literature-search (PubMed + Scholar Gateway + guidelines) and protocol-reviewer (cross-references an uploaded protocol against the evidence base). AI-assisted draft; clinician approval required.",
+      "author": {
+        "name": "Laszlo Szabo",
+        "url": "https://github.com/Laszlo75"
+      },
+      "homepage": "https://github.com/Laszlo75/clinical-skills/tree/main/clinical-evidence",
+      "repository": "https://github.com/Laszlo75/clinical-skills",
+      "license": "MIT",
+      "source": "./clinical-evidence",
+      "category": "clinical",
+      "keywords": [
+        "clinical",
+        "nhs",
+        "pubmed",
+        "evidence-synthesis",
+        "protocol-review",
+        "iso-42001"
+      ]
+    }
+  ]
+}
