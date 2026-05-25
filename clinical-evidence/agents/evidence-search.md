@@ -373,8 +373,9 @@ Before returning, make sure the `metadata` block at the top of
   prompt from the consumer skill (it reads `../../.claude-plugin/plugin.json` from its
   own sibling context); if not provided, use `"1.1.0"` as a reasonable default and the
   consumer's validator will catch mismatches.
-- `model_id` — the model identifier of the session you are running in (e.g.,
-  `claude-opus-4-7`).
+- `model_id` — the model identifier of the session you are actually running in.
+  Report the real model running this session; do not copy a placeholder or assume a
+  default version.
 - `mesh_terms` — list of MeSH terms / keywords you actually searched with.
 - `guideline_bodies` — list of bodies you consulted.
 
@@ -441,7 +442,7 @@ metadata:
   topic: "CMV prophylaxis in SOT"     # REQUIRED — confirmed topic from dispatch
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
   skill_version: "1.1.0"              # REQUIRED — plugin version
-  model_id: "claude-opus-4-7"         # REQUIRED — model identifier
+  model_id: "<actual session model id>"  # REQUIRED — the model actually running this session
   mesh_terms:                         # REQUIRED — list of strings
     - "Cytomegalovirus Infections"
     - "Organ Transplantation"

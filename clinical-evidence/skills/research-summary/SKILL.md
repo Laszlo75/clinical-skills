@@ -241,7 +241,7 @@ Replace placeholder values in the transparency disclaimer at the time of writing
   number the disclaimer records).
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field.
 - **Search date** — from the ledger's `metadata.search_date` field.
-- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-7`).
+- **Model identifier** — the model actually powering the current session (report the real model ID, not a placeholder or an assumed default).
 - **Document date** — today's date in ISO 8601 format (YYYY-MM-DD).
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin
