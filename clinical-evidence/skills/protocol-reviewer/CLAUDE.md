@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Claude Code skill (custom prompt) that reviews clinical protocols against current national guidelines and published evidence. It reads an uploaded clinical protocol (PDF/Word), cross-references it against an evidence base, and produces a structured .docx review document with actionable recommendations.
 
-The skill picks up its evidence base invisibly: if a recent literature search has been run in the same workspace, the hidden reference ledger is used directly; otherwise the sibling `literature-search` skill (bundled in the same `clinical-evidence` plugin) is auto-triggered. **The researcher is never asked about reference files, YAML, or file paths** — they simply upload a protocol and ask for a review.
+The skill picks up its evidence base invisibly: if a recent search has been run in the same workspace, the hidden reference ledger is used directly; otherwise the `evidence-search` agent (bundled in the same `clinical-evidence` plugin) is dispatched on the fly. **The researcher is never asked about reference files, YAML, or file paths** — they simply upload a protocol and ask for a review.
 
 ## Repository Structure
 
@@ -18,11 +18,12 @@ The skill picks up its evidence base invisibly: if a recent literature search ha
 
 ## Key Design Decisions
 
-- **Invisible handoff**: Evidence flows from `literature-search` to this skill via a hidden YAML ledger at `<workspace>/.literature_search_ledger.yaml`. The ledger is an internal quality-control and handoff artifact; the researcher never sees, edits, or is asked about it. Discovery is a single fixed path — either the file exists (use it) or it doesn't (auto-trigger literature-search).
-- **Authoritative schema**: The ledger format is defined in one place — [`../literature-search/references/ledger_schema.md`](../literature-search/references/ledger_schema.md). This skill targets ledger schema `1.x`. The integration pattern lives in [`../literature-search/references/consumer_integration.md`](../literature-search/references/consumer_integration.md). Both are the single source of truth for every downstream consumer.
-- **Executable validation**: Step 2 validates the ledger by running `../literature-search/scripts/validate_ledger.py`. This eliminates prose-drift between producer and consumer — the script is the contract.
+- **Invisible handoff**: Evidence flows from the `evidence-search` agent to this skill via a hidden YAML ledger at `<workspace>/.literature_search_ledger.yaml`. The ledger is an internal quality-control and handoff artifact; the researcher never sees, edits, or is asked about it. Discovery is a single fixed path — either the file exists (use it) or it doesn't (dispatch the agent).
+- **Authoritative schema**: The ledger format is defined in one place — [`../../shared/references/ledger_schema.md`](../../shared/references/ledger_schema.md). This skill targets ledger schema `1.x`. The integration pattern lives in [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md). Both are the single source of truth for every downstream consumer.
+- **Executable validation**: Step 2 validates the ledger by running `../../shared/scripts/validate_ledger.py`. This eliminates prose-drift between producer and consumer — the script is the contract.
 - **Markdown-first approach**: The review is written as Markdown with YAML frontmatter, then converted to .docx via pandoc.
-- **Reference integrity**: DOIs, titles, and author lists are copied verbatim from the hidden ledger (which in turn was verified against PubMed by the literature-search skill). This skill does not modify reference metadata.
+- **Scripted exports**: The `.bib` and PMID files are written by the shared `../../shared/scripts/ledger_to_exports.py` script (Step 4), not hand-written — the same executable-over-prose principle as the validator.
+- **Reference integrity**: DOIs, titles, and author lists are copied verbatim from the hidden ledger (which in turn was verified against PubMed by the `evidence-search` agent). This skill does not modify reference metadata.
 
 ## Build / Conversion Command
 
@@ -44,12 +45,12 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 ## Tool Dependencies
 
 - **pandoc** — markdown to .docx conversion
-- **Python 3 + PyYAML** — required to run the ledger validator (`../literature-search/scripts/validate_ledger.py`)
-- **PubMed MCP, Scholar Gateway, WebSearch** — required only when there is no existing ledger in the workspace and literature-search must be auto-triggered
+- **Python 3 + PyYAML** — required to run the ledger validator (`../../shared/scripts/validate_ledger.py`) and the export script (`../../shared/scripts/ledger_to_exports.py`)
+- **PubMed MCP, Scholar Gateway, WebSearch** — required only when there is no existing ledger in the workspace and the `evidence-search` agent must be dispatched
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.6 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.6 for the clinical reasoning and cross-referencing quality needed.
+**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and cross-referencing quality needed.
 
 **Intended use:** AI-assisted evidence synthesis to support the review of clinical protocols against current national guidelines and published literature. The system cross-references and summarises evidence; it does not make clinical decisions.
 
@@ -57,7 +58,7 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 
 **Transparency:** Each review document is generated as an explicit draft with a prominent "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) discloses AI involvement and includes a "Reviewed and approved by" placeholder for the clinician to complete after appraisal.
 
-**Reference integrity:** DOIs and article metadata are copied verbatim from the hidden YAML reference ledger, which was verified against PubMed by the literature-search skill and structurally validated by `validate_ledger.py` before this skill consumes it. This skill never fabricates or reconstructs identifiers.
+**Reference integrity:** DOIs and article metadata are copied verbatim from the hidden YAML reference ledger, which was verified against PubMed by the `evidence-search` agent and structurally validated by `validate_ledger.py` before this skill consumes it. This skill never fabricates or reconstructs identifiers.
 
 **Traceability:** Each review document includes an AI system metadata line recording the `clinical-evidence` plugin version, ledger schema version, model identifier, search date, and review date. A local evaluation register (`reviews/evaluation_register.csv`, gitignored) logs review outcomes and recommendation counts for ongoing quality monitoring.
 

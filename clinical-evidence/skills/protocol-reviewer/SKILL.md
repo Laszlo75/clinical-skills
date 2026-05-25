@@ -1,5 +1,7 @@
 ---
 name: protocol-reviewer
+model: opus
+effort: max
 description: >
   Review and update clinical protocols against current evidence and national guidelines.
   Automatically picks up recent evidence from the workspace or triggers a fresh literature
@@ -24,12 +26,12 @@ yourself. The researcher never has to hand you a reference file.
 ## Quick Start
 
 **Input:** A clinical protocol (PDF/Word).
-**Output:** 4 files — review document (.md + .docx), BibTeX (.bib), PMID list (.txt) + evaluation register entry. If no prior literature search exists in the workspace, the literature-search workflow runs first and also writes its own 4 evidence-summary files.
-**Happy path:** Read protocol → discover the workspace's hidden evidence ledger (or auto-trigger literature-search to create one) → validate → cross-reference → generate review → log to register.
+**Output:** 4 files — review document (.md + .docx), BibTeX (.bib), PMID list (.txt) + evaluation register entry. If no prior search exists in the workspace, the `evidence-search` agent runs first; it writes only the hidden ledger (no user-facing files of its own).
+**Happy path:** Read protocol → discover the workspace's hidden evidence ledger (or dispatch the `evidence-search` agent to create one) → validate → cross-reference → generate review → log to register.
 
 ## Model Requirements
 
-This skill should be run on **Claude Opus 4.6** (`claude-opus-4-6`). The clinical
+This skill should be run on **Claude Opus 4.7** (`claude-opus-4-7`). The clinical
 reasoning, evidence synthesis, and cross-referencing in this workflow are demanding tasks
 where model capability directly affects output quality — particularly the accuracy of
 evidence grading, the nuance of recommendations, and the reliability of reference handling.
@@ -46,23 +48,25 @@ side of careful deliberation.
 
 ## Prerequisites
 
-This skill consumes a hidden YAML reference ledger produced by its sibling
-`literature-search` skill (bundled together in the `clinical-evidence` plugin). The
-ledger is an internal artifact — **the researcher never sees, edits, or is asked about
-it**. Handoff is invisible.
+This skill consumes a hidden YAML reference ledger produced by the `evidence-search`
+agent (bundled in the same `clinical-evidence` plugin). The ledger is an internal
+artifact — **the researcher never sees, edits, or is asked about it**. Handoff is
+invisible.
 
 Before writing any consumer-side logic, read the two authoritative docs that live in the
-literature-search sibling directory:
+plugin's shared contract directory:
 
-- [`../literature-search/references/ledger_schema.md`](../literature-search/references/ledger_schema.md)
+- [`../../shared/references/ledger_schema.md`](../../shared/references/ledger_schema.md)
   — field names, types, the structured grade object, everything. This skill targets
   ledger schema **`1.x`**.
-- [`../literature-search/references/consumer_integration.md`](../literature-search/references/consumer_integration.md)
+- [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md)
   — the discover/validate/consume pattern every downstream skill follows.
 
-**Sibling directory assumption.** This skill and `literature-search` ship together as
-sibling directories inside the `clinical-evidence` plugin, so the `../literature-search/...`
-relative paths used below always resolve correctly after a normal plugin install.
+**Shared directory assumption.** This skill and `research-summary` ship together inside
+the `clinical-evidence` plugin, and the shared contract (schema, integration guide,
+validator, export script) lives in the plugin's `shared/` directory. This skill sits at
+`skills/protocol-reviewer/`, so the `../../shared/...` relative paths used below always
+resolve correctly after a normal plugin install.
 
 ## When This Skill Activates
 
@@ -79,7 +83,7 @@ management, infection prophylaxis). They want to know what needs updating.
        ▼
 2. DISCOVER the workspace's hidden evidence ledger
    ├── .literature_search_ledger.yaml exists? ──► validate → load
-   └── not present? ──► auto-trigger literature-search → loop back
+   └── not present? ──► dispatch evidence-search agent → loop back
        │
        ▼
 3. CROSS-REFERENCE: protocol vs guidelines vs evidence
@@ -114,7 +118,7 @@ so they can correct any misinterpretation.
 ## Step 2: Discover, Validate, and Load the Reference Ledger
 
 Follow the three-step pattern documented in
-[`../literature-search/references/consumer_integration.md`](../literature-search/references/consumer_integration.md).
+[`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md).
 The details below are a concrete application of that general pattern for this skill.
 
 ### 2a. Discover
@@ -151,10 +155,9 @@ Do not mention the file, the path, or the word "YAML".
    at the canonical path. Loop back to 2b to validate and load it.
 
 If the Agent tool reports that `evidence-search` is not a known subagent (unexpected on
-a normal `clinical-evidence` plugin install), fall back to reading
-`../literature-search/SKILL.md` and following that workflow in the main context. Warn
-the researcher that the search will take longer and consume more context. This is a
-graceful-degradation path; with a normal install the agent path is preferred.
+a normal `clinical-evidence` plugin install), stop and tell the researcher the plugin is
+incomplete and needs to be reinstalled. Do not attempt to run the search inline — the
+reference-integrity workflow depends on the agent.
 
 ### 2b. Validate
 
@@ -162,16 +165,16 @@ Run the bundled validator. Do not re-implement the checks in prose — the scrip
 single source of truth:
 
 ```bash
-python ../literature-search/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
 ```
 
 - **Exit 0** — ledger is valid. Proceed to 2c. Any `WARN:` lines are informational;
   surface them only if they are clinically relevant (e.g., very few references).
 - **Exit 1** — show the `ERROR:` lines to the researcher in plain language (translate
-  them — don't dump raw script output). Offer to re-run the literature search, which
-  will overwrite the bad ledger with a fresh one.
-- **Exit 2** — treat as "ledger missing or corrupt" and auto-trigger literature-search
-  as in 2a.
+  them — don't dump raw script output). Offer to re-dispatch the `evidence-search` agent,
+  which will overwrite the bad ledger with a fresh one.
+- **Exit 2** — treat as "ledger missing or corrupt" and dispatch the `evidence-search`
+  agent as in 2a.
 
 ### Schema version support
 
@@ -247,7 +250,7 @@ pandoc conversion command.
    content rules, and pandoc conversion command
 2. **Write the review as Markdown** with YAML frontmatter for the title page
 3. **Convert to .docx** using pandoc with the bundled `assets/reference.docx` template
-4. **Generate .bib and PMIDs.txt** files for Zotero import (format specified in the template)
+4. **Generate .bib and PMIDs.txt** by running the shared `../../shared/scripts/ledger_to_exports.py` script against the validated ledger (do not hand-write BibTeX — see the template)
 
 The template file covers the full review structure (executive summary, methodology,
 section-by-section review, summary table, additional considerations, transparency
@@ -270,7 +273,7 @@ Replace placeholder values in the transparency disclaimer at the time of the rev
 - **Plugin version** — read from `../../.claude-plugin/plugin.json` (this skill lives inside the `clinical-evidence` plugin; the plugin version is the single version number the disclaimer records)
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field
 - **Search date** — from the ledger's `metadata.search_date` field
-- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-6`)
+- **Model identifier** — the model actually powering the current session (report the real model ID, not a placeholder or an assumed default)
 - **Review date** — today's date in ISO 8601 format (YYYY-MM-DD)
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin version at the time the search was run). You can read it for cross-checks, but the disclaimer should report the current plugin version, not the historical one from the ledger.
@@ -299,7 +302,7 @@ Populate every field you know at the time of the review:
 - **protocol_version**: version/edition from the protocol document
 - **clinical_domain**: e.g., "renal transplantation", "haematology"
 - **skill_version**: the plugin version from `../../.claude-plugin/plugin.json`
-- **model_id**: the model powering the session (e.g., `claude-opus-4-6`)
+- **model_id**: the model actually powering the session (report the real model ID, not a placeholder or an assumed default)
 - **total_references**: count of references in the final review
 - **guidelines_consulted**: semicolon-separated list (e.g., "BTS 3rd Ed 2016;KDIGO 2024")
 - **recommendations_aligned / minor_update / major_update / new_addition / remove**: counts
@@ -369,11 +372,12 @@ Always frame recommendations in the UK NHS context:
 This skill requires:
 
 - **pandoc** — for converting markdown to .docx (bundled reference template in `assets/reference.docx`)
-- **Python 3** with **PyYAML** — for running the ledger validator in Step 2b
-  (`../literature-search/scripts/validate_ledger.py`)
+- **Python 3** with **PyYAML** — for the ledger validator in Step 2b
+  (`../../shared/scripts/validate_ledger.py`) and the export script in Step 4
+  (`../../shared/scripts/ledger_to_exports.py`)
 
-When auto-triggering literature-search (no ledger in the workspace), the following tools
-are also required — they are used by the literature-search workflow, not this skill directly:
+When dispatching the `evidence-search` agent (no ledger in the workspace), the following
+tools are also required — they are used by the agent, not this skill directly:
 
 - **PubMed MCP** (`search_articles`, `get_article_metadata`, `get_full_text_article`, `find_related_articles`)
 - **Scholar Gateway** (`semanticSearch`)
@@ -391,6 +395,6 @@ for additional context beyond what the ledger contains.
   language: "I can't verify the evidence base I have available — a small helper is
   missing. Please run `pip install pyyaml` and try again." Do not attempt to re-implement
   validation by eye.
-- **PubMed MCP / Scholar Gateway unavailable (auto-trigger path only):** If the workspace
+- **PubMed MCP / Scholar Gateway unavailable (agent dispatch path only):** If the workspace
   has no ledger and the required MCP tools are not available, tell the researcher that
-  the literature-search tools need to be configured before a review can proceed.
+  the search tools need to be configured before a review can proceed.

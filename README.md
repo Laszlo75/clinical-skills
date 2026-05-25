@@ -30,7 +30,7 @@ Or add the marketplace by URL:
 Each plugin documents its own dependencies. At minimum you will need:
 
 - [Claude Desktop](https://claude.ai/download) or another Claude client with MCP connector support
-- Recommended model: **Claude Opus 4.6** — the clinical reasoning, evidence appraisal, and reference integrity checks benefit from stronger model capability
+- Recommended model: **Claude Opus 4.7** — the clinical reasoning, evidence appraisal, and reference integrity checks benefit from stronger model capability
 - **pandoc** — markdown to `.docx` conversion (`brew install pandoc` on macOS, `sudo apt install pandoc` on Linux)
 - **Python 3 + PyYAML** — used by the reference-ledger validator
 

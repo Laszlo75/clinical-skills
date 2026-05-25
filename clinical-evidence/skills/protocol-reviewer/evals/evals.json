@@ -25,9 +25,9 @@
     {
       "id": 4,
       "prompt": "Here's our old ABO incompatible transplant protocol from 2009. Can you review it and tell me what needs updating? I'm a consultant transplant surgeon in a UK teaching hospital.",
-      "expected_output": "Should auto-trigger literature-search (no ledger in the workspace). After the search completes, the hidden ledger should exist, the validator should pass, and the review should be generated. Should produce the 4 literature-search user-facing outputs (.md, .docx, .bib, .txt) AND the 4 protocol-reviewer outputs (.md, .docx, .bib, .txt). Review should cover rituximab dosing, titre targets, antibody removal, immunosuppression, monitoring. UK-focused with BTS evidence grades.",
+      "expected_output": "Should dispatch the evidence-search agent (no ledger in the workspace). The agent writes only the hidden ledger — no user-facing files of its own. After it returns, the ledger should exist, the validator should pass, and the review should be generated (with .bib + PMID written by ledger_to_exports.py). Should produce exactly the 4 protocol-reviewer outputs (.md, .docx, .bib, .txt) — no separate set of search outputs. Review should cover rituximab dosing, titre targets, antibody removal, immunosuppression, monitoring. UK-focused with BTS evidence grades.",
       "files": [],
-      "notes": "Tests the auto-trigger path — no pre-existing ledger in the workspace. Requires PubMed MCP and Scholar Gateway to be configured. The ledger must not appear in the user-facing file list shown to the clinician."
+      "notes": "Tests the agent-dispatch path — no pre-existing ledger in the workspace. Requires PubMed MCP and Scholar Gateway to be configured. The ledger must not appear in the user-facing file list shown to the clinician."
     },
     {
       "id": 5,

@@ -4,6 +4,34 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.0] - 2026-05-25
+
+### Removed
+
+- **`literature-search` skill removed.** Its only unique responsibilities — being the user-facing trigger for a bare search and writing the Zotero export files — were folded into `research-summary`. The skill had become a thin wrapper around the `evidence-search` agent: the other two skills already dispatched the agent directly and never routed through it.
+
+### Changed
+
+- **`research-summary` is now the user-facing entry point for a literature search or evidence summary.** It absorbed `literature-search`'s trigger phrases ("literature search", "search PubMed", "find evidence on", "reference list for", "what does the latest evidence say about", etc.) and now produces **four** files — `.md`, `.docx`, `.bib`, and `PMIDs.txt` — up from two. The narrative document and the Zotero exports come from the same validated ledger in a single pass.
+- **Shared contract files moved to a plugin-level `shared/` directory.** [`ledger_schema.md`](./shared/references/ledger_schema.md), [`consumer_integration.md`](./shared/references/consumer_integration.md), `pubmed_strategy.md`, and [`validate_ledger.py`](./shared/scripts/validate_ledger.py) moved from `skills/literature-search/` to `shared/`. The contract is now owned by no single skill; both consumers reference it via `../../shared/...`.
+- **`protocol-reviewer`'s graceful-degradation fallback removed.** It previously fell back to reading `../literature-search/SKILL.md` when the agent was unavailable; that path no longer exists, so the agent is now the only search route (an unknown-subagent error tells the researcher to reinstall the plugin).
+
+### Added
+
+- **`shared/scripts/ledger_to_exports.py`** — an executable script that writes the `.bib` + PMID exports from the validated ledger. Both consumer skills call it instead of hand-writing BibTeX, so the export format cannot drift and reference fields are copied verbatim from the ledger (the same executable-over-prose principle as the validator).
+
+### Fixed
+
+- `protocol-reviewer/references/document_template.md` pointed at a non-existent `../literature-search/references/evidence_summary_template.md` for the BibTeX format; it now invokes the shared export script.
+- `research-summary`'s template contradicted itself (its "produce the exports" step vs. its "those belong to literature-search" output note); reconciled — the skill now owns the exports.
+- The two pre-existing BibTeX formats disagreed (PMID-keyed vs. AuthorYear-keyed); the shared export script settles on one canonical PMID-keyed format.
+- `marketplace.json` carried redundant version numbers (a cosmetic top-level catalog version, plus a per-plugin entry version that had drifted to `1.0.0` while `plugin.json` read `1.1.0`). Both marketplace `version` fields were removed — `plugin.json` is now the single source of truth, which is the version Claude Code resolves first anyway.
+
+### Compatibility
+
+- **Breaking: the `literature-search` skill no longer exists.** Anyone who invoked it by name should use `research-summary`, which now covers search + summary + Zotero exports. Its trigger phrases activate `research-summary` instead.
+- **Ledger schema stays at `1.0`.** No format change — existing ledgers remain consumable by both skills and the agent. The contract files moved location but their content is unchanged.
+
 ## [1.1.0] - 2026-04-10
 
 ### Added

@@ -6,23 +6,24 @@ A Claude skill that writes structured narrative evidence summary documents (`.md
 
 Ask for an evidence summary on a clinical topic and the skill will:
 
-1. **Pick up the evidence base invisibly** — if a recent literature search already exists in this workspace, the hidden reference ledger is used automatically; otherwise the sibling `evidence-search` agent (bundled in the same `clinical-evidence` plugin) is dispatched on the fly
+1. **Pick up the evidence base invisibly** — if a recent search already exists in this workspace, the hidden reference ledger is used automatically; otherwise the `evidence-search` agent (bundled in the same `clinical-evidence` plugin) is dispatched on the fly
 2. **Validate** the ledger using the bundled executable validator
 3. **Write a narrative evidence summary** with guidelines, recent evidence, conflicting recommendations, emerging evidence, and evidence gaps
 4. **Convert to a Word document** using pandoc with the bundled reference template
+5. **Write Zotero exports** (`.bib` + PMID list) from the same ledger using the shared `ledger_to_exports.py` script
 
 You never have to manage reference files or YAML — the handoff between the search and the summary is completely internal.
 
 ## Output Files
 
-Each summary produces two files:
+Each summary produces four files:
 
 | File                          | Purpose                                        |
 |-------------------------------|------------------------------------------------|
 | `*_Evidence_Summary_*.md`     | Markdown source for the evidence summary       |
 | `*_Evidence_Summary_*.docx`   | Formatted Word document (via pandoc)           |
-
-**Need `.bib` and PMID files for Zotero?** Run the sibling `literature-search` skill — those exports belong to that skill. If you've already run `literature-search` in the same workspace, the files are already there.
+| `*_References.bib`            | BibTeX file for Zotero/reference manager import |
+| `*_PMIDs.txt`                 | PMID list for Zotero bulk import               |
 
 ## Requirements
 
@@ -34,7 +35,7 @@ Each summary produces two files:
 
 ## Installation
 
-This skill ships as part of the **clinical-evidence** plugin in the [clinical-skills](https://github.com/Laszlo75/clinical-skills) marketplace. Install the whole plugin (not the skill on its own) — `research-summary` depends on the `evidence-search` agent and on the ledger contract files in `literature-search/references/`:
+This skill ships as part of the **clinical-evidence** plugin in the [clinical-skills](https://github.com/Laszlo75/clinical-skills) marketplace. Install the whole plugin (not the skill on its own) — `research-summary` depends on the `evidence-search` agent and on the shared contract files in the plugin's `shared/` directory (schema, validator, export script):
 
 ```text
 /plugin marketplace add Laszlo75/clinical-skills
@@ -48,7 +49,8 @@ This skill ships as part of the **clinical-evidence** plugin in the [clinical-sk
 
 ## Example Prompts
 
-- *"Write the evidence summary now."* (after running `literature-search` in the same workspace)
+- *"Search the literature on letermovir prophylaxis in kidney transplant recipients and write it up."*
+- *"Write the evidence summary now."* (after a search has already been run in the same workspace)
 - *"Produce a narrative literature review on letermovir prophylaxis in kidney transplant recipients."*
 - *"Summarise the current evidence on DOACs for perioperative anticoagulation for our teaching session."*
 - *"I need a formal evidence summary document on CAR-T in relapsed DLBCL for the MDT."*

@@ -4,12 +4,18 @@
 # Claude Code local state
 .claude/
 
+# Python bytecode (from running the shared validator/export scripts)
+__pycache__/
+*.pyc
+
 # Packaged skills (distributed via GitHub releases)
 *.skill
 
-# literature-search output files (generated in user workspace)
+# research-summary output files (generated in user workspace)
 *_Evidence_Summary_*.md
 *_Evidence_Summary_*.docx
+
+# Zotero exports written by both consumer skills (generated in user workspace)
 *_References.bib
 *_PMIDs.txt
 
