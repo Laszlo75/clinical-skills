@@ -151,31 +151,21 @@ search strategy section onto page 2, creating a clean title page.
 
 ### 3. Also produce the .bib and PMIDs.txt files
 
-After the markdown and docx are done, generate:
+After the markdown and docx are done, generate the Zotero exports from the **same
+validated ledger** using the shared export script — do not hand-write BibTeX:
 
-**`[Topic_Name]_References.bib`** — BibTeX file:
-```bibtex
-@article{AuthorYear,
-  author  = {Last, First and Last2, First2},
-  title   = {Article title},
-  journal = {Journal Name},
-  year    = {2024},
-  volume  = {36},
-  pages   = {100--110},
-  pmid    = {12345678},
-  doi     = {10.1234/example}
-}
+```bash
+python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
+  --prefix "[Topic_Name]" --outdir <workspace>
 ```
 
-If two references share the same `AuthorYear` key (e.g., two Smith2024 papers),
-append a lowercase letter: `Smith2024a`, `Smith2024b`.
-
-**`[Topic_Name]_PMIDs.txt`** — one PMID per line:
-```
-12345678
-23456789
-34567890
-```
+This writes `[Topic_Name]_References.bib` (one `@article` entry per peer-reviewed
+reference, keyed by PMID where available) and `[Topic_Name]_PMIDs.txt` (one PMID per
+line; Scholar Gateway-only references without a PMID are omitted from the `.txt` but
+still appear in the `.bib` by DOI). The script copies every field verbatim from the
+ledger, so DOIs, titles, and author lists cannot be corrupted. It is the single source
+of truth for the export format — pass the same `[Topic_Name]` you used for the
+`.md`/`.docx` so all four files share a prefix.
 
 ## Key Content Rules
 
@@ -228,11 +218,11 @@ in the reference list, just like PubMed papers. Use the guideline body's URL:
 
 ## Output Files
 
-The `research-summary` skill should produce **two** user-facing files in the researcher's workspace folder:
+The `research-summary` skill should produce **four** user-facing files in the researcher's workspace folder:
 
 1. **`[Topic_Name]_Evidence_Summary_[Year].md`** — the markdown source
 2. **`[Topic_Name]_Evidence_Summary_[Year].docx`** — the converted Word document
+3. **`[Topic_Name]_References.bib`** — BibTeX for Zotero import (from `ledger_to_exports.py`)
+4. **`[Topic_Name]_PMIDs.txt`** — one PMID per line for Zotero bulk import (from `ledger_to_exports.py`)
 
-The `.bib` file and PMID list are produced by the sibling `literature-search` skill, not this one — they're generated from the same hidden ledger but owned by that skill. If the researcher wants them and they don't already exist, ask them to run `literature-search`.
-
-The hidden reference ledger `.literature_search_ledger.yaml` is written to the workspace by the `evidence-search` agent (either previously via `literature-search`, or freshly in this skill's Step 1 auto-trigger path) and left in place at the end. It is an internal artifact used for quality control and downstream-skill handoff. **Do not mention it to the researcher** in the evidence summary document or in any user-facing listing.
+The hidden reference ledger `.literature_search_ledger.yaml` is written to the workspace by the `evidence-search` agent (either previously, or freshly in this skill's Step 1 agent-dispatch path) and left in place at the end. It is an internal artifact used for quality control and downstream-skill handoff. **Do not mention it to the researcher** in the evidence summary document or in any user-facing listing.

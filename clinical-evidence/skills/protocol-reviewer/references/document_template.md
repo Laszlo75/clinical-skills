@@ -133,10 +133,20 @@ executive summary onto page 2, creating a clean title page.
 
 ### 3. Also produce the .bib and PMIDs.txt files
 
-After the markdown and docx are done, generate the `.bib` and `PMIDs.txt` files using
-the same format as the literature-search skill (see `../literature-search/references/evidence_summary_template.md`
-for the BibTeX format). Copy all reference metadata verbatim from the reference ledger
-loaded in Step 2.
+After the markdown and docx are done, generate the `.bib` and `PMIDs.txt` files from the
+**same validated ledger** using the shared export script — do not hand-write BibTeX:
+
+```bash
+python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
+  --prefix "[Protocol_Name]" --outdir <workspace>
+```
+
+Pass the same `[Protocol_Name]` used for the `.md`/`.docx` so all four files share a
+prefix. The script writes `[Protocol_Name]_References.bib` (one `@article` entry per
+peer-reviewed reference, keyed by PMID where available) and `[Protocol_Name]_PMIDs.txt`
+(one PMID per line; Scholar Gateway-only references without a PMID are omitted from the
+`.txt` but still appear in the `.bib` by DOI). Every field is copied verbatim from the
+ledger, so DOIs, titles, and author lists cannot be corrupted.
 
 ## Key Content Rules
 
@@ -173,7 +183,7 @@ This is one of the most valued features — it saves clinicians time.
 ### Reference accuracy — copy from the reference ledger, never from memory
 
 Every DOI in the reference list MUST come directly from the reference ledger
-produced by the literature-search skill (loaded and validated in Step 2). DOIs
+produced by the evidence-search agent (loaded and validated in Step 2). DOIs
 are opaque strings — you cannot reconstruct them from the paper title or journal.
 
 When writing the reference list, work from the parsed ledger in your context.

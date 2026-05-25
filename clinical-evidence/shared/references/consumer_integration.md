@@ -1,39 +1,38 @@
 # Consumer integration guide
 
-**Audience:** Any skill that consumes a literature-search YAML reference ledger — today that is `protocol-reviewer`; tomorrow it will also be `literature-review`; later it may be other skills entirely.
+**Audience:** Any skill that consumes the clinical-evidence YAML reference ledger — today that is `research-summary` and `protocol-reviewer`; later it may be other skills entirely.
 
-**Purpose:** A single place that documents how a downstream skill plugs into the literature-search pipeline. If you are building a new consumer, read this file; you should not need to re-invent discovery, validation, or auto-triggering logic.
+**Purpose:** A single place that documents how a downstream skill plugs into the evidence pipeline. The ledger is produced by the `evidence-search` agent (`clinical-evidence/agents/evidence-search.md`); consumers discover, validate, and read it. If you are building a new consumer, read this file; you should not need to re-invent discovery, validation, or auto-triggering logic.
 
 ---
 
 ## The pipeline in one picture
 
 ```
-┌──────────────────┐                        ┌─────────────────────────────┐
-│ literature-search│ ─ writes ledger ─▶    │ workspace folder            │
-│ (producer)       │   to hidden path       │  ├─ Topic_Evidence_....docx │ ← user-facing
-└──────────────────┘                        │  ├─ Topic_Evidence_....md   │ ← user-facing
-                                            │  ├─ Topic_References.bib    │ ← user-facing
-                                            │  ├─ Topic_PMIDs.txt         │ ← user-facing
-                                            │  └─ .literature_search_     │
-                                            │       ledger.yaml           │ ← hidden / internal
+┌────────────────────┐                      ┌─────────────────────────────┐
+│ evidence-search    │ ─ writes ledger ─▶  │ workspace folder            │
+│ agent (producer)   │   to hidden path     │  └─ .literature_search_     │
+└────────────────────┘                      │       ledger.yaml           │ ← hidden / internal
                                             └──────────────┬──────────────┘
-                                                           │
+                                                           │  read by a consumer
                                    ┌───────────────────────┼───────────────────────┐
                                    ▼                       ▼                       ▼
                          ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐
-                         │ protocol-reviewer│   │ literature-review│   │  future consumer │
+                         │ research-summary │   │ protocol-reviewer│   │  future consumer │
                          │  (consumer)      │   │  (consumer)      │   │  (consumer)      │
+                         │  .md .docx       │   │  .md .docx       │   │                  │
+                         │  .bib .txt       │   │  .bib .txt       │   │                  │
                          └──────────────────┘   └──────────────────┘   └──────────────────┘
+                           ↑ user-facing files written by each consumer ↑
 ```
 
-All consumers share the same three-step onboarding: **discover** the ledger, **validate** it, **consume** it. The researcher is never asked about the ledger — it is a hidden file that exists purely to enable the handoff and to anchor the producer's anti-hallucination writes.
+The `evidence-search` agent writes **only** the hidden ledger. Each consumer reads it and writes its own user-facing files (a consumer that wants Zotero exports calls `shared/scripts/ledger_to_exports.py`). All consumers share the same three-step onboarding: **discover** the ledger, **validate** it, **consume** it. The researcher is never asked about the ledger — it is a hidden file that exists purely to enable the handoff and to anchor the producer's anti-hallucination writes.
 
 ---
 
 ## Prerequisite: read the schema
 
-Before you write any consumer code or prompt instructions, read [`ledger_schema.md`](./ledger_schema.md). It is the authoritative contract — field names, types, required vs optional, the grade object, everything. Do not memorise the schema from this file or from the producing skill's SKILL.md. The schema file is the source of truth.
+Before you write any consumer code or prompt instructions, read [`ledger_schema.md`](./ledger_schema.md). It is the authoritative contract — field names, types, required vs optional, the grade object, everything. Do not memorise the schema from this file or from the `evidence-search` agent's prompt. The schema file is the source of truth.
 
 One fact worth internalising from the schema before you read on: **the ledger always lives at exactly one path** — `<workspace>/.literature_search_ledger.yaml`. That path is fixed. There is no filename the consumer has to guess, no pointer file to parse, no "which ledger did you mean?" ambiguity. The whole discovery flow below is built on that single invariant.
 
@@ -51,17 +50,17 @@ The workspace is the directory the researcher is working in — the same directo
 
 ### Case A — the ledger file exists
 
-Proceed to Step 2 (Validation). Do not ask the researcher anything. The whole point of the fixed hidden path is that a researcher who has just run a literature search in this folder, and now asks for a protocol review (or a narrative review, or any other downstream action), can say "review this protocol" and the consumer silently picks up the evidence without a word about files or formats.
+Proceed to Step 2 (Validation). Do not ask the researcher anything. The whole point of the fixed hidden path is that a researcher who has just run a search in this folder, and now asks for a protocol review (or a narrative summary, or any other downstream action), can say "review this protocol" and the consumer silently picks up the evidence without a word about files or formats.
 
 A single, lightweight confirmation is still good manners once the ledger has loaded — something like: "Using the evidence I pulled together on *[topic]* on *[search_date]* — let me know if you'd rather I re-run the search." One line, no path, no filename. Optional skip if the consumer already has high confidence the topic is aligned.
 
 ### Case B — the ledger file does not exist
 
-Auto-trigger a fresh literature search. The literature-search skill lives as a sibling directory: read `../literature-search/SKILL.md` and follow its complete workflow. When that workflow finishes, literature-search will have written the ledger to exactly the canonical path, so the consumer can loop back and proceed as in Case A.
+Dispatch the `evidence-search` agent to build one. Use the **Agent tool** with `subagent_type: "evidence-search"`, passing the clinical topic (and any MeSH terms / guideline bodies you can infer) plus an explicit instruction to write the ledger to `<workspace>/.literature_search_ledger.yaml`. The agent runs the full search in isolated context and returns a short structured summary; the ledger will then be at the canonical path, so the consumer can loop back and proceed as in Case A.
 
-If `../literature-search/SKILL.md` is not found at that relative path, stop and tell the researcher in plain language:
+If the Agent tool reports that `evidence-search` is not a known subagent (unexpected on a normal `clinical-evidence` plugin install), stop and tell the researcher in plain language:
 
-> "I don't have any evidence to work from yet, and I can't find the literature-search skill to run one. Please install literature-search alongside this skill, or run a literature search first."
+> "I don't have any evidence to work from yet, and the search agent isn't available. The plugin looks incomplete — please reinstall the `clinical-evidence` plugin, or run a search first."
 
 Do not ask the researcher to provide a YAML file. The ledger is an internal artifact — researchers should never see it, edit it, or be asked about it.
 
@@ -79,18 +78,18 @@ Keep it single-path. One canonical location. Exists or doesn't exist.
 
 ## Step 2 — Validation: run the validator
 
-Never trust a ledger without running the validator first. The validator is a Python script bundled with literature-search:
+Never trust a ledger without running the validator first. The validator is a Python script in the plugin's shared directory:
 
 ```bash
-python ../literature-search/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
 ```
 
 Exit codes:
 - `0` — valid. Warnings (if any) are informational; you may surface them to the researcher but you can proceed.
-- `1` — one or more ERROR lines in output. **Do not proceed.** Show the errors to the researcher in plain language and offer to re-run the literature search.
-- `2` — file missing or unparseable YAML. Treat this the same as "file missing" from Step 1 — auto-trigger literature-search.
+- `1` — one or more ERROR lines in output. **Do not proceed.** Show the errors to the researcher in plain language and offer to re-dispatch the `evidence-search` agent.
+- `2` — file missing or unparseable YAML. Treat this the same as "file missing" from Step 1 — dispatch the `evidence-search` agent.
 
-**Why a script and not prose:** executable checks cannot drift from the schema. A prose checklist in your SKILL.md will eventually fall out of sync with what literature-search produces. The script is bundled with the producer, so it always matches.
+**Why a script and not prose:** executable checks cannot drift from the schema. A prose checklist in your SKILL.md will eventually fall out of sync with what the agent produces. The script is the shared contract, so it always matches.
 
 **What the script checks** (so you know what's been verified without having to re-read it):
 - Top-level sections: `metadata`, `guidelines`, `references` present.
@@ -142,7 +141,7 @@ When you parse `metadata.ledger_schema_version`:
 
 - **Missing field** — error. This is a legacy unversioned ledger; the researcher must re-run the search. The validator will flag this with a clear error.
 - **Matches your MAJOR** (e.g., consumer targets 1.x and ledger is 1.0, 1.1, 1.2) — accept silently.
-- **Higher MAJOR** (e.g., consumer targets 1.x and ledger is 2.0) — warn clearly: "The evidence in this workspace was produced by a newer version of the search skill than this consumer understands. Some fields may have moved or been renamed. I'd recommend updating this consumer before proceeding." Stop unless the researcher overrides.
+- **Higher MAJOR** (e.g., consumer targets 1.x and ledger is 2.0) — warn clearly: "The evidence in this workspace was produced by a newer version of the search agent than this consumer understands. Some fields may have moved or been renamed. I'd recommend updating this consumer before proceeding." Stop unless the researcher overrides.
 - **Lower MAJOR** (e.g., consumer targets 2.x and ledger is 1.0) — warn and stop. The consumer assumes fields that may not exist.
 
 The validator handles most of this check for you — trust its exit code.
@@ -151,24 +150,30 @@ The validator handles most of this check for you — trust its exit code.
 
 ## Directory convention
 
-Consumers and the producer are installed as **sibling directories** under the researcher's skills folder:
+The shared contract lives in a plugin-level `shared/` directory; consumer skills and the producer agent sit alongside it inside the plugin:
 
 ```
-skills/
-├── literature-search/        ← producer
-│   ├── SKILL.md
+clinical-evidence/
+├── agents/
+│   └── evidence-search.md       ← producer (writes the ledger)
+├── shared/                       ← shared contract, owned by no single skill
 │   ├── references/
 │   │   ├── ledger_schema.md
-│   │   └── consumer_integration.md  ← this file
+│   │   ├── consumer_integration.md  ← this file
+│   │   └── pubmed_strategy.md
 │   └── scripts/
-│       └── validate_ledger.py
-├── protocol-reviewer/        ← consumer
-│   └── SKILL.md
-└── literature-review/        ← future consumer
-    └── SKILL.md
+│       ├── validate_ledger.py
+│       └── ledger_to_exports.py
+└── skills/
+    ├── research-summary/         ← consumer
+    │   └── SKILL.md
+    ├── protocol-reviewer/        ← consumer
+    │   └── SKILL.md
+    └── <future-consumer>/        ← consumer
+        └── SKILL.md
 ```
 
-This convention is what allows `../literature-search/...` to work from any consumer. If a user installs the skills somewhere else, they must preserve the sibling structure or the auto-trigger path in Step 1 Case B breaks. Document this in your consumer's SKILL.md so the user knows.
+This convention is what allows `../../shared/...` to resolve from any consumer skill (each consumer lives two levels below the plugin root, at `skills/<consumer>/`). If a user installs the plugin somewhere else, they must preserve this structure or the `../../shared/...` pointers break. Document this in your consumer's SKILL.md so the user knows.
 
 ---
 
@@ -177,22 +182,23 @@ This convention is what allows `../literature-search/...` to work from any consu
 ```markdown
 ## Prerequisites
 
-This skill consumes a hidden YAML reference ledger produced by the literature-search skill.
-Read `../literature-search/references/ledger_schema.md` for the schema and
-`../literature-search/references/consumer_integration.md` for the integration pattern.
+This skill consumes a hidden YAML reference ledger produced by the evidence-search agent.
+Read `../../shared/references/ledger_schema.md` for the schema and
+`../../shared/references/consumer_integration.md` for the integration pattern.
 The researcher should never be asked about the ledger directly.
 
 ## Loading the evidence
 
 1. Discover: look for `.literature_search_ledger.yaml` in the workspace folder.
    - If it exists, proceed to validation.
-   - If it does not exist, auto-trigger literature-search via `../literature-search/SKILL.md`;
-     when it finishes, the ledger will be at the canonical path.
+   - If it does not exist, dispatch the evidence-search agent (Agent tool,
+     subagent_type: evidence-search); when it finishes, the ledger will be at the
+     canonical path.
 
-2. Validate: run `python ../literature-search/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml`.
+2. Validate: run `python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml`.
    - Exit 0 → proceed.
-   - Exit 1 → show the researcher the errors in plain language and offer to re-run the search.
-   - Exit 2 → treat as "missing" and auto-trigger the search.
+   - Exit 1 → show the researcher the errors in plain language and offer to re-dispatch the agent.
+   - Exit 2 → treat as "missing" and dispatch the agent.
 
 3. Consume: read fields from the YAML as documented in `ledger_schema.md`.
    Copy reference metadata verbatim. Use `grade.display` for inline citations.
@@ -209,7 +215,7 @@ Imagine a future `literature-review` skill that takes the same evidence and prod
 
 1. Researcher says "write me a literature review on CMV prophylaxis in SOT".
 2. Skill looks for `.literature_search_ledger.yaml` in the workspace.
-3. If present, it validates silently, confirms the topic with the researcher in one line ("Using the CMV-in-SOT evidence from 2026-04-10 — say so if you'd rather I re-run the search"), and proceeds. If absent, it auto-triggers literature-search; when that finishes it loops back to step 2.
+3. If present, it validates silently, confirms the topic with the researcher in one line ("Using the CMV-in-SOT evidence from 2026-04-10 — say so if you'd rather I re-run the search"), and proceeds. If absent, it dispatches the `evidence-search` agent; when that finishes it loops back to step 2.
 4. It loads `guidelines[]` to frame the current standard of care.
 5. It loads `references[]` and uses `key_finding` to structure the narrative sections.
 6. It groups recommendations by `grade.system` and `grade.code` to highlight consensus.

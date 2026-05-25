@@ -2,9 +2,9 @@
 
 **Schema version:** `1.0`
 **Status:** Stable. First versioned schema.
-**Audience:** The `literature-search` skill (producer) and any skill that consumes its evidence (`protocol-reviewer`, future `literature-review`, etc.). **Not** a user-facing document — researchers never see this file or the ledger it describes.
+**Audience:** The `evidence-search` agent (producer) and any skill that consumes its evidence (`research-summary`, `protocol-reviewer`, future consumers). **Not** a user-facing document — researchers never see this file or the ledger it describes.
 
-This document is the **single source of truth** for the internal reference ledger format. The ledger is an internal artifact, not one of the skill's user-facing outputs.
+This document is the **single source of truth** for the internal reference ledger format. The ledger is an internal artifact, not one of the consumers' user-facing outputs.
 
 ---
 
@@ -61,7 +61,7 @@ A producer of this ledger must guarantee:
 4. **Every reference has a verified title, first author, and journal** copied verbatim from the source.
 5. **Retracted papers** are excluded. Producers must scan for `[Retracted]` / `[Retraction of:` markers in titles and drop those entries before writing the ledger.
 6. **Every guideline recommendation** carries a structured `grade` object (see "Grade object" below) — not a free-text string.
-7. **The final ledger passes** `scripts/validate_ledger.py` — if validation fails, the producer must fix the issues before finishing the search.
+7. **The final ledger passes** `shared/scripts/validate_ledger.py` — if validation fails, the producer must fix the issues before finishing the search.
 8. **The ledger is written to the canonical path** `<workspace>/.literature_search_ledger.yaml`.
 
 ## Consumer contract
@@ -86,8 +86,8 @@ The YAML must contain these three sections:
 
 Two sections are optional and may be omitted if empty:
 
-- `preprints` — bioRxiv / medRxiv preprints (from literature-search Step 3b)
-- `ongoing_trials` — ClinicalTrials.gov records (from literature-search Step 3b)
+- `preprints` — bioRxiv / medRxiv preprints (from the `evidence-search` agent's Step 3b)
+- `ongoing_trials` — ClinicalTrials.gov records (from the `evidence-search` agent's Step 3b)
 
 ---
 
@@ -182,10 +182,10 @@ grade:
 
 ## Validation
 
-Every producer and consumer must run `literature-search/scripts/validate_ledger.py` against the ledger:
+Every producer and consumer must run `shared/scripts/validate_ledger.py` against the ledger:
 
 ```bash
-python scripts/validate_ledger.py /path/to/.literature_search_ledger.yaml
+python shared/scripts/validate_ledger.py /path/to/.literature_search_ledger.yaml
 ```
 
 Exit codes:

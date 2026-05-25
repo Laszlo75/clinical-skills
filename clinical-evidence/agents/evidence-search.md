@@ -12,15 +12,15 @@ description: >-
   Examples:
 
   <example>
-  Context: The user-facing `literature-search` skill has parsed a topic and is ready to
-  run the search.
+  Context: The user-facing `research-summary` skill has parsed a topic and found no
+  ledger in the workspace, so it needs a fresh search before writing the summary.
   user: "Search the literature on CMV prophylaxis in solid organ transplant recipients."
   assistant: "I'll dispatch the evidence-search agent to run the full search and build
   the reference ledger — this keeps the tool-output traffic out of our main conversation."
   <commentary>
-  The literature-search skill is the user's entry point, but the actual PubMed + Scholar
-  Gateway traffic belongs in an isolated agent. Dispatch evidence-search with the
-  confirmed topic, MeSH terms, and guideline bodies.
+  The research-summary skill is the user's entry point for a search, but the actual
+  PubMed + Scholar Gateway traffic belongs in an isolated agent. Dispatch evidence-search
+  with the confirmed topic, MeSH terms, and guideline bodies.
   </commentary>
   </example>
 
@@ -371,7 +371,7 @@ Before returning, make sure the `metadata` block at the top of
 - `search_date` — today in ISO 8601 `YYYY-MM-DD`.
 - `skill_version` — the plugin version. You will typically receive this in the dispatch
   prompt from the consumer skill (it reads `../../.claude-plugin/plugin.json` from its
-  own sibling context); if not provided, use `"1.1.0"` as a reasonable default and the
+  own sibling context); if not provided, use `"2.0.0"` as a reasonable default and the
   consumer's validator will catch mismatches.
 - `model_id` — the model identifier of the session you are actually running in.
   Report the real model running this session; do not copy a placeholder or assume a
@@ -416,12 +416,11 @@ that — the consumer reads the ledger itself for details.
 
 ## Inlined ledger schema contract (essential fields)
 
-The full schema lives in `references/ledger_schema.md` inside the `literature-search`
-skill directory, but you cannot reliably read that from your isolated context. The
-essential contract is inlined here. The executable validator
-(`scripts/validate_ledger.py`, run by the dispatching consumer) is the real ground
-truth — if you produce a ledger that mismatches this contract, the validator will fail
-and the consumer will re-invoke you.
+The full schema lives in `shared/references/ledger_schema.md` in the `clinical-evidence`
+plugin, but you cannot reliably read that from your isolated context. The essential
+contract is inlined here. The executable validator (`shared/scripts/validate_ledger.py`,
+run by the dispatching consumer) is the real ground truth — if you produce a ledger that
+mismatches this contract, the validator will fail and the consumer will re-invoke you.
 
 ### Required top-level sections
 
@@ -441,7 +440,7 @@ metadata:
   ledger_schema_version: "1.0"        # REQUIRED — semver of this schema, fixed at "1.0"
   topic: "CMV prophylaxis in SOT"     # REQUIRED — confirmed topic from dispatch
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
-  skill_version: "1.1.0"              # REQUIRED — plugin version
+  skill_version: "2.0.0"              # REQUIRED — plugin version
   model_id: "<actual session model id>"  # REQUIRED — the model actually running this session
   mesh_terms:                         # REQUIRED — list of strings
     - "Cytomegalovirus Infections"

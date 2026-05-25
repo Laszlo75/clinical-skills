@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a literature-search YAML reference ledger against schema v1.0.
+"""Validate a clinical-evidence YAML reference ledger against schema v1.0.
 
 Usage:
     python validate_ledger.py <path_to_ledger.yaml>
@@ -9,9 +9,9 @@ Exit codes:
     1 — ledger has one or more ERROR issues. Do not proceed.
     2 — ledger file missing or unparseable YAML.
 
-This script is the executable counterpart to references/ledger_schema.md and is
+This script is the executable counterpart to ../references/ledger_schema.md and is
 the single source of truth for what a valid ledger looks like. Every producer and
-consumer of the literature-search ledger must run this script before relying on
+consumer of the reference ledger must run this script before relying on
 the ledger contents.
 
 Schema version supported: 1.x
@@ -95,7 +95,7 @@ def _check_metadata(metadata: Any, issues: Issues) -> None:
         issues.error(
             "metadata.ledger_schema_version",
             "missing — legacy unversioned ledger; regenerate using the "
-            "clinical-evidence plugin's literature-search skill",
+            "clinical-evidence plugin's evidence-search agent",
         )
     else:
         parsed = _parse_version(raw_version)

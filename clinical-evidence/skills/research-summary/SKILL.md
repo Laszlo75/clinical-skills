@@ -3,17 +3,22 @@ name: research-summary
 model: opus
 effort: max
 description: >
-  Produce a narrative evidence summary document (.md + .docx) from a clinical literature
-  search. Reads a verified YAML reference ledger in the workspace, or triggers the
-  evidence-search agent to build one if none exists, and writes a structured Word
-  document covering guidelines, recent evidence, conflicting recommendations, emerging
-  evidence, and evidence gaps. Use when the user asks for an evidence summary, narrative
-  literature review, or a written overview of the current clinical evidence on a topic
-  — particularly after running a literature search. Triggers include: "write the
-  evidence summary", "produce a narrative literature review", "evidence summary
-  document", "write up the evidence on", "summarise the literature on", or any request
-  for a written evidence document after a search has been run. Also triggers when the
-  user uploads no protocol but asks for a formal evidence review document on a topic.
+  Search PubMed, Scholar Gateway, and national guideline websites for clinical evidence on
+  a topic, then produce a narrative evidence summary document (.md + .docx) plus
+  Zotero-friendly export files (BibTeX .bib + PMID list). Dispatches the evidence-search
+  agent to build a verified reference ledger (or reuses one already in the workspace), then
+  writes a structured document covering guidelines, recent evidence, conflicting
+  recommendations, emerging evidence, and evidence gaps. Use when the user asks for a
+  literature search, evidence review, evidence summary, narrative literature review,
+  reference list, or wants to know what the latest evidence or guidelines say about a
+  clinical topic. Triggers include: "literature search", "search PubMed", "find evidence
+  on", "what does the latest evidence say about", "what do the guidelines say about",
+  "evidence review", "reference list for", "write the evidence summary", "produce a
+  narrative literature review", "summarise the literature on", or any request for clinical
+  evidence or a written evidence document on a specific topic. Also triggers when the user
+  mentions a clinical topic casually and asks what the current evidence or guidelines say
+  (e.g., "I'm updating our CMV protocol, what's the current thinking?", "what does NICE say
+  about X?"), as long as they have not uploaded a protocol for review.
 ---
 
 # Clinical Evidence Summary Writer
@@ -26,14 +31,14 @@ pick up the ledger invisibly — the researcher never has to hand you a referenc
 
 ## Quick Start
 
-**Input:** A clinical topic (free text), optionally with a recent literature search
+**Input:** A clinical topic (free text), optionally with a recent search
 already run in the workspace.
-**Output:** 2 user-facing files — evidence summary (`.md` + `.docx`). The BibTeX file
-and PMID list are the responsibility of the `literature-search` skill; if they're not
-already present and the researcher wants them, they should run `literature-search`
-separately.
-**Happy path:** Discover the workspace's hidden evidence ledger (or auto-trigger the
-`evidence-search` agent to create one) → validate → write markdown → convert to `.docx`.
+**Output:** 4 user-facing files — evidence summary (`.md` + `.docx`) plus Zotero exports
+(`.bib` + `PMIDs.txt`). The exports are generated from the same hidden ledger by the
+shared `ledger_to_exports.py` script.
+**Happy path:** Discover the workspace's hidden evidence ledger (or dispatch the
+`evidence-search` agent to create one) → validate → write markdown → convert to `.docx`
+→ write `.bib` + PMID exports.
 
 ## Model Requirements
 
@@ -58,28 +63,31 @@ artifact — **the researcher never sees, edits, or is asked about it**. Handoff
 invisible.
 
 Before writing any consumer-side logic, read the two authoritative docs that live in
-the `literature-search` sibling directory:
+the plugin's shared contract directory:
 
-- [`../literature-search/references/ledger_schema.md`](../literature-search/references/ledger_schema.md)
+- [`../../shared/references/ledger_schema.md`](../../shared/references/ledger_schema.md)
   — field names, types, the structured grade object, everything. This skill targets
   ledger schema **`1.x`**.
-- [`../literature-search/references/consumer_integration.md`](../literature-search/references/consumer_integration.md)
+- [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md)
   — the discover/validate/consume pattern every downstream skill follows.
 
-**Sibling directory assumption.** This skill, `literature-search`, and
-`protocol-reviewer` ship together as sibling directories inside the `clinical-evidence`
-plugin, so the `../literature-search/...` relative paths used below always resolve
+**Shared directory assumption.** This skill and `protocol-reviewer` ship together inside
+the `clinical-evidence` plugin, and the shared contract (schema, integration guide,
+validator, export script) lives in the plugin's `shared/` directory. Each skill sits at
+`skills/<skill>/`, so the `../../shared/...` relative paths used below always resolve
 correctly after a normal plugin install.
 
 ## When This Skill Activates
 
-The researcher wants a written narrative evidence summary on a clinical topic.
-Typically:
+The researcher wants clinical evidence on a topic — a literature search, a reference
+list, or a written narrative evidence summary. This skill is the user-facing entry point
+for "what does the evidence say about X". Typically:
 
-- After running `literature-search` in the same workspace and saying *"now write the
-  evidence summary document"*.
-- Immediately when asked for an evidence summary without running `literature-search`
-  first — the skill auto-triggers the `evidence-search` agent on the fly.
+- Asked directly for a literature search or evidence summary on a topic — the skill
+  dispatches the `evidence-search` agent on the fly, then writes the document and exports.
+- After a search has already been run in the same workspace (by this skill or by
+  `protocol-reviewer`), and the researcher says *"now write the evidence summary
+  document"* — the skill reuses the existing ledger.
 - When the researcher needs a formal evidence document for a journal club, grant
   application, teaching session, or clinical question — but does **not** have a
   protocol to review. (If they have a protocol, they want `protocol-reviewer` instead.)
@@ -99,6 +107,9 @@ Typically:
        │
        ▼
 4. CONVERT to .docx via pandoc
+       │
+       ▼
+5. WRITE Zotero exports (.bib + PMIDs) via the shared script
 ```
 
 The researcher never sees step 1 as a file-handling step — to them, the workflow is
@@ -109,7 +120,7 @@ simply *"I want an evidence summary on X"*. Follow each step below carefully.
 ## Step 1: Discover, Validate, and Load the Reference Ledger
 
 Follow the three-step pattern documented in
-[`../literature-search/references/consumer_integration.md`](../literature-search/references/consumer_integration.md).
+[`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md).
 The details below are a concrete application of that pattern for this skill.
 
 ### 1a. Discover
@@ -156,7 +167,7 @@ Run the bundled validator. Do not re-implement the checks in prose — the scrip
 single source of truth:
 
 ```bash
-python ../literature-search/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
 ```
 
 - **Exit 0** — ledger is valid. Proceed to 1c. Any `WARN:` lines are informational;
@@ -265,19 +276,35 @@ pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
   --to=docx
 ```
 
-Verify the `.docx` was generated and report both file paths to the researcher.
+Verify the `.docx` was generated.
+
+## Step 4: Write the Zotero export files
+
+Generate the BibTeX and PMID files from the **same validated ledger** using the shared
+export script — do not hand-write BibTeX from memory:
+
+```bash
+python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
+  --prefix "[Topic_Name]" --outdir <workspace>
+```
+
+Pass the **same `[Topic_Name]`** you used for the `.md`/`.docx` filenames so all four
+files share a prefix. The script reads reference metadata verbatim from the ledger and
+writes `[Topic_Name]_References.bib` (one entry per peer-reviewed reference) and
+`[Topic_Name]_PMIDs.txt` (one PMID per line, Scholar Gateway-only references omitted).
+The script is the single source of truth for the export format — never reconstruct
+DOIs, PMIDs, or author lists by hand.
+
+Then report all four file paths to the researcher.
 
 ## Output Files
 
-Save both files to the researcher's workspace folder:
+Save all four files to the researcher's workspace folder:
 
 1. **`[Topic_Name]_Evidence_Summary_[Year].md`** — markdown source (useful for future editing in any text editor)
 2. **`[Topic_Name]_Evidence_Summary_[Year].docx`** — converted Word document (pandoc + reference template)
-
-If the researcher also wants `.bib` and PMID files for Zotero, tell them to run the
-sibling `literature-search` skill — those exports belong to that skill, not this one.
-If `literature-search` was already run in the same workspace the files will already
-exist.
+3. **`[Topic_Name]_References.bib`** — BibTeX for Zotero import (from `ledger_to_exports.py`)
+4. **`[Topic_Name]_PMIDs.txt`** — one PMID per line for Zotero bulk import (from `ledger_to_exports.py`)
 
 ---
 
@@ -314,9 +341,10 @@ Always frame findings in the UK NHS context:
 ### Scope boundaries
 
 - Do **not** review or critique a protocol — that is the job of `protocol-reviewer`.
-- Do **not** produce `.bib` or PMID files — that is the job of `literature-search`.
 - Do **not** perform the literature search inline. If no ledger exists, dispatch the
   `evidence-search` agent.
+- Do **not** hand-write the `.bib`/PMID files — generate them with the shared
+  `ledger_to_exports.py` script (Step 4).
 
 ---
 
@@ -325,7 +353,7 @@ Always frame findings in the UK NHS context:
 This skill requires:
 
 - **pandoc** — for converting markdown to `.docx` (bundled reference template in `assets/reference.docx`)
-- **Python 3 + PyYAML** — for running the ledger validator in Step 1b (`../literature-search/scripts/validate_ledger.py`)
+- **Python 3 + PyYAML** — for the ledger validator in Step 1b (`../../shared/scripts/validate_ledger.py`) and the export script in Step 4 (`../../shared/scripts/ledger_to_exports.py`)
 
 When auto-triggering the `evidence-search` agent (no ledger in the workspace), the
 following tools are also required — they are used by the agent, not this skill
@@ -344,9 +372,9 @@ directly:
   language: *"I can't verify the evidence base I have available — a small helper is
   missing. Please run `pip install pyyaml` and try again."* Do not attempt to
   re-implement validation by eye.
-- **PubMed MCP / Scholar Gateway unavailable (auto-trigger path only):** if the
+- **PubMed MCP / Scholar Gateway unavailable (agent dispatch path only):** if the
   workspace has no ledger and the required MCP tools are not available, tell the
-  researcher that the literature-search tools need to be configured before a summary
+  researcher that the search tools need to be configured before a summary
   can proceed.
 - **evidence-search agent not installed:** this should never happen with a normal
   `clinical-evidence` plugin install. If the Agent tool reports the subagent type is
