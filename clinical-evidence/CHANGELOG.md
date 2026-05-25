@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - `protocol-reviewer/references/document_template.md` pointed at a non-existent `../literature-search/references/evidence_summary_template.md` for the BibTeX format; it now invokes the shared export script.
 - `research-summary`'s template contradicted itself (its "produce the exports" step vs. its "those belong to literature-search" output note); reconciled — the skill now owns the exports.
 - The two pre-existing BibTeX formats disagreed (PMID-keyed vs. AuthorYear-keyed); the shared export script settles on one canonical PMID-keyed format.
-- `marketplace.json`'s `clinical-evidence` entry was stale at `1.0.0` while `plugin.json` read `1.1.0`; both are now `2.0.0`.
+- `marketplace.json` carried redundant version numbers (a cosmetic top-level catalog version, plus a per-plugin entry version that had drifted to `1.0.0` while `plugin.json` read `1.1.0`). Both marketplace `version` fields were removed — `plugin.json` is now the single source of truth, which is the version Claude Code resolves first anyway.
 
 ### Compatibility
 
