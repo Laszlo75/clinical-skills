@@ -29,7 +29,7 @@ yourself. The researcher never has to hand you a reference file.
 
 ## Model Requirements
 
-This skill should be run on **Claude Opus 4.6** (`claude-opus-4-6`). The clinical
+This skill should be run on **Claude Opus 4.7** (`claude-opus-4-7`). The clinical
 reasoning, evidence synthesis, and cross-referencing in this workflow are demanding tasks
 where model capability directly affects output quality — particularly the accuracy of
 evidence grading, the nuance of recommendations, and the reliability of reference handling.
@@ -270,7 +270,7 @@ Replace placeholder values in the transparency disclaimer at the time of the rev
 - **Plugin version** — read from `../../.claude-plugin/plugin.json` (this skill lives inside the `clinical-evidence` plugin; the plugin version is the single version number the disclaimer records)
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field
 - **Search date** — from the ledger's `metadata.search_date` field
-- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-6`)
+- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-7`)
 - **Review date** — today's date in ISO 8601 format (YYYY-MM-DD)
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin version at the time the search was run). You can read it for cross-checks, but the disclaimer should report the current plugin version, not the historical one from the ledger.
@@ -299,7 +299,7 @@ Populate every field you know at the time of the review:
 - **protocol_version**: version/edition from the protocol document
 - **clinical_domain**: e.g., "renal transplantation", "haematology"
 - **skill_version**: the plugin version from `../../.claude-plugin/plugin.json`
-- **model_id**: the model powering the session (e.g., `claude-opus-4-6`)
+- **model_id**: the model powering the session (e.g., `claude-opus-4-7`)
 - **total_references**: count of references in the final review
 - **guidelines_consulted**: semicolon-separated list (e.g., "BTS 3rd Ed 2016;KDIGO 2024")
 - **recommendations_aligned / minor_update / major_update / new_addition / remove**: counts

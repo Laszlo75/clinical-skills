@@ -51,7 +51,7 @@ The `.bib` file and PMID list are NOT produced by this skill. If the researcher 
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.6 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.6 for the clinical reasoning and narrative synthesis quality needed.
+**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and narrative synthesis quality needed.
 
 **Intended use:** AI-assisted narrative synthesis of clinical evidence into a structured summary document. The system synthesises and summarises evidence; it does not make clinical decisions.
 

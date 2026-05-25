@@ -28,7 +28,7 @@ The skill also writes a hidden reference ledger at `.literature_search_ledger.ya
 ## Requirements
 
 - [Claude Desktop](https://claude.ai/download) or another Claude client with MCP connector support
-- **Recommended model**: Claude Opus 4.6 — the literature search, evidence appraisal, and reference integrity steps benefit from stronger reasoning capability
+- **Recommended model**: Claude Opus 4.7 — the literature search, evidence appraisal, and reference integrity steps benefit from stronger reasoning capability
 - The following MCP connectors enabled:
   - **PubMed** — literature search and article metadata
   - **Scholar Gateway** — semantic search across peer-reviewed literature

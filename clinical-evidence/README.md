@@ -58,7 +58,7 @@ The hidden `.literature_search_ledger.yaml` is present in the workspace after an
 ## Requirements
 
 - [Claude Desktop](https://claude.ai/download) with MCP connector support
-- Recommended model: **Claude Opus 4.6**
+- Recommended model: **Claude Opus 4.7**
 - MCP connectors enabled:
   - **PubMed** — literature search and article metadata
   - **Scholar Gateway** — semantic search

@@ -49,7 +49,7 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.6 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.6 for the clinical reasoning and cross-referencing quality needed.
+**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and cross-referencing quality needed.
 
 **Intended use:** AI-assisted evidence synthesis to support the review of clinical protocols against current national guidelines and published literature. The system cross-references and summarises evidence; it does not make clinical decisions.
 

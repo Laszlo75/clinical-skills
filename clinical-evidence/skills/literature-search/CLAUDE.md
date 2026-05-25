@@ -56,7 +56,7 @@ Optional (enhance agent coverage when available):
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.6 (Anthropic), accessed via Claude Desktop with PubMed and Scholar Gateway integrations.
+**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop with PubMed and Scholar Gateway integrations.
 
 **Intended use:** AI-assisted literature search and reference ledger construction. The system retrieves, structures, and verifies evidence; it does not make clinical decisions and does not produce the narrative evidence summary (that is handled by the `research-summary` consumer skill).
 

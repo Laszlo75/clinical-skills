@@ -37,7 +37,7 @@ separately.
 
 ## Model Requirements
 
-This skill should be run on **Claude Opus 4.6** (`claude-opus-4-6`). The clinical
+This skill should be run on **Claude Opus 4.7** (`claude-opus-4-7`). The clinical
 reasoning, evidence synthesis, and narrative writing in this workflow are demanding
 tasks where model capability directly affects output quality — particularly the
 accuracy of evidence grading, the coherence of thematic synthesis, and the reliability
@@ -241,7 +241,7 @@ Replace placeholder values in the transparency disclaimer at the time of writing
   number the disclaimer records).
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field.
 - **Search date** — from the ledger's `metadata.search_date` field.
-- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-6`).
+- **Model identifier** — the model powering the current session (e.g., `claude-opus-4-7`).
 - **Document date** — today's date in ISO 8601 format (YYYY-MM-DD).
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin

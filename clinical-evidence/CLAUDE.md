@@ -103,7 +103,7 @@ Optional (enhance agent coverage):
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.6 (Anthropic), accessed via Claude Desktop.
+**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop.
 
 **Intended use:** AI-assisted literature search, evidence synthesis, and cross-referencing of clinical protocols against current guidelines. The plugin retrieves, structures, and summarises evidence; it does not make clinical decisions.
 
