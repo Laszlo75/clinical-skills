@@ -67,6 +67,22 @@ scripts are in `[skill-path]/../../shared/scripts/`.
 4. **Hand over:** a few sentences on the headline findings, anything excluded during
    reference checking, and where the four files are.
 
+## Timing log
+
+Log stage boundaries with the shared timing script — one short command per boundary,
+so the researcher can see where time and tokens go and compare plugin versions:
+
+```bash
+python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start run --skill research-summary
+python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start <stage>
+python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
+```
+
+Stages, in order: `search`, `verify` (reference-checker + verification), `document` (writing the summary, `.docx` and exports). For stages that dispatch an agent, pass the token usage the
+agent reports on completion as `--tokens` when you have it. Close with `end run`, then run
+`run_log.py "<workspace>" summary` and include its output at the end of the hand-over
+message. The script never fails a run; if it warns, carry on.
+
 ## Non-negotiables
 
 - **References come only from the verified ledger.** Build the reference list from

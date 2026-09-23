@@ -4,6 +4,17 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.2.1] - 2026-09-23
+
+### Added
+
+- **Timing log.** Both skills now record each stage's start and end with `shared/scripts/run_log.py`, in `<workspace>/.clinical-evidence/run_log.csv`.
+  - Stages logged: map, checkpoint, search, verify, judge, second review, tables, document.
+  - Each agent stage also records the token usage the agent reports on completion, where available.
+  - The hand-over message ends with a summary of minutes and tokens per stage.
+  - The purpose is to find where time and tokens go, and to benchmark plugin versions against each other. The CSV reads straight into R.
+  - The script never fails a clinical run: on any error it only warns.
+
 ## [2.2.0] - 2026-09-23
 
 ### Added
