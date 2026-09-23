@@ -4,6 +4,16 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.1] - 2026-09-23
+
+### Fixed
+
+- **`research-summary` did not load in Claude Cowork.** Its frontmatter `description` was 1,353 characters, over the 1,024-character limit for skill descriptions. The loader dropped the skill silently, so only `protocol-reviewer` appeared (the plugin page showed "1 skill"). The description is now 764 characters and keeps the main trigger phrases. The bug dates from 2.0.0, when the skill absorbed `literature-search`'s triggers.
+
+### Added
+
+- `tests/test_plugin_structure.py` checks each skill's name (format, length, matches its folder) and description (≤ 1,024 characters, no XML tags), each agent's frontmatter, and that the marketplace entry points at the plugin, so a silently dropped skill fails CI instead.
+
 ## [2.1.0] - 2026-09-23
 
 ### Added
