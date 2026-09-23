@@ -1,5 +1,11 @@
 # clinical-evidence v3 — review findings and workflow design
 
+> **Status (2026-09-23):** Phase 0 shipped as v2.0.1. Phase 1 shipped as v2.1.0, with two changes to the design below, made on the maintainer's feedback:
+> - **Verification uses the PubMed MCP connector, not direct E-utilities/Crossref calls.** A `reference-checker` agent makes an independent second reading and `verify_references.py` compares the two readings tolerantly.
+> - **pandoc and citeproc are dropped as dependencies.** Claude Desktop/Cowork create `.docx` natively, the model numbers citations, and `format_references.py` generates the reference list.
+>
+> A third principle now applies throughout: prompts state outcomes, constraints and reasons, not step-by-step procedure, because current models need less hand-holding. The sections below keep the original design for context. Where they mention E-utilities probes or citeproc rendering, the notes above supersede them.
+
 ## Context
 
 The user asked for a critical review of the `clinical-evidence` plugin (v2.0.0: `research-summary`, `protocol-reviewer` and the `evidence-search` agent) and for a move to **Opus 5.5 at max effort**. After the first review, they asked two further things:
@@ -69,7 +75,7 @@ Intended outcome: a v3 design that
 
 Key design choices:
 - **Question-driven search.** Every protocol statement links to a question, which links to evidence, which leads to a verdict. The traceability matrix is itself a deliverable, and a missing link shows up as a gap.
-- **A script renders the citations.** The model writes `[@pmid:31107464]`, and `render_citations.py` handles numbering, ordering and formatting from the verified records. This removes the whole "copy verbatim, number sequentially, cite every reference" class of errors.
+- **A script renders the citations.** The model writes `[@pmid:29596116]`, and `render_citations.py` handles numbering, ordering and formatting from the verified records. This removes the whole "copy verbatim, number sequentially, cite every reference" class of errors.
 - **Independent verifier agent.** This mirrors dual review in systematic reviews. It runs in a fresh context so it doesn't inherit the author's reasoning. It only sees the judgements and the stored passages.
 - **Parallel retrieval.** Opus 5.5 handles fan-out and long contexts well. Searching per question in parallel makes it faster and more thorough, while the parent context stays clean.
 - **Workspace store instead of a single hidden file:** `.clinical-evidence/<topic-slug>_<date>/` holding `ledger.yaml`, `refs.csl.json`, `search_log.csv`, `manifest.json` and `sources/` (cached guideline text). It supports several topics, keeps history, and allows reuse matched on topic plus freshness (older than 6 months → offer a refresh).

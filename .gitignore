@@ -26,6 +26,12 @@ __pycache__/
 # Hidden reference ledger — canonical internal handoff artifact
 .literature_search_ledger.yaml
 
+# Hidden verification working files (second reading, report) in the user workspace
+.clinical-evidence/
+
+# pytest
+.pytest_cache/
+
 # Legacy ledger filenames from pre-1.0 layouts — keep ignored so stray
 # files from old searches never get committed
 *_References.yaml

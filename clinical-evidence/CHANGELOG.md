@@ -4,6 +4,35 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2026-09-23
+
+### Added
+
+- **Independent, tolerant reference verification.** A new `reference-checker` agent is given only the PMIDs/DOIs from a search and re-reads each record from PubMed in a fresh context. `shared/scripts/verify_references.py` then cross-checks the two readings with `shared/scripts/refmatch.py`:
+  - Harmless differences pass: capitalisation, accents (Müller/Muller/Mueller), HTML markup, punctuation, a DOI written as a URL, epub vs print year.
+  - A different PMID or DOI, a title belonging to another paper, or a retraction fails, and the reference moves to `excluded_references` so it can never be cited.
+  - Consortium-author mismatches are flagged for a quick human glance.
+  - This replaces the search agent's own character-by-character self-check.
+- **`shared/scripts/format_references.py`** builds the numbered Vancouver reference list (Markdown, or JSON for code that writes the `.docx`) from the verified ledger, refusing unknown or excluded ids. Reference text is no longer retyped.
+- **Test suite and CI.** `tests/` (pytest, planted fixtures) covers matching, verification, formatting, validation and exports. A GitHub Actions workflow runs it on Python 3.10 and 3.12.
+- Evaluation register gains a `references_excluded` column, appended at the end so existing registers stay readable.
+
+### Changed
+
+- **Prompts rewritten for current models.** SKILL.md files and the search agent now state the outcome, the hard constraints with their reasons, and the checks the output must pass, rather than step-by-step procedure. Line counts: protocol-reviewer 402 → 137, research-summary 383 → 105, evidence-search 556 → 154. The shared evidence procedure lives once, in `shared/references/consumer_integration.md`.
+- **pandoc is optional.** Claude Desktop / Cowork create `.docx` natively in the house style; pandoc with `assets/reference.docx` remains an alternative route.
+- Templates are now structure specs (sections, callout, disclaimer). The disclaimer records the verification status.
+- Evidence summaries are labelled "Structured Literature Review" rather than "Systematic Literature Search", since there is no PRISMA-level search log yet.
+
+### Fixed
+
+- **The ledger schema's worked example cited the wrong paper.** It gave PMID 31107464 and doi:10.1111/ajt.15493 for Kotton et al. 2018 (Third International CMV Consensus Guidelines). PubMed shows that PMID is an organoid methods paper, and the DOI belongs to another article. Corrected to PMID 29596116, doi:10.1097/TP.0000000000002191. This is the failure mode the new verification catches, and it does: the old example is excluded when run through the pipeline.
+- Duplicate-DOI detection is case-insensitive. `ref_id` uniqueness now also covers preprints.
+
+### Compatibility
+
+- **Ledger schema 1.1**, additive: optional `integrity` per reference, `excluded_references`, `metadata.verification`. 1.0 ledgers still validate; consumers verify them on first use.
+
 ## [2.0.1] - 2026-09-23
 
 ### Changed

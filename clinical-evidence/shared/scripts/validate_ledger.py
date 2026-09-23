@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a clinical-evidence YAML reference ledger against schema v1.0.
+"""Validate a clinical-evidence YAML reference ledger against schema v1.x (1.0 and 1.1).
 
 Usage:
     python validate_ledger.py <path_to_ledger.yaml>
@@ -33,6 +33,9 @@ except ImportError:
     )
     sys.exit(2)
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refmatch import norm_doi  # noqa: E402
+
 
 SUPPORTED_MAJOR = 1
 DOI_RE = re.compile(r"^10\.\d{4,9}/\S+$")
@@ -42,6 +45,7 @@ ALLOWED_SOURCES = {"pubmed", "scholar_gateway", "both"}
 ALLOWED_PREPRINT_SERVERS = {"medrxiv", "biorxiv"}
 ALLOWED_TRIAL_PHASES = {"Phase I", "Phase II", "Phase III", "Phase IV"}
 ALLOWED_TRIAL_STATUSES = {"RECRUITING", "ACTIVE_NOT_RECRUITING", "COMPLETED"}
+ALLOWED_INTEGRITY_STATUSES = {"pass", "review"}  # "fail" rows are moved to excluded_references
 RETRACTION_MARKERS = ("[Retracted]", "[Retraction of:", "Retracted:")
 
 
@@ -195,7 +199,7 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
 
 
 def _check_references(
-    references: Any, issues: Issues, seen_ref_ids: set[int]
+    references: Any, issues: Issues, seen_ref_ids: set[int], verified_schema: bool = False
 ) -> None:
     if references is None:
         issues.error("references", "missing top-level section")
@@ -234,13 +238,14 @@ def _check_references(
         elif not DOI_RE.match(doi):
             issues.error(f"{base}.doi", f"does not match DOI format 10.XXXX/...: {doi!r}")
         else:
-            if doi in seen_dois:
+            key = norm_doi(doi)
+            if key in seen_dois:
                 issues.error(
                     f"{base}.doi",
-                    f"duplicate DOI already used at references[{seen_dois[doi]}]",
+                    f"duplicate DOI already used at references[{seen_dois[key]}]",
                 )
             else:
-                seen_dois[doi] = i
+                seen_dois[key] = i
         # string fields
         for field in (
             "first_author",
@@ -269,6 +274,19 @@ def _check_references(
         # full_text_reviewed boolean
         if not isinstance(r.get("full_text_reviewed"), bool):
             issues.error(f"{base}.full_text_reviewed", "must be a boolean")
+        # integrity block (schema 1.1, written by verify_references.py --apply)
+        integrity = r.get("integrity")
+        if integrity is None:
+            if verified_schema:
+                issues.warn(f"{base}.integrity", "missing — reference not independently verified")
+        elif not isinstance(integrity, dict):
+            issues.error(f"{base}.integrity", "must be a mapping")
+        elif integrity.get("status") not in ALLOWED_INTEGRITY_STATUSES:
+            issues.error(
+                f"{base}.integrity.status",
+                f"must be one of {sorted(ALLOWED_INTEGRITY_STATUSES)}, got "
+                f"{integrity.get('status')!r} (failed references belong in excluded_references)",
+            )
         # retraction check on title
         title = r.get("title")
         if isinstance(title, str):
@@ -282,7 +300,7 @@ def _check_references(
                     break
 
 
-def _check_preprints(preprints: Any, issues: Issues) -> None:
+def _check_preprints(preprints: Any, issues: Issues, seen_ref_ids: set[int] | None = None) -> None:
     if preprints is None:
         return  # optional
     if not isinstance(preprints, list):
@@ -293,6 +311,11 @@ def _check_preprints(preprints: Any, issues: Issues) -> None:
         if not isinstance(p, dict):
             issues.error(base, "must be a mapping")
             continue
+        ref_id = p.get("ref_id")
+        if seen_ref_ids is not None and isinstance(ref_id, int):
+            if ref_id in seen_ref_ids:
+                issues.error(f"{base}.ref_id", f"duplicate ref_id {ref_id}")
+            seen_ref_ids.add(ref_id)
         for field in ("doi", "authors", "title", "key_finding"):
             if not isinstance(p.get(field), str) or not p.get(field).strip():
                 issues.error(f"{base}.{field}", "missing or not a non-empty string")
@@ -354,6 +377,33 @@ def _check_ongoing_trials(trials: Any, issues: Issues) -> None:
             issues.error(f"{base}.sample_size", "must be an integer")
 
 
+def _check_excluded(excluded: Any, issues: Issues, seen_ref_ids: set[int]) -> None:
+    if excluded is None:
+        return  # optional (schema 1.1)
+    if not isinstance(excluded, list):
+        issues.error("excluded_references", "must be a list if present")
+        return
+    for i, e in enumerate(excluded):
+        base = f"excluded_references[{i}]"
+        if not isinstance(e, dict):
+            issues.error(base, "must be a mapping")
+            continue
+        if not isinstance(e.get("reason"), str) or not e["reason"].strip():
+            issues.error(f"{base}.reason", "missing or not a non-empty string")
+        if e.get("ref_id") in seen_ref_ids:
+            issues.error(
+                f"{base}.ref_id",
+                f"ref_id {e.get('ref_id')} is excluded but still present in guidelines/references",
+            )
+
+
+def _is_verified_schema(metadata: Any) -> bool:
+    if not isinstance(metadata, dict):
+        return False
+    parsed = _parse_version(metadata.get("ledger_schema_version"))
+    return parsed is not None and parsed[:2] >= (1, 1)
+
+
 def validate_ledger(path: Path) -> int:
     if not path.exists():
         sys.stderr.write(f"ERROR: ledger file not found: {path}\n")
@@ -373,8 +423,12 @@ def validate_ledger(path: Path) -> int:
 
     _check_metadata(data.get("metadata"), issues)
     _check_guidelines(data.get("guidelines"), issues, seen_ref_ids)
-    _check_references(data.get("references"), issues, seen_ref_ids)
-    _check_preprints(data.get("preprints"), issues)
+    _check_references(
+        data.get("references"), issues, seen_ref_ids,
+        verified_schema=_is_verified_schema(data.get("metadata")),
+    )
+    _check_preprints(data.get("preprints"), issues, seen_ref_ids)
+    _check_excluded(data.get("excluded_references"), issues, seen_ref_ids)
     _check_ongoing_trials(data.get("ongoing_trials"), issues)
 
     issues.print_all()

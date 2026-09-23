@@ -1,0 +1,43 @@
+# Reading B (as written by reference-checker) — independent transcription.
+- pmid: "29596116"
+  doi: "10.1097/TP.0000000000002191"
+  title: "The Third International Consensus Guidelines on the Management of Cytomegalovirus in Solid-organ Transplantation."
+  first_author: "Kotton CN"
+  year: 2018
+  journal: "Transplantation"
+  publication_types: ["Journal Article", "Practice Guideline"]
+- pmid: "30000003"
+  doi: "10.1097/tp.0000000000003001"
+  title: "Letermovir Prophylaxis in Kidney Transplant Recipients: A <i>Randomized</i> Trial."
+  first_author: "Muller T"
+  year: 2020
+  journal: "Transplantation"
+  publication_types: ["Randomized Controlled Trial"]
+- pmid: "30000004"
+  doi: "10.1016/j.ajt.2020.01.004"
+  title: "Hepatitis E infection in heart transplant recipients: a multicentre cohort"
+  first_author: "Smith J"
+  year: 2020
+  journal: "American Journal of Transplantation"
+- pmid: "30000005"
+  doi: "10.1182/blood.2018894618"
+  title: "Maribavir for refractory cytomegalovirus infection after transplantation"
+  first_author: "Brown A"
+  year: 2019
+  journal: "Blood"
+- pmid: "30000006"
+  doi: "10.1000/retracted.2017.6"
+  title: "A miracle cure for CMV disease"
+  first_author: "White R"
+  year: 2017
+  journal: "Journal of Examples"
+  publication_types: ["Journal Article", "Retracted Publication"]
+- pmid: "30000007"
+  doi: "10.1016/j.kint.2020.07.007"
+  title: "Summary of the KDIGO guideline on kidney transplant candidates."
+  first_author: "Kidney Disease: Improving Global Outcomes (KDIGO) Transplant Work Group"
+  year: 2020
+  journal: "Kidney Int"
+- pmid: null
+  doi: "10.9999/sg.only.2022.8"
+  not_found: true

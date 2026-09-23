@@ -1,0 +1,124 @@
+# Reading A (as written by evidence-search) with planted cases for verification tests.
+metadata:
+  ledger_schema_version: "1.0"
+  topic: "CMV prophylaxis in solid organ transplant recipients"
+  search_date: "2026-09-23"
+  skill_version: "2.1.0"
+  model_id: "claude-opus-5-5 (configured: opus)"
+  mesh_terms: ["Cytomegalovirus Infections", "Organ Transplantation"]
+  guideline_bodies: ["KDIGO", "BTS"]
+guidelines:
+  - ref_id: 1
+    type: guideline
+    title: "KDIGO Clinical Practice Guideline on the Evaluation and Management of Candidates for Kidney Transplantation"
+    organisation: "KDIGO"
+    year: 2020
+    url: "https://kdigo.org/guidelines/transplant-candidate/"
+    key_recommendations:
+      - text: "Example recommendation"
+        grade: {system: "KDIGO", code: "1B", display: "KDIGO Grade 1B"}
+references:
+  - ref_id: 2   # exact match -> pass
+    pmid: "29596116"
+    doi: "10.1097/TP.0000000000002191"
+    first_author: "Kotton CN"
+    authors_full: "Kotton CN, Kumar D, Caliendo AM, Huprikar S, Chou S, Danziger-Isakov L, Humar A, et al."
+    title: "The Third International Consensus Guidelines on the Management of Cytomegalovirus in Solid-organ Transplantation."
+    journal: "Transplantation"
+    year: 2018
+    volume: "102"
+    pages: "900-931"
+    key_finding: "Prophylaxis and pre-emptive therapy are both acceptable strategies."
+    source: "pubmed"
+    full_text_reviewed: true
+  - ref_id: 3   # harmless differences (diacritics, case, markup, DOI case, epub year) -> pass
+    pmid: "30000003"
+    doi: "10.1097/TP.0000000000003001"
+    first_author: "Müller T"
+    authors_full: "Müller T, Schmidt A"
+    title: "Letermovir prophylaxis in kidney transplant recipients: a randomized trial"
+    journal: "Transplantation"
+    year: 2021
+    volume: "105"
+    pages: "1-10"
+    key_finding: "Letermovir non-inferior to valganciclovir."
+    source: "pubmed"
+    full_text_reviewed: false
+  - ref_id: 4   # wrong paper attached to the PMID -> fail
+    pmid: "30000004"
+    doi: "10.1016/j.ajt.2020.01.004"
+    first_author: "Smith J"
+    authors_full: "Smith J, Jones K"
+    title: "Valganciclovir dosing in renal impairment after kidney transplantation"
+    journal: "American Journal of Transplantation"
+    year: 2020
+    volume: "20"
+    pages: "100-110"
+    key_finding: "Dose adjustment reduces leukopenia."
+    source: "pubmed"
+    full_text_reviewed: false
+  - ref_id: 5   # one-character DOI typo -> fail
+    pmid: "30000005"
+    doi: "10.1182/blood.2018894368"
+    first_author: "Brown A"
+    authors_full: "Brown A, Green B"
+    title: "Maribavir for refractory cytomegalovirus infection after transplantation"
+    journal: "Blood"
+    year: 2019
+    volume: "133"
+    pages: "200-210"
+    key_finding: "Maribavir superior to investigator-assigned therapy."
+    source: "pubmed"
+    full_text_reviewed: false
+  - ref_id: 6   # retracted -> fail
+    pmid: "30000006"
+    doi: "10.1000/retracted.2017.6"
+    first_author: "White R"
+    authors_full: "White R"
+    title: "A miracle cure for CMV disease"
+    journal: "Journal of Examples"
+    year: 2017
+    volume: "1"
+    pages: "1-2"
+    key_finding: "Too good to be true."
+    source: "pubmed"
+    full_text_reviewed: false
+  - ref_id: 7   # consortium author written differently -> review
+    pmid: "30000007"
+    doi: "10.1016/j.kint.2020.07.007"
+    first_author: "KDIGO Transplant Work Group"
+    authors_full: "KDIGO Transplant Work Group"
+    title: "Summary of the KDIGO guideline on kidney transplant candidates"
+    journal: "Kidney International"
+    year: 2020
+    volume: "98"
+    pages: "700-710"
+    key_finding: "Summary of recommendations."
+    source: "pubmed"
+    full_text_reviewed: false
+  - ref_id: 8   # Scholar Gateway only, not in PubMed -> review
+    pmid: null
+    doi: "10.9999/sg.only.2022.8"
+    first_author: "Ng P"
+    authors_full: "Ng P, Lee Q"
+    title: "CMV serostatus and graft survival in a European registry"
+    journal: "Transplant International"
+    year: 2022
+    volume: "35"
+    pages: "5-15"
+    key_finding: "D+/R- associated with lower graft survival."
+    source: "scholar_gateway"
+    full_text_reviewed: false
+  - ref_id: 9   # missing from second reading -> review
+    pmid: "30000009"
+    doi: "10.1111/tid.13009"
+    first_author: "García-López M"
+    authors_full: "García-López M"
+    title: "Pre-emptive therapy for CMV in liver transplantation"
+    journal: "Transplant Infectious Disease"
+    year: 2019
+    volume: "21"
+    pages: "e13009"
+    key_finding: "Pre-emptive therapy effective in liver recipients."
+    source: "pubmed"
+    full_text_reviewed: false

@@ -1,7 +1,7 @@
 # Reference ledger — internal schema
 
-**Schema version:** `1.0`
-**Status:** Stable. First versioned schema.
+**Schema version:** `1.1`
+**Status:** Stable. 1.1 adds optional verification fields; 1.0 ledgers remain valid.
 **Audience:** The `evidence-search` agent (producer) and any skill that consumes its evidence (`research-summary`, `protocol-reviewer`, future consumers). **Not** a user-facing document — researchers never see this file or the ledger it describes.
 
 This document is the **single source of truth** for the internal reference ledger format. The ledger is an internal artifact, not one of the consumers' user-facing outputs.
@@ -12,7 +12,7 @@ This document is the **single source of truth** for the internal reference ledge
 
 The reference ledger is a YAML file containing every piece of evidence the literature search turned up — guidelines, peer-reviewed references, preprints, ongoing trials. It exists for two reasons:
 
-1. **Quality control for the producer.** The ledger is written incrementally during the search: after every `get_article_metadata` call, the producer appends the returned DOI/PMID/title/author fields to the ledger file *before doing anything else*. This mechanical tool-output → file → file-read cycle is the only reliable defence against DOI hallucination. (The real failure case: in testing, a DOI that differed by three characters from the correct one was produced because the model wrote from memory. The incremental-write-to-file pattern prevents that. It has to keep existing.)
+1. **Quality control.** The producer copies DOI/PMID/title/author fields into the ledger straight from each `get_article_metadata` response, never from memory. (The real failure case: in testing, a DOI three characters off the correct one was produced from memory. This schema's own early examples paired the Kotton 2018 CMV guideline with a PMID and DOI belonging to other papers — exactly the error independent verification now catches.) Since 1.1, every reference is then independently re-read by the `reference-checker` agent and cross-checked by `verify_references.py` before it can be cited.
 
 2. **Handoff between skills.** When a downstream skill (protocol-reviewer, literature-review) needs to cross-reference or summarise the evidence, it reads the ledger instead of re-doing the search. This is faster than re-searching and guarantees the two skills are working from the same verified source.
 
@@ -55,21 +55,19 @@ A consumer on schema `1.x` must:
 
 A producer of this ledger must guarantee:
 
-1. **`ledger_schema_version`** is set to the schema version the producer targets (currently `"1.0"`).
-2. **Every DOI** in `references[]` is copied character-for-character from its authoritative source (PubMed for PubMed references, publisher metadata for Scholar Gateway-only references). DOIs are never reconstructed from memory.
-3. **Every PMID** is a real PubMed identifier that the producer retrieved during the search — no fabricated IDs.
-4. **Every reference has a verified title, first author, and journal** copied verbatim from the source.
-5. **Retracted papers** are excluded. Producers must scan for `[Retracted]` / `[Retraction of:` markers in titles and drop those entries before writing the ledger.
-6. **Every guideline recommendation** carries a structured `grade` object (see "Grade object" below) — not a free-text string.
-7. **The final ledger passes** `shared/scripts/validate_ledger.py` — if validation fails, the producer must fix the issues before finishing the search.
-8. **The ledger is written to the canonical path** `<workspace>/.literature_search_ledger.yaml`.
+1. **`ledger_schema_version`** is set to the schema version the producer targets (currently `"1.1"`).
+2. **Every DOI, PMID, title, author list and journal** in `references[]` is copied from its source tool output (PubMed, or Scholar Gateway for papers not in PubMed) — never reconstructed from memory.
+3. **Retracted papers** are excluded.
+4. **Every guideline recommendation** carries a structured `grade` object (see "Grade object" below) — not a free-text string.
+5. **The final ledger passes** `shared/scripts/validate_ledger.py` — if validation fails, the producer must fix the issues before finishing the search.
+6. **The ledger is written to the canonical path** `<workspace>/.literature_search_ledger.yaml`.
 
 ## Consumer contract
 
 A consumer of this ledger may rely on:
 
 1. **The structure below is stable** within the current schema MAJOR version.
-2. **Reference metadata (DOI, PMID, title, authors) is trustworthy** — the producer verified it character-by-character against PubMed. Consumers should not re-fetch.
+2. **Reference metadata is trustworthy once verified** — a reference carrying an `integrity` block has been independently re-read from PubMed and cross-checked (tolerantly: formatting differences pass, a different identifier or paper fails). A ledger with any reference lacking `integrity` must be verified first (see `consumer_integration.md`). Failed references live in `excluded_references` and must never be cited.
 3. **Evidence grades are queryable** as structured objects with `system`, `code`, `display` — safe to filter, aggregate, or sort on.
 4. **`metadata.search_date`** reliably indicates how fresh the evidence is.
 5. **Running `scripts/validate_ledger.py`** on the ledger path is sufficient validation — the consumer does not need to re-implement checks in prose.
@@ -95,7 +93,7 @@ Two sections are optional and may be omitted if empty:
 
 ```yaml
 metadata:
-  ledger_schema_version: "1.0"        # REQUIRED — semver of this schema
+  ledger_schema_version: "1.1"        # REQUIRED — semver of this schema
   topic: "CMV prophylaxis in SOT"     # REQUIRED — the clinical topic searched
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
   skill_version: "1.0.0"              # REQUIRED — producer version (since clinical-evidence v1.0.0, this is the plugin version)
@@ -124,8 +122,8 @@ guidelines:
 
 references:
   - ref_id: 2                         # REQUIRED — unique across guidelines + references
-    pmid: "31107464"                  # REQUIRED — PubMed ID, or null for Scholar Gateway-only
-    doi: "10.1111/ajt.15493"          # REQUIRED — copied verbatim from source
+    pmid: "29596116"                  # REQUIRED — PubMed ID, or null for Scholar Gateway-only
+    doi: "10.1097/TP.0000000000002191"          # REQUIRED — copied verbatim from source
     first_author: "Kotton CN"         # REQUIRED — surname + initials, from PubMed
     authors_full: "Kotton CN, Kumar D, Caliendo AM, et al."  # REQUIRED — full list as PubMed returns it
     title: "The Third International Consensus Guidelines on the Management of Cytomegalovirus in Solid-organ Transplantation"
@@ -180,6 +178,30 @@ grade:
 
 ---
 
+## Verification fields (schema 1.1, written by `verify_references.py --apply`)
+
+```yaml
+metadata:
+  verification: "independent second reading, cross-checked 2026-09-23"   # optional
+
+references:
+  - ref_id: 2
+    # … fields as above …
+    integrity:                        # optional in 1.1; present once verified
+      status: "pass"                  # pass | review  ("review" = identifiers agree, a descriptive field needs a human glance)
+      checked_on: "2026-09-23"
+      notes: ""                       # e.g. "first author differs (KDIGO Work Group vs …)"
+
+excluded_references:                  # optional; references that failed verification
+  - ref_id: 4
+    pmid: "30000004"
+    doi: "10.1016/…"
+    title: "…"
+    reason: "title similarity 0.21 — likely a different paper"
+```
+
+Producers never write these fields. The validator warns when a 1.1 ledger has a reference without `integrity`, and errors if an excluded `ref_id` is still present in `references`.
+
 ## Validation
 
 Every producer and consumer must run `shared/scripts/validate_ledger.py` against the ledger:
@@ -198,6 +220,12 @@ Prose validation in SKILL.md files should defer to this script — a consumer's 
 ---
 
 ## Change log
+
+### 1.1 (2026-09-23)
+- Added optional `integrity` block per reference, top-level `excluded_references`, and `metadata.verification` — written by the independent verification step, never by the producer.
+- `ref_id` uniqueness now also covers `preprints`; duplicate-DOI detection is case-insensitive.
+- Fixed the worked example: Kotton et al. 2018 is PMID 29596116, doi:10.1097/TP.0000000000002191.
+- Fully backward compatible: 1.0 ledgers validate unchanged.
 
 ### 1.0 (2026-04-10)
 - First versioned schema. Introduced `ledger_schema_version` field in `metadata`.
