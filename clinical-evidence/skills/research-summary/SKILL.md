@@ -1,7 +1,7 @@
 ---
 name: research-summary
 model: opus
-effort: max
+effort: high
 description: >
   Clinical literature search and narrative evidence summary. Searches guidelines
   (NICE, BTS, KDIGO…), PubMed and Scholar Gateway, independently verifies every
@@ -30,8 +30,10 @@ too. When guidelines disagree with each other, or a newer trial contradicts a gu
 show both positions with their grades — the reader needs to see the tension, not have
 it smoothed over.
 
-Run on the latest Claude Opus at maximum effort (see the plugin README for the current
-model; in Claude Cowork, choose it in the app and enable extended thinking).
+Run on the latest Claude Opus at high effort (see the plugin README for the current
+model; in Claude Cowork, choose it in the app). The lead works economically: bulky
+reading (abstracts, full texts, guideline pages) happens inside the search agents, which
+run in parallel; this conversation sees only their short summaries.
 
 ## Paths
 
@@ -48,19 +50,17 @@ scripts are in `[skill-path]/../../shared/scripts/`.
 
 2. **Get a verified evidence base.** Follow
    [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md):
-   reuse or build the ledger (pass your sub-questions to `evidence-search`), have every
-   reference independently re-read and cross-checked, then validate.
+   reuse the ledger, or split the sub-questions into 2–3 clusters and run one
+   `evidence-search` agent per cluster in parallel, then merge; check the references'
+   identifiers (a quick PubMed ID conversion) and validate.
 
 3. **Write the summary** following
    [`references/evidence_summary_template.md`](references/evidence_summary_template.md)
    (sections, callout and disclaimer text). Organise recent evidence by clinical
    sub-question, not paper by paper. Deliver:
    - `[Topic_Name]_Evidence_Summary_[Year].md` — editable source;
-   - `[Topic_Name]_Evidence_Summary_[Year].docx` — made with the environment's built-in
-     Word document capability in the house style (A4, Arial, navy headings, title page,
-     header/footer with title and page numbers). If pandoc is available instead,
-     `pandoc … --reference-doc="[skill-path]/assets/reference.docx"` produces the same
-     style;
+   - `[Topic_Name]_Evidence_Summary_[Year].docx` — converted from the Markdown with
+     `md_to_docx.py` (house style from `assets/reference.docx`, no tokens spent);
    - `[Topic_Name]_References.bib` and `[Topic_Name]_PMIDs.txt` — from
      `ledger_to_exports.py`, same prefix.
 
@@ -78,7 +78,7 @@ python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start <stage
 python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
 ```
 
-Stages, in order: `search`, `verify` (reference-checker + verification), `document` (writing the summary, `.docx` and exports). For stages that dispatch an agent, pass the token usage the
+Stages, in order: `search` (all parallel agents + merge), `verify`, `document` (writing the summary, `.docx` and exports). For stages that dispatch an agent, pass the token usage the
 agent reports on completion as `--tokens` when you have it. Close with `end run`, then run
 `run_log.py "<workspace>" summary` and include its output at the end of the hand-over
 message. The script never fails a run; if it warns, carry on.
@@ -104,12 +104,13 @@ message. The script never fails a run; if it warns, carry on.
 
 - plugin version — from `[skill-path]/../../.claude-plugin/plugin.json`;
 - model identifier — the model you are running on as you understand it plus the
-  configured tier, e.g. `claude-opus-5-5 (configured: opus, effort max)`;
+  configured tier, e.g. `claude-opus-5-5 (configured: opus, effort high)`;
 - search date — `metadata.search_date`; document date — today (ISO 8601);
 - verification — `metadata.verification` (independent second reading, date).
 
 ## If something is missing
 
-- No Word-document capability and no pandoc: deliver the `.md` and say how to convert it.
+- `md_to_docx.py` exits 3 (no pandoc even after install): build the `.docx` with the
+  environment's Word-document capability; if there is none, deliver the `.md`.
 - PyYAML missing: ask the researcher to `pip install pyyaml`; don't check by eye.
 - PubMed connector missing and no ledger: explain the search tools need enabling first.

@@ -4,6 +4,26 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.0] - 2026-09-23
+
+A leaner pipeline to cut both run time and token use. A 2.2.0 protocol review took about 30 minutes; with more capable models it should get faster, not slower. The main causes were one long sequential search, blanket full-text reading, a second agent re-reading every record, and maximum effort on every step.
+
+### Changed
+
+- **Parallel search on Sonnet.**
+  - The lead skill splits the questions into 2–4 clusters and dispatches one `evidence-search` agent per cluster at the same time. `merge_ledgers.py` then combines their results.
+  - Retrieval and tagging run on Claude Sonnet; judgement and writing stay on Opus.
+  - Shorter agent runs also cost fewer tokens, because each tool call re-sends the conversation so far.
+- **Economical search.** Each agent stays within its assigned questions. It decides from abstracts first and fetches full text only when a dose, threshold or method can't be judged otherwise (at most two or three papers). It aims for about 6–12 references per cluster.
+- **Reference check without an extra agent.** The lead makes one batched PubMed `convert_article_ids` call. `verify_references.py` then checks each PMID ↔ DOI pairing, which catches a real identifier attached to the wrong paper at a fraction of the cost. The `reference-checker` agent has been removed. The fuller title/author comparison is still available for audits.
+- **Targeted second review.** `second-reviewer` now checks only practice-changing judgements (major updates, new additions, removals) and safety-flagged items; it is skipped when there are none. `review_tables.py` warns only when such an item goes unreviewed.
+- **Skills run at `effort: high`**, not `max`.
+- **Word output without token cost.** The new `shared/scripts/md_to_docx.py` converts the Markdown with pandoc, installing `pypandoc_binary` if needed. The environment's built-in Word capability is now only the fallback.
+
+### Compatibility
+
+- Outputs, ledger schema (1.2), timing log and register are unchanged. Compare runs with `run_log.py summary` against the 2.2.1 baseline.
+
 ## [2.2.1] - 2026-09-23
 
 ### Added

@@ -35,6 +35,12 @@ reads it. You did not write these judgements; don't give them the benefit of the
 - the verified evidence ledger — guidelines (with recommendation text, grade, and where
   available a verbatim `source_quote`) and references (with `key_finding`, PMID, DOI).
 
+Your dispatch prompt lists **which judgements to review** — normally only those that would
+change practice (major updates, new additions, removals) and anything flagged for patient
+safety. Review just those; aligned and minor items are left to the clinician's own read,
+which keeps this step quick. Read abstracts or guideline pages only where the ledger
+summary is not enough to decide.
+
 ## For each judgement, ask
 
 1. **Is it supported?** Does the cited evidence actually say what the recommendation
@@ -54,7 +60,7 @@ reads it. You did not write these judgements; don't give them the benefit of the
 
 ## Output
 
-Write `second_review.yaml` (path from the dispatch prompt), one entry per judgement:
+Write `second_review.yaml` (path from the dispatch prompt), one entry per reviewed judgement:
 
 ```yaml
 - judgement: J3

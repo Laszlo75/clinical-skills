@@ -98,3 +98,13 @@ def test_new_addition_without_statement_allowed(review, monkeypatch):
                        "confidence": "low", "second_review": {"status": "agree"}})
     (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
     assert run(review, monkeypatch) == 0
+
+
+def test_second_review_warning_only_for_practice_changing(review, monkeypatch, capsys):
+    ledger, pmap, judgements = load(review)
+    judgements[0].pop("second_review")                      # minor_update: no warning
+    judgements[1].pop("second_review")                      # major_update + safety: warning
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    out = capsys.readouterr().out
+    assert "J2: practice-changing but not second-reviewed" in out and "J1:" not in out

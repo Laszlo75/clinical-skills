@@ -8,6 +8,8 @@ What *must* fail is a different identifier or a different paper.
 Rules (see compare()):
     PMID          equal → pass            differ → fail
     DOI           normalised equal → pass one side missing → review   differ → fail
+    (when the second reading has no title — an identity-only reading from PubMed's ID
+    converter — only PMID, DOI and retraction flags are compared)
     title         score ≥ 0.90 → pass     0.75–0.90 → review          < 0.75 → fail
     first author  surname forms overlap → pass                        else → review
     year          |Δ| ≤ 1 → pass          else → review
@@ -162,6 +164,20 @@ def compare(a: dict, b: dict) -> dict:
     else:
         fields["doi"] = REVIEW
         notes.append("DOI missing on one side")
+
+    # Descriptive fields are compared only when the second reading has them. An
+    # identity-only reading (PubMed ID conversion: PMID <-> DOI) checks the pairing that
+    # catches a real identifier attached to the wrong paper, at a fraction of the cost.
+    if _blank(b.get("title")):
+        if is_retracted(a) or is_retracted(b):
+            fields["retraction"] = FAIL
+            notes.append("retracted publication")
+        return {
+            "status": worst(*fields.values()),
+            "fields": fields,
+            "title_score": "",
+            "notes": notes + ["identity check only (PMID/DOI pairing)"],
+        }
 
     score = title_score(a.get("title"), b.get("title"))
     if score >= TITLE_PASS:

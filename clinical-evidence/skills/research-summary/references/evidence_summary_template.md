@@ -54,7 +54,8 @@ ongoing trials (NCT number, phase, sample size, expected completion).
 > Anthropic) with PubMed and Scholar Gateway searches. The AI system was used for
 > literature retrieval and structured analysis; clinical interpretation remains the
 > responsibility of the reviewing clinician. Reference metadata was retrieved from PubMed
-> and independently re-read and cross-checked before citation.*
+> and its identifiers independently checked
+> against PubMed before citation.*
 >
 > **Reviewed and approved by:** ______________________ *(name, title, and institution)*
 >

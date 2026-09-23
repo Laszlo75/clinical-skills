@@ -15,7 +15,7 @@ Two skills that share one hidden, verified reference ledger:
 
 Both skills share a single subagent at [`agents/evidence-search.md`](./agents/evidence-search.md) that runs the actual PubMed + Scholar Gateway + guideline search work in isolated context. Researchers never interact with the agent directly — it's dispatched automatically by whichever skill needs a fresh ledger. Running the search inside an agent keeps the tool-heavy traffic (PubMed metadata calls, Scholar Gateway passages, full-text retrievals) out of the main conversation, so downstream synthesis has a clean slate to work from.
 
-A second agent, [`reference-checker`](./agents/reference-checker.md), is given only the PMIDs/DOIs from a search and re-reads each record from PubMed in a fresh context. `shared/scripts/verify_references.py` then compares the two readings and excludes anything that doesn't match before a single reference is cited.
+Searches run as several `evidence-search` agents in parallel — one per cluster of questions — and are merged. The skill then checks every PMID/DOI pair independently with PubMed's ID converter, and `shared/scripts/verify_references.py` excludes anything that doesn't match before a single reference is cited.
 
 ## How it works in practice
 
@@ -59,8 +59,8 @@ The hidden `.literature_search_ledger.yaml` is present in the workspace after an
 ## Requirements
 
 - [Claude Desktop](https://claude.ai/download) — Claude Cowork or Claude Code — with MCP connector support
-- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at maximum effort.** This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
-  - *Claude Code:* the skills pin `model: opus` + `effort: max` and the `evidence-search` agent pins `model: opus`, so the latest Opus is used automatically.
+- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at high effort** for the skills; the search agents run on Claude Sonnet. This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
+  - *Claude Code:* the skills pin `model: opus` + `effort: high`, the `evidence-search` agent pins `model: sonnet` (retrieval and tagging) and the `second-reviewer` agent pins `model: opus`.
   - *Claude Cowork:* the model is chosen in the app — select Opus 5.5 and enable extended thinking before running a skill.
 - MCP connectors enabled:
   - **PubMed** — literature search and article metadata
@@ -86,14 +86,13 @@ Each skill has its own README and `CLAUDE.md` inside its folder:
 - [`skills/protocol-reviewer/README.md`](./skills/protocol-reviewer/README.md)
 - [`skills/protocol-reviewer/CLAUDE.md`](./skills/protocol-reviewer/CLAUDE.md)
 - [`agents/evidence-search.md`](./agents/evidence-search.md) — the shared search agent
-- [`agents/reference-checker.md`](./agents/reference-checker.md) — the independent second reading used for verification
 - [`agents/second-reviewer.md`](./agents/second-reviewer.md) — challenges each protocol-review judgement against its evidence
 - [`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md) — the ledger contract
 - [`shared/references/consumer_integration.md`](./shared/references/consumer_integration.md) — how a consumer plugs in
 
 ## AI Use & Governance (ISO 42001)
 
-These components are AI-assisted. Every generated document carries a "DRAFT — NOT FOR CLINICAL USE" callout and a transparency disclaimer naming the model, the MCP sources used, and the plugin version. Reference metadata is retrieved from PubMed, then independently re-read by a second agent and cross-checked by a script before it can be cited. The check is tolerant of harmless differences (capitalisation, accents, markup, epub vs print year) but excludes any reference whose identifier or title points to a different paper, and any retracted paper. Clinical judgement and final sign-off remain the responsibility of the reviewing clinician and the approving MDT.
+These components are AI-assisted. Every generated document carries a "DRAFT — NOT FOR CLINICAL USE" callout and a transparency disclaimer naming the model, the MCP sources used, and the plugin version. Reference metadata is retrieved from PubMed, and every PMID/DOI pair is then checked independently against PubMed before it can be cited; any reference whose identifiers point to different papers, or that is retracted, is excluded. Clinical judgement and final sign-off remain the responsibility of the reviewing clinician and the approving MDT.
 
 ## License
 

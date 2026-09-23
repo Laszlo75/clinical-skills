@@ -12,7 +12,7 @@ This document is the **single source of truth** for the internal reference ledge
 
 The reference ledger is a YAML file containing every piece of evidence the literature search turned up — guidelines, peer-reviewed references, preprints, ongoing trials. It exists for two reasons:
 
-1. **Quality control.** The producer copies DOI/PMID/title/author fields into the ledger straight from each `get_article_metadata` response, never from memory. (The real failure case: in testing, a DOI three characters off the correct one was produced from memory. This schema's own early examples paired the Kotton 2018 CMV guideline with a PMID and DOI belonging to other papers — exactly the error independent verification now catches.) Since 1.1, every reference is then independently re-read by the `reference-checker` agent and cross-checked by `verify_references.py` before it can be cited.
+1. **Quality control.** The producer copies DOI/PMID/title/author fields into the ledger straight from each `get_article_metadata` response, never from memory. (The real failure case: in testing, a DOI three characters off the correct one was produced from memory. This schema's own early examples paired the Kotton 2018 CMV guideline with a PMID and DOI belonging to other papers — exactly the error independent verification now catches.) Since 1.1, every reference's identifiers are then checked independently against PubMed (the consuming skill's ID-conversion call, compared by `verify_references.py`) before it can be cited.
 
 2. **Handoff between skills.** When a downstream skill (protocol-reviewer, literature-review) needs to cross-reference or summarise the evidence, it reads the ledger instead of re-doing the search. This is faster than re-searching and guarantees the two skills are working from the same verified source.
 
@@ -67,7 +67,7 @@ A producer of this ledger must guarantee:
 A consumer of this ledger may rely on:
 
 1. **The structure below is stable** within the current schema MAJOR version.
-2. **Reference metadata is trustworthy once verified** — a reference carrying an `integrity` block has been independently re-read from PubMed and cross-checked (tolerantly: formatting differences pass, a different identifier or paper fails). A ledger with any reference lacking `integrity` must be verified first (see `consumer_integration.md`). Failed references live in `excluded_references` and must never be cited.
+2. **Reference metadata is trustworthy once verified** — a reference carrying an `integrity` block has been independently checked against PubMed (tolerantly: formatting differences pass, a different identifier or paper fails). A ledger with any reference lacking `integrity` must be verified first (see `consumer_integration.md`). Failed references live in `excluded_references` and must never be cited.
 3. **Evidence grades are queryable** as structured objects with `system`, `code`, `display` — safe to filter, aggregate, or sort on.
 4. **`metadata.search_date`** reliably indicates how fresh the evidence is.
 5. **Running `scripts/validate_ledger.py`** on the ledger path is sufficient validation — the consumer does not need to re-implement checks in prose.
