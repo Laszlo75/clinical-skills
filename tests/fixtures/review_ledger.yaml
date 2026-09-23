@@ -1,0 +1,68 @@
+# Verified schema-1.2 ledger for protocol-review table tests (ABOi example).
+metadata:
+  ledger_schema_version: "1.2"
+  topic: "ABO-incompatible kidney transplantation"
+  search_date: "2026-09-23"
+  skill_version: "2.2.0"
+  model_id: "claude-opus-5-5 (configured: opus)"
+  mesh_terms: ["Kidney Transplantation", "ABO Blood-Group System"]
+  guideline_bodies: ["BTS"]
+  verification: "independent second reading, cross-checked 2026-09-23"
+  questions:
+    - {id: Q1, text: "What rituximab dose is recommended for ABOi desensitisation?"}
+    - {id: Q2, text: "What isoagglutinin titre target should be reached before transplantation?"}
+guidelines:
+  - ref_id: 1
+    type: guideline
+    title: "Guidelines for Antibody Incompatible Transplantation"
+    organisation: "BTS"
+    year: 2016
+    url: "https://bts.org.uk/guidelines-standards/"
+    questions: [Q1, Q2]
+    key_recommendations:
+      - text: "Target IgG titre of 1:8 or less at transplantation"
+        grade: {system: "BTS", code: "1C", display: "BTS Grade 1C"}
+        source_quote: "We recommend a target titre of ≤1:8 at the time of transplantation."
+        section: "ABOi desensitisation"
+        accessed: "2026-09-23"
+references:
+  - ref_id: 2
+    pmid: "30000102"
+    doi: "10.1000/example.102"
+    first_author: "Smith J"
+    authors_full: "Smith J, Jones K"
+    title: "Low-dose rituximab in ABO-incompatible kidney transplantation: a meta-analysis"
+    journal: "Transplantation"
+    year: 2023
+    volume: "107"
+    pages: "1-10"
+    key_finding: "200 mg rituximab non-inferior to 375 mg/m2 for graft survival."
+    source: "pubmed"
+    full_text_reviewed: true
+    questions: [Q1]
+    study_design: "Systematic review and meta-analysis"
+    population: "Adult ABOi kidney recipients"
+    sample_size: 1426
+    certainty: "moderate"
+    integrity: {status: pass, checked_on: "2026-09-23", notes: ""}
+  - ref_id: 3
+    pmid: "30000103"
+    doi: "10.1000/example.103"
+    first_author: "Müller T"
+    authors_full: "Müller T"
+    title: "Titre rebound after ABOi kidney transplantation: registry analysis"
+    journal: "American Journal of Transplantation"
+    year: 2022
+    volume: "22"
+    pages: "5-15"
+    key_finding: "Pre-transplant titre ≤1:8 associated with lower AMR."
+    source: "pubmed"
+    full_text_reviewed: false
+    questions: [Q2]
+    study_design: "Registry cohort"
+    population: "European ABOi recipients"
+    sample_size: 2210
+    certainty: "low"
+    integrity: {status: pass, checked_on: "2026-09-23", notes: ""}
+excluded_references:
+  - {ref_id: 4, pmid: "30000104", doi: "10.1000/example.104", title: "Wrong paper", reason: "title similarity 0.20 — likely a different paper"}

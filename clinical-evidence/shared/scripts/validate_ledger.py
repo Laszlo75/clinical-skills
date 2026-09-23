@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a clinical-evidence YAML reference ledger against schema v1.x (1.0 and 1.1).
+"""Validate a clinical-evidence YAML reference ledger against schema v1.x (1.0–1.2).
 
 Usage:
     python validate_ledger.py <path_to_ledger.yaml>
@@ -46,7 +46,20 @@ ALLOWED_PREPRINT_SERVERS = {"medrxiv", "biorxiv"}
 ALLOWED_TRIAL_PHASES = {"Phase I", "Phase II", "Phase III", "Phase IV"}
 ALLOWED_TRIAL_STATUSES = {"RECRUITING", "ACTIVE_NOT_RECRUITING", "COMPLETED"}
 ALLOWED_INTEGRITY_STATUSES = {"pass", "review"}  # "fail" rows are moved to excluded_references
+ALLOWED_CERTAINTY = {"high", "moderate", "low", "very low"}  # GRADE certainty (schema 1.2)
 RETRACTION_MARKERS = ("[Retracted]", "[Retraction of:", "Retracted:")
+
+
+def _check_optional_str(entry: dict, fields: tuple, base: str, issues: "Issues") -> None:
+    for field in fields:
+        if field in entry and entry[field] is not None and not isinstance(entry[field], str):
+            issues.error(f"{base}.{field}", "must be a string if present")
+
+
+def _check_questions_field(entry: dict, base: str, issues: "Issues") -> None:
+    qs = entry.get("questions")
+    if qs is not None and (not isinstance(qs, list) or not all(isinstance(q, str) for q in qs)):
+        issues.error(f"{base}.questions", "must be a list of question ids (strings) if present")
 
 
 class Issues:
@@ -140,6 +153,15 @@ def _check_metadata(metadata: Any, issues: Issues) -> None:
         elif not isinstance(value, list):
             issues.error(f"metadata.{field}", "must be a list")
 
+    # review questions (schema 1.2, optional)
+    questions = metadata.get("questions")
+    if questions is not None:
+        if not isinstance(questions, list) or not all(
+            isinstance(q, dict) and isinstance(q.get("id"), str) and isinstance(q.get("text"), str)
+            for q in questions
+        ):
+            issues.error("metadata.questions", "must be a list of {id, text} mappings if present")
+
 
 def _check_grade(grade: Any, path: str, issues: Issues) -> None:
     if not isinstance(grade, dict):
@@ -182,6 +204,7 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
                 issues.error(f"{base}.{field}", "missing or not a non-empty string")
         if not isinstance(g.get("year"), int):
             issues.error(f"{base}.year", "must be an integer")
+        _check_questions_field(g, base, issues)
         recs = g.get("key_recommendations")
         if recs is None:
             issues.warn(f"{base}.key_recommendations", "missing — empty list recommended")
@@ -196,6 +219,10 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
                 if not isinstance(r.get("text"), str) or not r.get("text").strip():
                     issues.error(f"{rpath}.text", "missing or not a non-empty string")
                 _check_grade(r.get("grade"), rpath, issues)
+                _check_optional_str(r, ("source_quote", "section"), rpath, issues)
+                acc = r.get("accessed")
+                if acc is not None and not (isinstance(acc, date) or ISO_DATE_RE.match(str(acc))):
+                    issues.error(f"{rpath}.accessed", f"not ISO 8601 YYYY-MM-DD: {acc!r}")
 
 
 def _check_references(
@@ -274,6 +301,14 @@ def _check_references(
         # full_text_reviewed boolean
         if not isinstance(r.get("full_text_reviewed"), bool):
             issues.error(f"{base}.full_text_reviewed", "must be a boolean")
+        # optional appraisal fields (schema 1.2)
+        _check_questions_field(r, base, issues)
+        _check_optional_str(r, ("study_design", "population"), base, issues)
+        if "sample_size" in r and r["sample_size"] is not None and not isinstance(r["sample_size"], int):
+            issues.error(f"{base}.sample_size", "must be an integer if present")
+        cert = r.get("certainty")
+        if cert is not None and str(cert).lower() not in ALLOWED_CERTAINTY:
+            issues.error(f"{base}.certainty", f"must be one of {sorted(ALLOWED_CERTAINTY)}, got {cert!r}")
         # integrity block (schema 1.1, written by verify_references.py --apply)
         integrity = r.get("integrity")
         if integrity is None:

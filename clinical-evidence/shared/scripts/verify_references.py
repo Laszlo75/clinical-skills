@@ -26,7 +26,7 @@ With --apply the ledger is updated in place:
     - agreed DOIs are stored in bare form (e.g. a URL-form DOI becomes "10.xxx/…");
     - `fail` references move to top-level `excluded_references` (with a reason), so
       they can never be cited;
-    - metadata.ledger_schema_version becomes "1.1".
+    - metadata.ledger_schema_version is raised to at least "1.1" (never lowered).
 
 Exit codes: 0 — done (review rows allowed); 1 — bad input; 2 — ledger missing/unparseable.
 """
@@ -111,6 +111,13 @@ def _adopt_bare_doi(ref: dict, result: dict, by_pmid: dict, by_doi: dict) -> Non
         ref["doi"] = bare
 
 
+def _version(raw: Any) -> tuple[int, ...]:
+    try:
+        return tuple(int(x) for x in str(raw).split("."))
+    except ValueError:
+        return (0,)
+
+
 def verify(ledger_path: Path, b_path: Path, apply: bool, report_path: Path | None) -> int:
     if not ledger_path.exists():
         sys.stderr.write(f"ERROR: ledger not found: {ledger_path}\n")
@@ -180,7 +187,8 @@ def verify(ledger_path: Path, b_path: Path, apply: bool, report_path: Path | Non
         if excluded:
             ledger["excluded_references"] = (ledger.get("excluded_references") or []) + excluded
         meta = ledger.setdefault("metadata", {})
-        meta["ledger_schema_version"] = "1.1"
+        if _version(meta.get("ledger_schema_version")) < (1, 1):
+            meta["ledger_schema_version"] = "1.1"   # never downgrade a newer 1.x ledger
         meta["verification"] = f"independent second reading, cross-checked {today}"
         with ledger_path.open("w", encoding="utf-8") as f:
             yaml.safe_dump(ledger, f, sort_keys=False, allow_unicode=True, width=100)

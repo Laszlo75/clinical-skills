@@ -24,9 +24,19 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
 - **Shared evidence procedure.** Discovery, independent verification, validation,
   reference formatting and exports are defined once in
   `../../shared/references/consumer_integration.md`; this skill follows it.
-- **Search driven by the protocol.** The skill passes the protocol's concrete statements
-  (doses, thresholds, timings) to `evidence-search`, so the evidence answers what the
-  review actually has to test.
+- **Question-driven, traceable review (2.2.0).** The protocol is mapped to atomic
+  statements and PICO-style review questions (`protocol_map.yaml`), confirmed with the
+  clinician at a single checkpoint before searching. Searches can run in parallel per
+  question cluster (`merge_ledgers.py`). Each statement gets a structured judgement
+  (`judgements.yaml`), so every recommendation traces statement → question → evidence →
+  verdict.
+- **Second reviewer.** The `second-reviewer` agent, in a fresh context, challenges each
+  judgement against its cited evidence and checks doses against BNF/SmPC — the dual-review
+  step of a systematic review. Disagreements must be resolved in writing.
+- **Scripted tables.** `review_tables.py` refuses to build if the working files are
+  inconsistent (uncovered statement, excluded/unknown citation, unresolved disagreement),
+  then writes the evidence table, traceability matrix and register row — counts are
+  computed, not typed.
 - **Verification before citation.** `reference-checker` re-reads every PMID from PubMed
   given identifiers only; `verify_references.py` cross-checks tolerantly and moves
   failures to `excluded_references`. `format_references.py` builds the list, so
@@ -34,8 +44,9 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
 - **Native .docx.** Claude Desktop / Cowork create Word files directly; pandoc is an
   optional route, not a dependency.
 - **Evaluation register** at `<workspace>/clinical-evidence-register.csv` — never in the
-  skill directory (the plugin cache is replaced on update). 2.1.0 added the
-  `references_excluded` column at the end.
+  skill directory (the plugin cache is replaced on update), appended by
+  `review_tables.py`. New columns are added at the end and older registers are migrated
+  in place (2.1.0 `references_excluded`, 2.2.0 `second_review_disagreements`).
 
 ## AI use policy (ISO 42001)
 

@@ -73,3 +73,11 @@ def test_agreed_url_form_doi_is_stored_bare(workspace):
     run(workspace)
     kept = yaml.safe_load((workspace / "ledger_a.yaml").read_text())["references"]
     assert kept[0]["doi"] == "10.1097/TP.0000000000002191"
+
+
+def test_apply_never_downgrades_schema(workspace):
+    ledger = yaml.safe_load((workspace / "ledger_a.yaml").read_text())
+    ledger["metadata"]["ledger_schema_version"] = "1.2"
+    (workspace / "ledger_a.yaml").write_text(yaml.safe_dump(ledger, sort_keys=False))
+    run(workspace)
+    assert yaml.safe_load((workspace / "ledger_a.yaml").read_text())["metadata"]["ledger_schema_version"] == "1.2"

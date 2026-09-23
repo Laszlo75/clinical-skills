@@ -17,12 +17,14 @@ You never have to manage reference files or YAML — the evidence handoff is com
 
 ## Output Files
 
-Each review produces four files:
+Each review produces these files:
 
 | File | Purpose |
 |------|---------|
 | `*_Review_*.md` | Markdown source for the review |
-| `*_Review_*.docx` | Formatted Word document (house style) |
+| `*_Review_*.docx` | Formatted Word document (house style), with a traceability matrix appendix |
+| `*_Evidence_Table.xlsx` / `.csv` | One row per cited source: design, population, size, certainty, key finding, which recommendations cite it (R-friendly) |
+| `*_Traceability.csv` | Protocol statement → review question → evidence → verdict → second review |
 | `*_References.bib` | BibTeX file for Zotero/reference manager import |
 | `*_PMIDs.txt` | PMID list for Zotero bulk import |
 
