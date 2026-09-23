@@ -8,9 +8,10 @@ Upload a clinical protocol (PDF or Word) and the skill will:
 
 1. **Read and parse** the protocol, extracting key clinical topics, drugs, doses, and thresholds
 2. **Pick up the evidence base invisibly** — if a recent search already exists in this workspace, it's used automatically; otherwise the `evidence-search` agent (bundled in the same `clinical-evidence` plugin) is dispatched on the fly
-3. **Cross-reference** the protocol against current guidelines and recent evidence
-4. **Generate a review document** (.docx) with section-by-section analysis and actionable recommendations
-5. **Log to evaluation register** for ongoing quality monitoring
+3. **Check every reference independently** — a second agent re-reads each record from PubMed and a script cross-checks the two readings
+4. **Cross-reference** the protocol against current guidelines and recent evidence
+5. **Generate a review document** (.docx) with section-by-section analysis and actionable recommendations
+6. **Log to evaluation register** for ongoing quality monitoring
 
 You never have to manage reference files or YAML — the evidence handoff is completely internal.
 
@@ -21,7 +22,7 @@ Each review produces four files:
 | File | Purpose |
 |------|---------|
 | `*_Review_*.md` | Markdown source for the review |
-| `*_Review_*.docx` | Formatted Word document (via pandoc) |
+| `*_Review_*.docx` | Formatted Word document (house style) |
 | `*_References.bib` | BibTeX file for Zotero/reference manager import |
 | `*_PMIDs.txt` | PMID list for Zotero bulk import |
 
@@ -29,8 +30,8 @@ Each review produces four files:
 
 - [Claude Desktop](https://claude.ai/download) or another Claude client with MCP connector support
 - The `evidence-search` agent — automatically present because the agent and this skill ship together in the `clinical-evidence` plugin
-- **pandoc** — for markdown to .docx conversion
-- **Python 3 with PyYAML** — for running the bundled ledger validator
+- A Word-document capability — built into Claude Desktop / Cowork; alternatively **pandoc** (optional)
+- **Python 3 with PyYAML** — for the bundled verification, validation and formatting scripts
 - The skill is designed for **UK NHS context** (references MHRA, NICE TAs, UK registries)
 
 ## Installation
@@ -44,8 +45,8 @@ This skill ships as part of the **clinical-evidence** plugin in the [clinical-sk
 
 ### After installation
 
-1. **Install pandoc**: `brew install pandoc` (macOS) or `sudo apt install pandoc` (Linux)
-2. **Ensure PyYAML is available**: `pip install pyyaml` (needed by the bundled ledger validator)
+1. **Ensure PyYAML is available**: `pip install pyyaml` (needed by the bundled scripts)
+2. *Optional:* pandoc, if your environment has no built-in Word-document capability
 
 ## Example Prompts
 
@@ -56,11 +57,11 @@ This skill ships as part of the **clinical-evidence** plugin in the [clinical-sk
 
 ## AI Use & Governance (ISO 42001)
 
-This tool uses AI-assisted evidence synthesis to support clinical protocol review. AI outputs are advisory only and must be critically appraised by a consultant-level clinician before informing protocol changes. The AI system is Claude (Anthropic), accessed via Claude Desktop.
+This tool uses AI-assisted evidence synthesis to support clinical protocol review. AI outputs are advisory only and must be critically appraised by a consultant-level clinician before informing protocol changes. The AI system is Claude (Anthropic), accessed via Claude Cowork or Claude Code.
 
-Every review document is generated as an explicit draft with a "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) includes a "Reviewed and approved by" placeholder — the clinician fills this in after reviewing and approving the document. References are copied verbatim from the YAML reference ledger, which was verified against PubMed by the `evidence-search` agent.
+Every review document is generated as an explicit draft with a "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) includes a "Reviewed and approved by" placeholder — the clinician fills this in after reviewing and approving the document. Reference metadata comes from PubMed via the `evidence-search` agent and is independently re-read by the `reference-checker` agent and cross-checked before anything is cited; references that fail the check are excluded.
 
-A local evaluation register (`reviews/evaluation_register.csv`, gitignored) logs each review's outcomes and recommendation counts for ongoing quality monitoring.
+An evaluation register in the researcher's workspace (`clinical-evidence-register.csv`) logs each review's outcomes and recommendation counts for ongoing quality monitoring.
 
 See [`CLAUDE.md`](CLAUDE.md) for the full AI use policy.
 

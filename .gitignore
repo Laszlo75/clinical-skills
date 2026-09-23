@@ -26,13 +26,21 @@ __pycache__/
 # Hidden reference ledger — canonical internal handoff artifact
 .literature_search_ledger.yaml
 
+# Hidden verification working files (second reading, report) in the user workspace
+.clinical-evidence/
+
+# pytest
+.pytest_cache/
+
 # Legacy ledger filenames from pre-1.0 layouts — keep ignored so stray
 # files from old searches never get committed
 *_References.yaml
 _working_ledger.yaml
 
-# protocol-reviewer local evaluation register (contains review-specific
-# audit data; must never be committed to a public repo)
+# protocol-reviewer evaluation register (written to the user's workspace;
+# contains review-specific audit data and must never be committed to a public repo).
+# reviews/ is the pre-2.0.1 location, kept ignored for stray copies.
+clinical-evidence-register.csv
 reviews/
 
 # Development scratch files

@@ -1,71 +1,50 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Maintainer notes for this skill. The runtime instructions live in `SKILL.md`; this file
+records design decisions for anyone editing the skill.
 
-## What This Is
+## What it is
 
-A Claude Code skill (custom prompt) that reviews clinical protocols against current national guidelines and published evidence. It reads an uploaded clinical protocol (PDF/Word), cross-references it against an evidence base, and produces a structured .docx review document with actionable recommendations.
+Reviews an uploaded clinical protocol (PDF/Word) against current guidelines and recent
+evidence and produces a draft, section-by-section review (`.md` + `.docx`) with graded
+recommendations, plus Zotero exports and a row in the workspace evaluation register.
 
-The skill picks up its evidence base invisibly: if a recent search has been run in the same workspace, the hidden reference ledger is used directly; otherwise the `evidence-search` agent (bundled in the same `clinical-evidence` plugin) is dispatched on the fly. **The researcher is never asked about reference files, YAML, or file paths** — they simply upload a protocol and ask for a review.
+## Files
 
-## Repository Structure
+- `SKILL.md` — outcome, workflow, non-negotiables. Kept deliberately short: current
+  models need goals, constraints and reasons, not step-by-step procedure.
+- `references/document_template.md` — document structure, draft callout and disclaimer
+  text.
+- `assets/reference.docx` — house style (A4, Arial, navy headings, header/footer); used
+  directly if pandoc is the conversion route, otherwise a style reference.
+- `evals/evals.json` — test scenarios.
 
-- **SKILL.md** — The skill definition (prompt). Defines the 5-step workflow: read protocol → discover + validate + load hidden reference ledger → cross-reference → generate review → log to evaluation register.
-- **assets/reference.docx** — Pandoc reference template for .docx output (Arial, A4, navy headings, headers/footers).
-- **references/document_template.md** — Markdown template and pandoc conversion instructions for the review document.
-- **evals/evals.json** — Test scenarios for the skill.
-- **reviews/** — Local evaluation register (gitignored). Contains `evaluation_register.csv` for tracking review outcomes.
+## Design decisions
 
-## Key Design Decisions
+- **Shared evidence procedure.** Discovery, independent verification, validation,
+  reference formatting and exports are defined once in
+  `../../shared/references/consumer_integration.md`; this skill follows it.
+- **Search driven by the protocol.** The skill passes the protocol's concrete statements
+  (doses, thresholds, timings) to `evidence-search`, so the evidence answers what the
+  review actually has to test.
+- **Verification before citation.** `reference-checker` re-reads every PMID from PubMed
+  given identifiers only; `verify_references.py` cross-checks tolerantly and moves
+  failures to `excluded_references`. `format_references.py` builds the list, so
+  reference text is never retyped.
+- **Native .docx.** Claude Desktop / Cowork create Word files directly; pandoc is an
+  optional route, not a dependency.
+- **Evaluation register** at `<workspace>/clinical-evidence-register.csv` — never in the
+  skill directory (the plugin cache is replaced on update). 2.1.0 added the
+  `references_excluded` column at the end.
 
-- **Invisible handoff**: Evidence flows from the `evidence-search` agent to this skill via a hidden YAML ledger at `<workspace>/.literature_search_ledger.yaml`. The ledger is an internal quality-control and handoff artifact; the researcher never sees, edits, or is asked about it. Discovery is a single fixed path — either the file exists (use it) or it doesn't (dispatch the agent).
-- **Authoritative schema**: The ledger format is defined in one place — [`../../shared/references/ledger_schema.md`](../../shared/references/ledger_schema.md). This skill targets ledger schema `1.x`. The integration pattern lives in [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md). Both are the single source of truth for every downstream consumer.
-- **Executable validation**: Step 2 validates the ledger by running `../../shared/scripts/validate_ledger.py`. This eliminates prose-drift between producer and consumer — the script is the contract.
-- **Markdown-first approach**: The review is written as Markdown with YAML frontmatter, then converted to .docx via pandoc.
-- **Scripted exports**: The `.bib` and PMID files are written by the shared `../../shared/scripts/ledger_to_exports.py` script (Step 4), not hand-written — the same executable-over-prose principle as the validator.
-- **Reference integrity**: DOIs, titles, and author lists are copied verbatim from the hidden ledger (which in turn was verified against PubMed by the `evidence-search` agent). This skill does not modify reference metadata.
+## AI use policy (ISO 42001)
 
-## Build / Conversion Command
-
-```bash
-pandoc "[Protocol_Name]_Review_[Year].md" \
-  -o "[Protocol_Name]_Review_[Year].docx" \
-  --reference-doc=assets/reference.docx \
-  --from=markdown+yaml_metadata_block \
-  --to=docx
-```
-
-## Output Files (per review)
-
-1. `[Protocol_Name]_Review_[Year].md` — Markdown source
-2. `[Protocol_Name]_Review_[Year].docx` — Word document
-3. `[Protocol_Name]_References.bib` — BibTeX for Zotero
-4. `[Protocol_Name]_PMIDs.txt` — PMID list for Zotero bulk import
-
-## Tool Dependencies
-
-- **pandoc** — markdown to .docx conversion
-- **Python 3 + PyYAML** — required to run the ledger validator (`../../shared/scripts/validate_ledger.py`) and the export script (`../../shared/scripts/ledger_to_exports.py`)
-- **PubMed MCP, Scholar Gateway, WebSearch** — required only when there is no existing ledger in the workspace and the `evidence-search` agent must be dispatched
-
-## AI Use Policy (ISO 42001)
-
-**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and cross-referencing quality needed.
-
-**Intended use:** AI-assisted evidence synthesis to support the review of clinical protocols against current national guidelines and published literature. The system cross-references and summarises evidence; it does not make clinical decisions.
-
-**Human oversight:** All AI-generated outputs are advisory only. Every review must be critically appraised by a consultant-level clinician before informing protocol changes. Final recommendations are the responsibility of the reviewing clinician and the approving MDT.
-
-**Transparency:** Each review document is generated as an explicit draft with a prominent "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) discloses AI involvement and includes a "Reviewed and approved by" placeholder for the clinician to complete after appraisal.
-
-**Reference integrity:** DOIs and article metadata are copied verbatim from the hidden YAML reference ledger, which was verified against PubMed by the `evidence-search` agent and structurally validated by `validate_ledger.py` before this skill consumes it. This skill never fabricates or reconstructs identifiers.
-
-**Traceability:** Each review document includes an AI system metadata line recording the `clinical-evidence` plugin version, ledger schema version, model identifier, search date, and review date. A local evaluation register (`reviews/evaluation_register.csv`, gitignored) logs review outcomes and recommendation counts for ongoing quality monitoring.
-
-## Clinical Content Rules
-
-- Always include evidence grades inline (e.g., "BTS Grade 1C", "NICE Strength: Strong")
-- Frame recommendations in UK NHS context (MHRA, NICE TAs, UK registries)
-- Numbered in-text citations in square brackets: `[1]`, `[2, 3]`
-- DOIs must be copied verbatim from the YAML reference ledger — never reconstructed from memory
-- Target 15-30 high-quality references per review
+- **System:** the latest Claude Opus at maximum effort (version named in the plugin
+  README), via Claude Cowork or Claude Code.
+- **Intended use:** evidence synthesis to support protocol review; it does not make
+  clinical decisions.
+- **Oversight:** every output is a draft for appraisal by a consultant-level clinician
+  and the approving MDT.
+- **Transparency:** DRAFT callout; disclaimer with plugin version, model, sources,
+  search/review dates and verification status; "Reviewed and approved by" field.
+- **Traceability:** the evaluation register records each review's counts and outcome.

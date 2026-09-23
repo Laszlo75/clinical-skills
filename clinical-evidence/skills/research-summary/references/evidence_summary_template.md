@@ -1,228 +1,73 @@
-# Evidence Summary Template — Markdown-First Approach
+# Evidence summary — document structure
 
-## Strategy
+Use this structure for both the `.md` source and the `.docx`. Headings are numbered as
+shown; sections marked *optional* are omitted when there is nothing to report.
 
-Write the evidence summary as a **Markdown file** first, then convert to .docx using
-pandoc with a styled reference template. This keeps the agent focused on clinical content
-quality rather than formatting.
+## Title page
 
-## Why Markdown First?
+- Title: "Evidence Summary: [Topic]"
+- Subtitle: "Structured Literature Review"
+- Author line: "Clinical Evidence Summary — AI-Assisted Analysis"
+- Date: [Month Year]
 
-- The agent writes natural structured text instead of JavaScript
-- Clickable hyperlinks work natively: `[link text](https://...)`
-- In-text citations are just `[1]` in plain text
-- Tables work in standard markdown
-- Pandoc produces clean .docx that opens reliably in Microsoft Word
-- The reference template handles fonts, colours, heading styles, and page layout
-- Content is easy to review and debug before conversion
+(In Markdown, put these in YAML front matter — `title`, `subtitle`, `author`, `date` — then
+`\newpage`.)
 
-## Step-by-Step Process
-
-### 1. Write the evidence summary as Markdown
-
-Create a file called `[Topic_Name]_Evidence_Summary_[Year].md` with this structure:
-
-```markdown
----
-title: "Evidence Summary: [Topic]"
-subtitle: "Systematic Literature Search"
-author: "Clinical Literature Search — AI-Assisted Analysis"
-date: "[Month Year]"
----
-
-\newpage
+## Page 2: draft callout (verbatim, as a highlighted box / block quote)
 
 > **DRAFT — NOT FOR CLINICAL USE**
 >
-> This is an AI-generated draft document. It has not been verified by a clinician
-> and must not be used for clinical decision-making until it has been reviewed,
-> cross-checked, and approved by a qualified professional.
+> This is an AI-generated draft document. It has not been verified by a clinician and must
+> not be used for clinical decision-making until it has been reviewed, cross-checked, and
+> approved by a qualified professional.
 >
-> **To approve this document:** (1) review all evidence summaries and references,
-> (2) delete this callout, (3) complete the "Reviewed and approved by" field in
-> the Transparency Disclaimer (section 5).
+> **To approve this document:** (1) review all evidence summaries and references, (2)
+> delete this callout, (3) complete the "Reviewed and approved by" field in the
+> Transparency Disclaimer.
 
-# 1. Search Strategy
+## Sections
 
-**Databases searched:** PubMed, Scholar Gateway
-**Date range:** [start] to [end]
-**MeSH terms:** [list]
-**Publication types prioritised:** Systematic reviews, meta-analyses, RCTs, large registry studies
-**Guideline bodies consulted:** [list with editions/dates]
-**Total references included:** [N]
+**1. Search Strategy** — sources searched (PubMed, Scholar Gateway, guideline bodies with
+editions/dates; preprint/trial registries if used), date range, MeSH terms / keywords,
+study types prioritised, number of references included, and how references were verified
+(independent second reading cross-checked against the search; number excluded).
 
-# 2. National Guidelines
+**2. National and International Guidelines** — one subsection per guideline body: key
+recommendations with the grade inline, e.g. "BTS recommends a target titre ≤1:8 at
+transplantation (BTS Grade 1C) [2]".
 
-## 2.1 [Guideline Body — e.g., BTS Guidelines for X, Nth Edition (Year)]
+**3. Recent Evidence** — one subsection per clinical sub-question; synthesise across
+papers with citations rather than listing them one by one.
 
-[Key recommendations with evidence grades. ALWAYS include the grade — e.g.,
-"BTS recommends target titre <1:8 at transplantation (Grade 1C)"]
+**4. Conflicting Recommendations** *(optional)* — where guidelines disagree, or recent
+evidence contradicts a guideline: both positions with grades, and the likely reason.
 
-## 2.2 [Next Guideline Body]
+**5. Emerging Evidence** *(optional)* — preprints, each labelled "(preprint, not
+peer-reviewed)".
 
-[...]
+**6. Evidence Gaps** — questions without RCT data, single-centre-only areas, and relevant
+ongoing trials (NCT number, phase, sample size, expected completion).
 
-# 3. Recent Evidence
+**7. Transparency Disclaimer**
 
-## 3.1 [Subtopic — e.g., Drug Dosing]
+> *This evidence summary was produced using AI-assisted literature search (Claude,
+> Anthropic) with PubMed and Scholar Gateway searches. The AI system was used for
+> literature retrieval and structured analysis; clinical interpretation remains the
+> responsibility of the reviewing clinician. Reference metadata was retrieved from PubMed
+> and independently re-read and cross-checked before citation.*
+>
+> **Reviewed and approved by:** ______________________ *(name, title, and institution)*
+>
+> *AI system metadata: clinical-evidence v[plugin version] · [model identifier] · PubMed MCP
+> · Scholar Gateway · Search date [YYYY-MM-DD] · Document date [YYYY-MM-DD] · Verification:
+> [metadata.verification] ·
+> [github.com/Laszlo75/clinical-skills](https://github.com/Laszlo75/clinical-skills)*
 
-[Papers grouped by subtopic. Summarise key findings with in-text citations:
-"A recent meta-analysis [3] found no difference in outcomes. A UK registry
-study confirmed this [7]."]
+**8. References** — numbered in order of first citation, generated by
+`format_references.py --ids <ref_ids in citation order>` and inserted as-is. Guidelines
+appear in the list like papers. DOIs and URLs are clickable links.
 
-## 3.2 [Next Subtopic]
+## Citation style
 
-[...]
-
-# 4. Conflicting Recommendations
-
-[Include this section only if guidelines disagree with each other or if recent
-evidence contradicts a current guideline. Present both positions with evidence
-grades. Example:
-
-"BTS recommends X (Grade 1C) while KDIGO suggests Y (Grade 2D). The discrepancy
-reflects differing interpretations of [study]. A recent RCT [N] found Z, which
-supports the BTS position but was published after the current KDIGO guideline."
-
-Omit this section entirely if there are no conflicts to report.]
-
-# 5. Emerging Evidence (Preprints)
-
-[Include this section only if medRxiv/bioRxiv preprints were found in Step 3b.
-Label each preprint clearly as "(preprint, not peer-reviewed)". Example:
-
-"A recent medRxiv preprint (Smith et al., 2026; preprint, not peer-reviewed)
-reports outcomes from a single-centre series of 45 patients..."
-
-Omit this section entirely if no preprints were found or the bioRxiv MCP
-was not available.]
-
-# 6. Evidence Gaps
-
-[Areas where evidence is limited or absent. Identify:
-- Questions with no RCT data
-- Topics covered only by single-centre studies
-- Emerging areas with only preliminary data
-- If ongoing trials were found (Step 3b), list them here with NCT numbers,
-  phase, sample size, and expected completion dates]
-
-# 7. Transparency Disclaimer
-
-*This evidence summary was produced using AI-assisted literature search (Claude, Anthropic)
-with PubMed and Scholar Gateway searches. The AI system was used for literature retrieval
-and structured analysis; clinical interpretation remains the responsibility of the
-reviewing clinician. References have been verified against PubMed metadata.*
-
-**Reviewed and approved by:** ______________________ *(name, title, and institution)*
-
-*AI system metadata: clinical-evidence v[plugin version] · [model identifier] · PubMed MCP · Scholar Gateway · Search date [YYYY-MM-DD]*
-
-*Plugin repository: [github.com/Laszlo75/clinical-skills](https://github.com/Laszlo75/clinical-skills) — copy this link exactly, do not substitute a different repository URL. Read `[plugin version]` from `../../.claude-plugin/plugin.json` at document-generation time.*
-
-# 8. References
-
-1. Author AB, Author CD, et al. Title of the article. *Journal Name*.
-   Year;Vol(Issue):Pages. PMID: 12345678.
-   [DOI](https://doi.org/10.1234/example)
-
-2. British Transplantation Society. Guidelines for Antibody Incompatible
-   Transplantation, Third Edition. February 2016.
-   [BTS Guidelines](https://bts.org.uk/guidelines-standards/)
-
-3. [Continue numbering sequentially...]
-```
-
-### 2. Convert to .docx using pandoc
-
-The skill bundles a `reference.docx` template (in the `assets/` directory) that sets
-Arial font, A4 page size, navy headings, headers/footers, and page numbers.
-
-```bash
-pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
-  -o "[Topic_Name]_Evidence_Summary_[Year].docx" \
-  --reference-doc="[skill-path]/assets/reference.docx" \
-  --from=markdown+yaml_metadata_block \
-  --to=docx
-```
-
-The YAML frontmatter (`title`, `subtitle`, `author`, `date`) is rendered as a title
-block on the first page by pandoc. The `\newpage` after the frontmatter forces the
-search strategy section onto page 2, creating a clean title page.
-
-### 3. Also produce the .bib and PMIDs.txt files
-
-After the markdown and docx are done, generate the Zotero exports from the **same
-validated ledger** using the shared export script — do not hand-write BibTeX:
-
-```bash
-python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
-  --prefix "[Topic_Name]" --outdir <workspace>
-```
-
-This writes `[Topic_Name]_References.bib` (one `@article` entry per peer-reviewed
-reference, keyed by PMID where available) and `[Topic_Name]_PMIDs.txt` (one PMID per
-line; Scholar Gateway-only references without a PMID are omitted from the `.txt` but
-still appear in the `.bib` by DOI). The script copies every field verbatim from the
-ledger, so DOIs, titles, and author lists cannot be corrupted. It is the single source
-of truth for the export format — pass the same `[Topic_Name]` you used for the
-`.md`/`.docx` so all four files share a prefix.
-
-## Key Content Rules
-
-### Evidence grades — do not skip
-
-Every recommendation backed by a national guideline MUST include the evidence grade
-inline. This is what clinicians look for first. Examples:
-
-- "BTS recommends target titre <1:8 at transplantation **(Grade 1C)**"
-- "NICE recommends DOACs over warfarin for non-valvular AF **(Strength: Strong)**"
-- "KDIGO suggests monitoring DSA quarterly **(Grade 2C)**"
-
-### In-text citations — every claim needs a source
-
-Use numbered references in square brackets: `[1]`, `[2, 3]`, `[4-6]`.
-Every reference in the list must be cited at least once in the body.
-Every factual claim in the summary must cite its source.
-
-### Clickable links in references — essential
-
-In the markdown, write each reference with its DOI or URL as a clickable link:
-
-```markdown
-1. Smith AB, et al. Title. *Journal*. 2024;36:100. PMID: 12345678.
-   [DOI](https://doi.org/10.1234/example)
-```
-
-Pandoc converts these to clickable hyperlinks in the .docx automatically.
-
-### Reference accuracy — copy DOIs from PubMed, never from memory
-
-Every DOI in the reference list MUST come directly from the `get_article_metadata`
-output for that PMID. DOIs are opaque strings — you cannot reconstruct them from the
-paper title or journal. If you write a DOI from memory, it will almost certainly point
-to the wrong paper or be a dead link.
-
-When writing the reference list, work from the reference ledger you built during the
-search phase. Copy DOIs, titles, and author lists exactly as PubMed returned them.
-
-### Guidelines in the reference list
-
-National guidelines (BTS, NICE, KDIGO, etc.) must appear as numbered entries
-in the reference list, just like PubMed papers. Use the guideline body's URL:
-
-```markdown
-15. British Transplantation Society. Guidelines for Antibody Incompatible
-    Transplantation, 3rd Edition. 2016.
-    [BTS Guidelines](https://bts.org.uk/guidelines-standards/)
-```
-
-## Output Files
-
-The `research-summary` skill should produce **four** user-facing files in the researcher's workspace folder:
-
-1. **`[Topic_Name]_Evidence_Summary_[Year].md`** — the markdown source
-2. **`[Topic_Name]_Evidence_Summary_[Year].docx`** — the converted Word document
-3. **`[Topic_Name]_References.bib`** — BibTeX for Zotero import (from `ledger_to_exports.py`)
-4. **`[Topic_Name]_PMIDs.txt`** — one PMID per line for Zotero bulk import (from `ledger_to_exports.py`)
-
-The hidden reference ledger `.literature_search_ledger.yaml` is written to the workspace by the `evidence-search` agent (either previously, or freshly in this skill's Step 1 agent-dispatch path) and left in place at the end. It is an internal artifact used for quality control and downstream-skill handoff. **Do not mention it to the researcher** in the evidence summary document or in any user-facing listing.
+Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]`. Every factual claim cited; every
+listed reference cited at least once.

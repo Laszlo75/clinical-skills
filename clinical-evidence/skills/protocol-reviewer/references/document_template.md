@@ -1,211 +1,89 @@
-# Review Document Template — Markdown-First Approach
+# Protocol review — document structure
 
-## Strategy
+Use this structure for both the `.md` source and the `.docx`. Headings are numbered as
+shown. Placeholders are in square brackets.
 
-Write the review content as a **Markdown file** first, then convert to .docx using pandoc
-with a styled reference template. This keeps the agent focused on clinical content quality
-rather than fighting with docx-js boilerplate.
+## Title page
 
-## Why Markdown First?
+- Title: "Review of [Protocol Title]"
+- Subtitle: "Evidence-Based Recommendations for Protocol Update"
+- Author line: "Clinical Protocol Review — AI-Assisted Analysis"
+- Date: [Month Year]
 
-- The agent writes natural structured text instead of JavaScript
-- Clickable hyperlinks work natively: `[link text](https://...)`
-- In-text citations are just `[1]` in plain text
-- Tables work in standard markdown
-- Pandoc produces clean .docx that opens reliably in Microsoft Word
-- The reference template handles fonts, colours, heading styles, and page layout
-- Content is easy to review and debug before conversion
+(In Markdown, put these in YAML front matter — `title`, `subtitle`, `author`, `date` — then
+`\newpage`.)
 
-## Step-by-Step Process
-
-### 1. Write the review as Markdown
-
-Create a file called `[Protocol_Name]_Review_[Year].md` with this structure:
-
-```markdown
----
-title: "Review of [Protocol Title]"
-subtitle: "Evidence-Based Recommendations for Protocol Update"
-author: "Clinical Protocol Review — AI-Assisted Analysis"
-date: "[Month Year]"
----
-
-\newpage
+## Page 2: draft callout (verbatim, as a highlighted box / block quote)
 
 > **DRAFT — NOT FOR CLINICAL USE**
 >
-> This is an AI-generated draft document. It has not been verified by a clinician
-> and must not be circulated or used for clinical decision-making until it has been
-> reviewed, cross-checked, and approved by a qualified professional.
+> This is an AI-generated draft document. It has not been verified by a clinician and must
+> not be circulated or used for clinical decision-making until it has been reviewed,
+> cross-checked, and approved by a qualified professional.
 >
-> **To approve this document:** (1) review all recommendations and references,
-> (2) delete this callout, (3) complete the "Reviewed and approved by" field in
-> the Transparency Disclaimer (section 6).
+> **To approve this document:** (1) review all recommendations and references, (2) delete
+> this callout, (3) complete the "Reviewed and approved by" field in the Transparency
+> Disclaimer (section 6).
 
-# 1. Executive Summary
+## Sections
 
-[300-500 words covering: what was reviewed, key findings by classification,
-number of references, guidelines consulted, overall assessment]
+**1. Executive Summary** — 300–500 words: what was reviewed, counts by classification,
+the most important changes, guidelines consulted, number of references, overall
+assessment.
 
-# 2. Methodology
+**2. Methodology** — review date; sources searched (PubMed, Scholar Gateway, guideline
+bodies with editions/dates, plus preprint/trial registries if used); date range and
+study types prioritised; how references were verified (independent second reading
+cross-checked against the search, with the number excluded); the classification scheme.
 
-[Date of review, databases searched, date range, study types prioritised,
-guidelines consulted with edition/dates, classification system used]
-
-# 3. Section-by-Section Review
-
-## 3.1 [Section Title from Protocol]
-
-**Current protocol position:** [Brief paraphrase of what the protocol says]
-
-**National guideline position:** [What guidelines say, with evidence grades.
-ALWAYS include the grade — e.g., "BTS recommends target titre <1:8 at
-transplantation (Grade 1C)"]
-
-**Recent evidence:** [Summary citing papers as numbered references, e.g.,
-"A recent meta-analysis [3] found no difference in outcomes. A UK registry
-study confirmed this [7]."]
-
-**Assessment:** Major Update
-
-**Recommendation:** [Clear, actionable recommendation with evidence grade.
-e.g., "Update target titre to ≤1:8 IgG (BTS Grade 1C, supported by [3, 7])."]
-
----
-
-## 3.2 [Next Section Title]
-
-[Repeat the same structure for each protocol section]
-
----
-
-# 4. Summary of Recommendations
-
-| # | Section | Topic | Assessment | Key Recommendation |
-|---|---------|-------|------------|-------------------|
-| 1 | 3.1 | Titre targets | Major update | Update to ≤1:8 IgG |
-| 2 | 3.2 | Rituximab dose | Major update | Adopt 375 mg/m² |
-| ... | ... | ... | ... | ... |
-
-# 5. Additional Considerations
-
-[Topics not in the original protocol but required by current guidelines
-or supported by new evidence — e.g., registry reporting, consent requirements,
-service delivery standards]
-
-# 6. Transparency Disclaimer
-
-*This review was produced using AI-assisted evidence synthesis (Claude, Anthropic) with PubMed and Scholar Gateway searches. The AI system was used for literature retrieval and structured analysis; clinical judgement and final recommendations remain the responsibility of the reviewing clinician and the approving MDT. References have been verified against PubMed metadata.*
-
-**Reviewed and approved by:** ______________________ *(name, title, and institution)*
-
-*AI system metadata: clinical-evidence v[plugin version] · [model identifier] · PubMed MCP · Scholar Gateway · Review date [YYYY-MM-DD] · [github.com/Laszlo75/clinical-skills](https://github.com/Laszlo75/clinical-skills)*
-
-# 7. References
-
-1. Author AB, Author CD, et al. Title of the article. *Journal Name*.
-   Year;Vol(Issue):Pages. PMID: 12345678.
-   [DOI](https://doi.org/10.1234/example)
-
-2. British Transplantation Society. Guidelines for Antibody Incompatible
-   Transplantation, Third Edition. February 2016.
-   [BTS Guidelines](https://bts.org.uk/guidelines-standards/)
-
-3. [Continue numbering sequentially...]
-```
-
-### 2. Convert to .docx using pandoc
-
-The skill bundles a `reference.docx` template (in the `assets/` directory) that sets
-Arial font, A4 page size, navy headings, headers/footers, and page numbers.
-
-```bash
-pandoc "[Protocol_Name]_Review_[Year].md" \
-  -o "[Protocol_Name]_Review_[Year].docx" \
-  --reference-doc="[skill-path]/assets/reference.docx" \
-  --from=markdown+yaml_metadata_block \
-  --to=docx
-```
-
-The YAML frontmatter (`title`, `subtitle`, `author`, `date`) is rendered as a title
-block on the first page by pandoc. The `\newpage` after the frontmatter forces the
-executive summary onto page 2, creating a clean title page.
-
-### 3. Also produce the .bib and PMIDs.txt files
-
-After the markdown and docx are done, generate the `.bib` and `PMIDs.txt` files from the
-**same validated ledger** using the shared export script — do not hand-write BibTeX:
-
-```bash
-python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
-  --prefix "[Protocol_Name]" --outdir <workspace>
-```
-
-Pass the same `[Protocol_Name]` used for the `.md`/`.docx` so all four files share a
-prefix. The script writes `[Protocol_Name]_References.bib` (one `@article` entry per
-peer-reviewed reference, keyed by PMID where available) and `[Protocol_Name]_PMIDs.txt`
-(one PMID per line; Scholar Gateway-only references without a PMID are omitted from the
-`.txt` but still appear in the `.bib` by DOI). Every field is copied verbatim from the
-ledger, so DOIs, titles, and author lists cannot be corrupted.
-
-## Key Content Rules
-
-### Evidence grades — do not skip
-
-Every recommendation backed by a national guideline MUST include the evidence grade
-inline. This is what clinicians look for first. Examples:
-
-- "BTS recommends target titre <1:8 at transplantation **(Grade 1C)**"
-- "NICE recommends DOACs over warfarin for non-valvular AF **(Strength: Strong)**"
-- "KDIGO suggests monitoring DSA quarterly **(Grade 2C)**"
-
-If you don't include the grade, the clinician has to go look it up themselves — which
-defeats the purpose of the review.
-
-### In-text citations — every claim needs a source
-
-Use numbered references in square brackets: `[1]`, `[2, 3]`, `[4-6]`.
-Every reference in the list must be cited at least once in the body.
-Every factual claim in the review must cite its source.
-
-### Clickable links in references — essential
-
-In the markdown, write each reference with its DOI or URL as a clickable link:
+**3. Section-by-Section Review** — one subsection per protocol section, in protocol order:
 
 ```markdown
-1. Smith AB, et al. Title. *Journal*. 2024;36:100. PMID: 12345678.
-   [DOI](https://doi.org/10.1234/example)
+## 3.1 [Section title from protocol]
+
+**Current protocol position:** [brief paraphrase]
+
+**National guideline position:** [what guidelines say, grade inline — e.g. "BTS recommends
+a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
+
+**Recent evidence:** [synthesis with citations — "A 2024 meta-analysis [7] found…"]
+
+**Assessment:** [Aligned | Minor update | Major update | New addition | Remove]
+
+**Recommendation:** [clear, actionable, graded — "Update target titre to ≤1:8 IgG
+(BTS Grade 1C; supported by [4, 7])."]
 ```
 
-Pandoc converts these to clickable hyperlinks in the .docx automatically.
-This is one of the most valued features — it saves clinicians time.
+**4. Summary of Recommendations** — table:
 
-### Reference accuracy — copy from the reference ledger, never from memory
+| # | Section | Topic | Assessment | Key recommendation |
+|---|---------|-------|------------|--------------------|
 
-Every DOI in the reference list MUST come directly from the reference ledger
-produced by the evidence-search agent (loaded and validated in Step 2). DOIs
-are opaque strings — you cannot reconstruct them from the paper title or journal.
+**5. Additional Considerations** — topics the protocol omits but current guidelines or
+evidence require (e.g. registry reporting, consent, service standards), commissioning or
+business-case implications, emerging evidence (preprints labelled as such) and relevant
+ongoing trials (NCT number, phase, size, expected completion).
 
-When writing the reference list, work from the parsed ledger in your context.
-Copy DOIs, titles, and author lists exactly as they appear. Use `grade.display`
-verbatim for any inline evidence grade citation.
+**6. Transparency Disclaimer**
 
-### Guidelines in the reference list
+> *This review was produced using AI-assisted evidence synthesis (Claude, Anthropic) with
+> PubMed and Scholar Gateway searches. The AI system was used for literature retrieval and
+> structured analysis; clinical judgement and final recommendations remain the
+> responsibility of the reviewing clinician and the approving MDT. Reference metadata was
+> retrieved from PubMed and independently re-read and cross-checked before citation.*
+>
+> **Reviewed and approved by:** ______________________ *(name, title, and institution)*
+>
+> *AI system metadata: clinical-evidence v[plugin version] · [model identifier] · PubMed MCP
+> · Scholar Gateway · Search date [YYYY-MM-DD] · Review date [YYYY-MM-DD] · Verification:
+> [metadata.verification] ·
+> [github.com/Laszlo75/clinical-skills](https://github.com/Laszlo75/clinical-skills)*
 
-National guidelines (BTS, NICE, KDIGO, etc.) must appear as numbered entries
-in the reference list, just like PubMed papers. Use the guideline body's URL:
+**7. References** — numbered in order of first citation, generated by
+`format_references.py --ids <ref_ids in citation order>` and inserted as-is. Guidelines
+appear in the list like papers. DOIs and URLs are clickable links.
 
-```markdown
-15. British Transplantation Society. Guidelines for Antibody Incompatible
-    Transplantation, 3rd Edition. 2016.
-    [BTS Guidelines](https://bts.org.uk/guidelines-standards/)
-```
+## Citation style
 
-## Output Files
-
-The skill should produce four files in the user's workspace folder:
-
-1. **`[Protocol_Name]_Review_[Year].md`** — the markdown source (useful for future editing)
-2. **`[Protocol_Name]_Review_[Year].docx`** — the converted Word document
-3. **`[Protocol_Name]_References.bib`** — BibTeX for Zotero import
-4. **`[Protocol_Name]_PMIDs.txt`** — PMID list for bulk Zotero import
+Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]`. Every factual claim cited; every
+listed reference cited at least once.

@@ -4,6 +4,57 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] - 2026-09-23
+
+### Added
+
+- **Independent, tolerant reference verification.** A new `reference-checker` agent is given only the PMIDs/DOIs from a search and re-reads each record from PubMed in a fresh context. `shared/scripts/verify_references.py` then cross-checks the two readings with `shared/scripts/refmatch.py`:
+  - Harmless differences pass: capitalisation, accents (Müller/Muller/Mueller), HTML markup, punctuation, a DOI written as a URL, epub vs print year.
+  - A different PMID or DOI, a title belonging to another paper, or a retraction fails, and the reference moves to `excluded_references` so it can never be cited.
+  - Consortium-author mismatches are flagged for a quick human glance.
+  - This replaces the search agent's own character-by-character self-check.
+- **`shared/scripts/format_references.py`** builds the numbered Vancouver reference list (Markdown, or JSON for code that writes the `.docx`) from the verified ledger, refusing unknown or excluded ids. Reference text is no longer retyped.
+- **Test suite and CI.** `tests/` (pytest, planted fixtures) covers matching, verification, formatting, validation and exports. A GitHub Actions workflow runs it on Python 3.10 and 3.12.
+- Evaluation register gains a `references_excluded` column, appended at the end so existing registers stay readable.
+
+### Changed
+
+- **Prompts rewritten for current models.** SKILL.md files and the search agent now state the outcome, the hard constraints with their reasons, and the checks the output must pass, rather than step-by-step procedure. Line counts: protocol-reviewer 402 → 137, research-summary 383 → 105, evidence-search 556 → 154. The shared evidence procedure lives once, in `shared/references/consumer_integration.md`.
+- **pandoc is optional.** Claude Desktop / Cowork create `.docx` natively in the house style; pandoc with `assets/reference.docx` remains an alternative route.
+- Templates are now structure specs (sections, callout, disclaimer). The disclaimer records the verification status.
+- Evidence summaries are labelled "Structured Literature Review" rather than "Systematic Literature Search", since there is no PRISMA-level search log yet.
+
+### Fixed
+
+- **The ledger schema's worked example cited the wrong paper.** It gave PMID 31107464 and doi:10.1111/ajt.15493 for Kotton et al. 2018 (Third International CMV Consensus Guidelines). PubMed shows that PMID is an organoid methods paper, and the DOI belongs to another article. Corrected to PMID 29596116, doi:10.1097/TP.0000000000002191. This is the failure mode the new verification catches, and it does: the old example is excluded when run through the pipeline.
+- Duplicate-DOI detection is case-insensitive. `ref_id` uniqueness now also covers preprints.
+
+### Compatibility
+
+- **Ledger schema 1.1**, additive: optional `integrity` per reference, `excluded_references`, `metadata.verification`. 1.0 ledgers still validate; consumers verify them on first use.
+
+## [2.0.1] - 2026-09-23
+
+### Changed
+
+- **Recommended model is now Claude Opus 5.5 at maximum effort.** The specific version is named in one place only (the plugin README); skills, agent, and maintainer docs refer to "the latest Claude Opus" so the next model bump is a one-line change. Added Claude Cowork setup notes (select the model in the app and enable extended thinking).
+- **`evidence-search` agent pinned to `model: opus`** (was `inherit`), so the search and reference verification can no longer silently run on a lighter model when the parent session is not Opus.
+- **Model identifier in disclaimers, ledger, and register** now records the self-reported model ID plus the configured tier (e.g. `claude-opus-5-5 (configured: opus, effort max)`), giving the audit trail a second anchor because models can misreport their own ID.
+- Trimmed over-emphatic prompt wording ("think deeply and extensively", "single most important instruction") that is redundant at maximum effort; the reasons behind each rule are kept.
+- Reference guidance relaxed for current models: ~20–40 references (was 15–30) and full text for up to ~15 key papers (was 5–10), still quality over quantity.
+
+### Fixed
+
+- **Evaluation register no longer lives inside the plugin install.** It was written to `reviews/evaluation_register.csv` in the skill directory, which is replaced on every plugin update, wiping the audit trail. It is now `<workspace>/clinical-evidence-register.csv`. If you have an old register, copy it out of the plugin cache before updating.
+- **Script and asset paths are anchored to the skill directory.** Commands such as `python ../../shared/scripts/validate_ledger.py` and `--reference-doc=assets/reference.docx` were relative to the skill directory but run from the researcher's workspace. Every command now uses a `[skill-path]` placeholder resolved to the skill's absolute base directory, with quoting for paths containing spaces.
+- `evidence-search` no longer falls back to a hard-coded `skill_version: "2.0.0"`; it writes `"unknown"` if the dispatcher did not pass a version.
+- Plugin README said "all three skills" share the agent — there are two.
+- Per-skill `CLAUDE.md` files carried "when working with code in this repository" boilerplate; they are now labelled as maintainer notes.
+
+### Compatibility
+
+- No workflow or ledger schema change. Ledger schema stays at `1.0`; existing ledgers remain valid.
+
 ## [2.0.0] - 2026-05-25
 
 ### Removed
