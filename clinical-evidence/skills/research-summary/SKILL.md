@@ -3,22 +3,16 @@ name: research-summary
 model: opus
 effort: max
 description: >
-  Search PubMed, Scholar Gateway, and national guideline websites for clinical evidence on
-  a topic, then produce a narrative evidence summary document (.md + .docx) plus
-  Zotero-friendly export files (BibTeX .bib + PMID list). Dispatches the evidence-search
-  agent to build a verified reference ledger (or reuses one already in the workspace), then
-  writes a structured document covering guidelines, recent evidence, conflicting
-  recommendations, emerging evidence, and evidence gaps. Use when the user asks for a
-  literature search, evidence review, evidence summary, narrative literature review,
-  reference list, or wants to know what the latest evidence or guidelines say about a
-  clinical topic. Triggers include: "literature search", "search PubMed", "find evidence
-  on", "what does the latest evidence say about", "what do the guidelines say about",
-  "evidence review", "reference list for", "write the evidence summary", "produce a
-  narrative literature review", "summarise the literature on", or any request for clinical
-  evidence or a written evidence document on a specific topic. Also triggers when the user
-  mentions a clinical topic casually and asks what the current evidence or guidelines say
-  (e.g., "I'm updating our CMV protocol, what's the current thinking?", "what does NICE say
-  about X?"), as long as they have not uploaded a protocol for review.
+  Clinical literature search and narrative evidence summary. Searches guidelines
+  (NICE, BTS, KDIGO…), PubMed and Scholar Gateway, independently verifies every
+  reference, and writes a draft evidence summary (.md + .docx) with Zotero exports
+  (.bib + PMID list): guideline positions with grades, recent evidence, conflicts,
+  emerging evidence and gaps. Use when the user asks for a literature search, evidence
+  review or summary, narrative literature review, or reference list, or asks what the
+  latest evidence or guidelines say on a clinical topic — e.g. "search PubMed for…",
+  "find evidence on…", "what does NICE say about X?", "I'm updating our CMV protocol,
+  what's the current thinking?". If the user has uploaded a protocol to review, use
+  protocol-reviewer instead.
 ---
 
 # Clinical Evidence Summary

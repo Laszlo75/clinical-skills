@@ -64,7 +64,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.1.0**.
+Current release: **2.1.1**.
 
 **Semver policy:**
 
@@ -89,7 +89,7 @@ Skills and agents are written for current, capable models: state the outcome, th
 
 ## Tests
 
-`pytest -q` from the repository root (`pip install -r requirements-dev.txt`). Tests cover the shared scripts with planted fixtures in `tests/fixtures/`; CI runs them on every push.
+`pytest -q` from the repository root (`pip install -r requirements-dev.txt`). Tests cover the shared scripts with planted fixtures in `tests/fixtures/`, plus the plugin structure: skill names and descriptions must stay within the loader limits (name ≤ 64 chars, lowercase-hyphen, matching the folder; description ≤ 1,024 chars, no XML tags) — a skill that breaks them is dropped silently. CI runs them on every push.
 
 ## Tool Dependencies
 
