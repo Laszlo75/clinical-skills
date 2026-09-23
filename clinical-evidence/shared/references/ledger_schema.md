@@ -99,7 +99,7 @@ metadata:
   topic: "CMV prophylaxis in SOT"     # REQUIRED — the clinical topic searched
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
   skill_version: "1.0.0"              # REQUIRED — producer version (since clinical-evidence v1.0.0, this is the plugin version)
-  model_id: "<actual session model id>"  # REQUIRED — the model actually running this session
+  model_id: "<session model id> (configured: opus)"  # REQUIRED — self-reported ID + configured tier
   mesh_terms:                         # REQUIRED — MeSH terms / keywords used
     - "Cytomegalovirus Infections"
     - "Organ Transplantation"

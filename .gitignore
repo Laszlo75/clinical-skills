@@ -31,8 +31,10 @@ __pycache__/
 *_References.yaml
 _working_ledger.yaml
 
-# protocol-reviewer local evaluation register (contains review-specific
-# audit data; must never be committed to a public repo)
+# protocol-reviewer evaluation register (written to the user's workspace;
+# contains review-specific audit data and must never be committed to a public repo).
+# reviews/ is the pre-2.0.1 location, kept ignored for stray copies.
+clinical-evidence-register.csv
 reviews/
 
 # Development scratch files

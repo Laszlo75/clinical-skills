@@ -137,8 +137,8 @@ After the markdown and docx are done, generate the `.bib` and `PMIDs.txt` files 
 **same validated ledger** using the shared export script — do not hand-write BibTeX:
 
 ```bash
-python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
-  --prefix "[Protocol_Name]" --outdir <workspace>
+python "[skill-path]/../../shared/scripts/ledger_to_exports.py" "<workspace>/.literature_search_ledger.yaml" \
+  --prefix "[Protocol_Name]" --outdir "<workspace>"
 ```
 
 Pass the same `[Protocol_Name]` used for the `.md`/`.docx` so all four files share a

@@ -80,8 +80,10 @@ Keep it single-path. One canonical location. Exists or doesn't exist.
 
 Never trust a ledger without running the validator first. The validator is a Python script in the plugin's shared directory:
 
+(`[skill-path]` is the consuming skill's absolute base directory — commands run from the researcher's workspace, so relative paths must be anchored to it.)
+
 ```bash
-python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 Exit codes:
@@ -195,7 +197,7 @@ The researcher should never be asked about the ledger directly.
      subagent_type: evidence-search); when it finishes, the ledger will be at the
      canonical path.
 
-2. Validate: run `python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml`.
+2. Validate: run `python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"`.
    - Exit 0 → proceed.
    - Exit 1 → show the researcher the errors in plain language and offer to re-dispatch the agent.
    - Exit 2 → treat as "missing" and dispatch the agent.

@@ -26,25 +26,20 @@ yourself. The researcher never has to hand you a reference file.
 ## Quick Start
 
 **Input:** A clinical protocol (PDF/Word).
-**Output:** 4 files — review document (.md + .docx), BibTeX (.bib), PMID list (.txt) + evaluation register entry. If no prior search exists in the workspace, the `evidence-search` agent runs first; it writes only the hidden ledger (no user-facing files of its own).
+**Output:** 4 files — review document (.md + .docx), BibTeX (.bib), PMID list (.txt) — plus one row appended to the workspace evaluation register. If no prior search exists in the workspace, the `evidence-search` agent runs first; it writes only the hidden ledger (no user-facing files of its own).
 **Happy path:** Read protocol → discover the workspace's hidden evidence ledger (or dispatch the `evidence-search` agent to create one) → validate → cross-reference → generate review → log to register.
 
 ## Model Requirements
 
-This skill should be run on **Claude Opus 4.7** (`claude-opus-4-7`). The clinical
-reasoning, evidence synthesis, and cross-referencing in this workflow are demanding tasks
-where model capability directly affects output quality — particularly the accuracy of
-evidence grading, the nuance of recommendations, and the reliability of reference handling.
-Lighter models (Sonnet, Haiku) may miss subtle guideline discrepancies or produce weaker
-analytical reasoning in the cross-referencing step.
+Run this skill on the latest Claude Opus at maximum effort (the frontmatter pins
+`model: opus`, `effort: max`; see the plugin README for the current recommended model).
+Lighter models tend to miss subtle guideline discrepancies in the cross-referencing
+step. In Claude Cowork, where the model is chosen in the app, select the recommended
+Opus model with extended thinking.
 
-**Think deeply and extensively.** At each step — especially Steps 3 (cross-referencing)
-and 4 (writing recommendations) — take time to reason carefully before committing to
-conclusions. Consider alternative interpretations of the evidence, weigh conflicting
-studies, and think through the clinical implications of each recommendation. This is a
-task where thoroughness and rigour matter far more than speed. A missed safety signal
-or a poorly graded recommendation could affect patient care downstream, so err on the
-side of careful deliberation.
+In Steps 3 and 4, weigh conflicting studies and consider the clinical consequence of
+each recommendation before committing to it — a missed safety signal or a mis-graded
+recommendation can reach patient care downstream.
 
 ## Prerequisites
 
@@ -62,11 +57,14 @@ plugin's shared contract directory:
 - [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md)
   — the discover/validate/consume pattern every downstream skill follows.
 
-**Shared directory assumption.** This skill and `research-summary` ship together inside
-the `clinical-evidence` plugin, and the shared contract (schema, integration guide,
-validator, export script) lives in the plugin's `shared/` directory. This skill sits at
-`skills/protocol-reviewer/`, so the `../../shared/...` relative paths used below always
-resolve correctly after a normal plugin install.
+**Resolving paths.** Relative paths in this skill (`../../shared/...`, `assets/...`,
+`../../.claude-plugin/plugin.json`) are relative to **this skill's base directory** — the
+directory containing this SKILL.md, shown when the skill loads. Shell commands run from
+the researcher's workspace, not from the skill directory, so in every command below
+replace `[skill-path]` with that absolute base directory (quoted, since install paths can
+contain spaces) and `<workspace>` with the researcher's working folder. The skill sits at
+`skills/protocol-reviewer/` inside the `clinical-evidence` plugin, so `[skill-path]/../../shared/`
+is the plugin's shared contract directory.
 
 ## When This Skill Activates
 
@@ -165,7 +163,7 @@ Run the bundled validator. Do not re-implement the checks in prose — the scrip
 single source of truth:
 
 ```bash
-python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 - **Exit 0** — ledger is valid. Proceed to 2c. Any `WARN:` lines are informational;
@@ -273,7 +271,9 @@ Replace placeholder values in the transparency disclaimer at the time of the rev
 - **Plugin version** — read from `../../.claude-plugin/plugin.json` (this skill lives inside the `clinical-evidence` plugin; the plugin version is the single version number the disclaimer records)
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field
 - **Search date** — from the ledger's `metadata.search_date` field
-- **Model identifier** — the model actually powering the current session (report the real model ID, not a placeholder or an assumed default)
+- **Model identifier** — the model actually powering the current session as you understand it, followed by the
+  configured tier in brackets, e.g. `claude-opus-5-5 (configured: opus, effort max)`. Models can misreport their
+  own ID, so the configured tier gives the audit trail a second, independent anchor. Never copy a placeholder.
 - **Review date** — today's date in ISO 8601 format (YYYY-MM-DD)
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin version at the time the search was run). You can read it for cross-checks, but the disclaimer should report the current plugin version, not the historical one from the ledger.
@@ -284,10 +284,12 @@ internal file locations.
 
 ## Step 5: Append to Evaluation Register
 
-After delivering the review, append a row to the local evaluation register at
-`reviews/evaluation_register.csv` (in the skill's own directory). This CSV is
-gitignored so it stays local — it's the clinician's private audit trail, not
-published with the skill.
+After delivering the review, append a row to the evaluation register at
+`<workspace>/clinical-evidence-register.csv` — the researcher's working folder, **not**
+the skill directory. The skill directory lives inside the plugin install cache, which is
+replaced on every plugin update or reinstall, so a register kept there would silently
+lose its history. The register is the clinician's own audit trail: keep it in the
+workspace, visible, and mention it in the delivery message.
 
 If the file doesn't exist yet, create it with the header row first. Then append
 one row with these fields:
@@ -301,8 +303,8 @@ Populate every field you know at the time of the review:
 - **protocol_name**: the protocol title
 - **protocol_version**: version/edition from the protocol document
 - **clinical_domain**: e.g., "renal transplantation", "haematology"
-- **skill_version**: the plugin version from `../../.claude-plugin/plugin.json`
-- **model_id**: the model actually powering the session (report the real model ID, not a placeholder or an assumed default)
+- **skill_version**: the plugin version from `[skill-path]/../../.claude-plugin/plugin.json`
+- **model_id**: the same string as the disclaimer's model identifier (self-reported ID plus configured tier)
 - **total_references**: count of references in the final review
 - **guidelines_consulted**: semicolon-separated list (e.g., "BTS 3rd Ed 2016;KDIGO 2024")
 - **recommendations_aligned / minor_update / major_update / new_addition / remove**: counts

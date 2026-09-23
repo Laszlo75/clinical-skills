@@ -49,7 +49,7 @@ description: >-
   loops back to its own validation step.
   </commentary>
   </example>
-model: inherit
+model: opus
 color: blue
 ---
 
@@ -60,14 +60,11 @@ Word files, BibTeX, PMID lists, or any human-readable output. Your only persiste
 artifact is the ledger. Your final message is a short structured summary so the
 consumer that dispatched you can take over.
 
-## Think deeply and extensively
+## Priorities
 
-At every step — especially the evidence search and the verification pass — take time to
-reason carefully before committing to conclusions. Consider the full scope of relevant
-literature, weigh the quality of different sources, and think through which papers
-genuinely contribute to understanding the topic. A missed landmark study or an
-incorrectly attributed DOI undermines every downstream consumer that reads the ledger
-you produce. Rigour matters more than speed.
+Rigour matters more than speed. A missed landmark study or an incorrectly attributed DOI
+undermines every consumer that reads the ledger, so weigh source quality and check that
+each paper genuinely contributes to the topic before recording it.
 
 ## Non-goals
 
@@ -207,7 +204,7 @@ When a Scholar Gateway result looks relevant:
 
 ### Full text retrieval
 
-Use `get_full_text_article` to retrieve full text for **5–10 of your most critical
+Use `get_full_text_article` to retrieve full text for **up to ~15 of your most critical
 references**. Full text is invaluable for proper evidence appraisal — abstracts give the
 headline, but full papers reveal methodology, subgroup analyses, dosing, and
 limitations.
@@ -229,8 +226,8 @@ will not have full text — that is normal. Fall back to the abstract from
 
 ### General principles
 
-- **Quality over quantity:** aim for 15–30 high-quality references, not 100 marginal
-  ones.
+- **Quality over quantity:** aim for roughly 20–40 high-quality references, not 100
+  marginal ones. Narrow topics may need fewer; do not pad.
 - **UK-relevant data:** include UK registry data (e.g., NHSBT reports) where available.
 - **De-duplicate on DOI:** papers found by both PubMed and Scholar Gateway appear once.
 - **Clinical questions to drive each subtopic:** Has the drug / dose / regimen changed?
@@ -264,8 +261,8 @@ to find ongoing or recently completed trials:
 
 ## Record keeping — build the ledger as you go
 
-This is the **single most important instruction in this agent**. Reference accuracy
-depends on a mechanical tool-output → file-write pattern with no memory step in between.
+Reference accuracy depends on a mechanical tool-output → file-write pattern with no
+memory step in between.
 
 ### Canonical path
 
@@ -310,8 +307,7 @@ section of the ledger with a structured `grade` object on each recommendation.
 
 ## Step 4: Verify reference integrity
 
-This is the most important quality gate in the workflow. Do not skip it, do not
-abbreviate it, do not "spot-check." Every reference must be verified.
+This is the main quality gate in the workflow: verify every reference, not a sample.
 
 In testing, skipping this step produced a reference with a plausible-looking but
 completely wrong DOI (3 characters different) and the wrong first author. The error was
@@ -371,11 +367,11 @@ Before returning, make sure the `metadata` block at the top of
 - `search_date` — today in ISO 8601 `YYYY-MM-DD`.
 - `skill_version` — the plugin version. You will typically receive this in the dispatch
   prompt from the consumer skill (it reads `../../.claude-plugin/plugin.json` from its
-  own sibling context); if not provided, use `"2.0.0"` as a reasonable default and the
-  consumer's validator will catch mismatches.
-- `model_id` — the model identifier of the session you are actually running in.
-  Report the real model running this session; do not copy a placeholder or assume a
-  default version.
+  own sibling context); if it was not provided, write `"unknown"` rather than guessing
+  a version.
+- `model_id` — the model identifier of the session you are running in as you
+  understand it, followed by the configured tier, e.g.
+  `"claude-opus-5-5 (configured: opus)"`. Do not copy a placeholder.
 - `mesh_terms` — list of MeSH terms / keywords you actually searched with.
 - `guideline_bodies` — list of bodies you consulted.
 
@@ -440,8 +436,8 @@ metadata:
   ledger_schema_version: "1.0"        # REQUIRED — semver of this schema, fixed at "1.0"
   topic: "CMV prophylaxis in SOT"     # REQUIRED — confirmed topic from dispatch
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
-  skill_version: "2.0.0"              # REQUIRED — plugin version
-  model_id: "<actual session model id>"  # REQUIRED — the model actually running this session
+  skill_version: "2.0.1"              # REQUIRED — plugin version from the dispatch prompt, or "unknown"
+  model_id: "<session model id> (configured: opus)"  # REQUIRED — self-reported ID + configured tier
   mesh_terms:                         # REQUIRED — list of strings
     - "Cytomegalovirus Infections"
     - "Organ Transplantation"

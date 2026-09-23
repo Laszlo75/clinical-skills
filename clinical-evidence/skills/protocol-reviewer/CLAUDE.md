@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Maintainer notes for this skill. The runtime instructions live in `SKILL.md`; this file records design decisions for anyone editing the skill.
 
 ## What This Is
 
@@ -14,7 +14,7 @@ The skill picks up its evidence base invisibly: if a recent search has been run 
 - **assets/reference.docx** — Pandoc reference template for .docx output (Arial, A4, navy headings, headers/footers).
 - **references/document_template.md** — Markdown template and pandoc conversion instructions for the review document.
 - **evals/evals.json** — Test scenarios for the skill.
-- **reviews/** — Local evaluation register (gitignored). Contains `evaluation_register.csv` for tracking review outcomes.
+- **Evaluation register** — written to `<workspace>/clinical-evidence-register.csv`, never inside the skill directory (the plugin install cache is replaced on update, which would wipe the audit trail).
 
 ## Key Design Decisions
 
@@ -30,7 +30,7 @@ The skill picks up its evidence base invisibly: if a recent search has been run 
 ```bash
 pandoc "[Protocol_Name]_Review_[Year].md" \
   -o "[Protocol_Name]_Review_[Year].docx" \
-  --reference-doc=assets/reference.docx \
+  --reference-doc="[skill-path]/assets/reference.docx" \
   --from=markdown+yaml_metadata_block \
   --to=docx
 ```
@@ -50,7 +50,7 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and cross-referencing quality needed.
+**System identity:** the latest Claude Opus model (Anthropic) at maximum effort (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code. The clinical reasoning and cross-referencing need the strongest available model.
 
 **Intended use:** AI-assisted evidence synthesis to support the review of clinical protocols against current national guidelines and published literature. The system cross-references and summarises evidence; it does not make clinical decisions.
 
@@ -60,7 +60,7 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 
 **Reference integrity:** DOIs and article metadata are copied verbatim from the hidden YAML reference ledger, which was verified against PubMed by the `evidence-search` agent and structurally validated by `validate_ledger.py` before this skill consumes it. This skill never fabricates or reconstructs identifiers.
 
-**Traceability:** Each review document includes an AI system metadata line recording the `clinical-evidence` plugin version, ledger schema version, model identifier, search date, and review date. A local evaluation register (`reviews/evaluation_register.csv`, gitignored) logs review outcomes and recommendation counts for ongoing quality monitoring.
+**Traceability:** Each review document includes an AI system metadata line recording the `clinical-evidence` plugin version, ledger schema version, model identifier, search date, and review date. An evaluation register in the researcher's workspace (`clinical-evidence-register.csv`) logs review outcomes and recommendation counts for ongoing quality monitoring.
 
 ## Clinical Content Rules
 
@@ -68,4 +68,4 @@ pandoc "[Protocol_Name]_Review_[Year].md" \
 - Frame recommendations in UK NHS context (MHRA, NICE TAs, UK registries)
 - Numbered in-text citations in square brackets: `[1]`, `[2, 3]`
 - DOIs must be copied verbatim from the YAML reference ledger — never reconstructed from memory
-- Target 15-30 high-quality references per review
+- Target roughly 20–40 high-quality references per review; do not pad narrow topics

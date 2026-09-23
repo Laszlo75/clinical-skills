@@ -60,7 +60,7 @@ The two skills and the agent are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.0.0**.
+Current release: **2.0.1**.
 
 **Semver policy:**
 
@@ -75,10 +75,12 @@ Both skills (`research-summary`, `protocol-reviewer`) use the same pandoc conver
 ```bash
 pandoc "[Name]_[DocType]_[Year].md" \
   -o "[Name]_[DocType]_[Year].docx" \
-  --reference-doc=assets/reference.docx \
+  --reference-doc="[skill-path]/assets/reference.docx" \
   --from=markdown+yaml_metadata_block \
   --to=docx
 ```
+
+`[skill-path]` is the skill's absolute base directory: shell commands run from the researcher's workspace, so every script and asset path in a SKILL.md must be anchored to it (see the "Resolving paths" note in each SKILL.md).
 
 Each skill bundles its own `assets/reference.docx` — they are intentionally kept as independent copies so each skill stays self-contained even when loaded in isolation. Both skills also call the shared `shared/scripts/ledger_to_exports.py` to write the `.bib` + PMID exports from the ledger.
 
@@ -102,7 +104,7 @@ Optional (enhance agent coverage):
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop.
+**System identity:** the latest Claude Opus model (Anthropic) at maximum effort (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code in Claude Desktop.
 
 **Intended use:** AI-assisted literature search, evidence synthesis, and cross-referencing of clinical protocols against current guidelines. The plugin retrieves, structures, and summarises evidence; it does not make clinical decisions.
 

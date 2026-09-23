@@ -42,18 +42,15 @@ shared `ledger_to_exports.py` script.
 
 ## Model Requirements
 
-This skill should be run on **Claude Opus 4.7** (`claude-opus-4-7`). The clinical
-reasoning, evidence synthesis, and narrative writing in this workflow are demanding
-tasks where model capability directly affects output quality — particularly the
-accuracy of evidence grading, the coherence of thematic synthesis, and the reliability
-of reference handling. Lighter models may produce weaker analytical reasoning in the
-synthesis step.
+Run this skill on the latest Claude Opus at maximum effort (the frontmatter pins
+`model: opus`, `effort: max`; see the plugin README for the current recommended model).
+Evidence grading, thematic synthesis, and reference handling all benefit directly from
+model capability. In Claude Cowork, where the model is chosen in the app, select the
+recommended Opus model with extended thinking.
 
-**Think deeply and extensively.** At each step — especially when writing the thematic
-synthesis sections — take time to reason carefully before committing to conclusions.
-Consider alternative interpretations of the evidence, weigh conflicting studies, and
-think through the clinical implications. A poorly graded recommendation or a missed
-conflict between guidelines weakens the document for its clinical audience.
+When writing the thematic synthesis, weigh conflicting studies against each other and
+state the clinical implication — a missed conflict between guidelines weakens the
+document for its clinical audience.
 
 ## Prerequisites
 
@@ -71,11 +68,14 @@ the plugin's shared contract directory:
 - [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md)
   — the discover/validate/consume pattern every downstream skill follows.
 
-**Shared directory assumption.** This skill and `protocol-reviewer` ship together inside
-the `clinical-evidence` plugin, and the shared contract (schema, integration guide,
-validator, export script) lives in the plugin's `shared/` directory. Each skill sits at
-`skills/<skill>/`, so the `../../shared/...` relative paths used below always resolve
-correctly after a normal plugin install.
+**Resolving paths.** Relative paths in this skill (`../../shared/...`, `assets/...`,
+`../../.claude-plugin/plugin.json`) are relative to **this skill's base directory** — the
+directory containing this SKILL.md, shown when the skill loads. Shell commands run from
+the researcher's workspace, not from the skill directory, so in every command below
+replace `[skill-path]` with that absolute base directory (quoted, since install paths can
+contain spaces) and `<workspace>` with the researcher's working folder. The skill sits at
+`skills/research-summary/` inside the `clinical-evidence` plugin, so `[skill-path]/../../shared/`
+is the plugin's shared contract directory.
 
 ## When This Skill Activates
 
@@ -167,7 +167,7 @@ Run the bundled validator. Do not re-implement the checks in prose — the scrip
 single source of truth:
 
 ```bash
-python ../../shared/scripts/validate_ledger.py <workspace>/.literature_search_ledger.yaml
+python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 - **Exit 0** — ledger is valid. Proceed to 1c. Any `WARN:` lines are informational;
@@ -252,7 +252,9 @@ Replace placeholder values in the transparency disclaimer at the time of writing
   number the disclaimer records).
 - **Ledger schema version** — from the ledger's `metadata.ledger_schema_version` field.
 - **Search date** — from the ledger's `metadata.search_date` field.
-- **Model identifier** — the model actually powering the current session (report the real model ID, not a placeholder or an assumed default).
+- **Model identifier** — the model actually powering the current session as you understand it, followed by the
+  configured tier in brackets, e.g. `claude-opus-5-5 (configured: opus, effort max)`. Models can misreport their
+  own ID, so the configured tier gives the audit trail a second, independent anchor. Never copy a placeholder.
 - **Document date** — today's date in ISO 8601 format (YYYY-MM-DD).
 
 The ledger's `metadata.skill_version` field carries the producer version (the plugin
@@ -271,7 +273,7 @@ Use pandoc with the bundled reference template in `assets/reference.docx`:
 ```bash
 pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
   -o "[Topic_Name]_Evidence_Summary_[Year].docx" \
-  --reference-doc=assets/reference.docx \
+  --reference-doc="[skill-path]/assets/reference.docx" \
   --from=markdown+yaml_metadata_block \
   --to=docx
 ```
@@ -284,8 +286,8 @@ Generate the BibTeX and PMID files from the **same validated ledger** using the 
 export script — do not hand-write BibTeX from memory:
 
 ```bash
-python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
-  --prefix "[Topic_Name]" --outdir <workspace>
+python "[skill-path]/../../shared/scripts/ledger_to_exports.py" "<workspace>/.literature_search_ledger.yaml" \
+  --prefix "[Topic_Name]" --outdir "<workspace>"
 ```
 
 Pass the **same `[Topic_Name]`** you used for the `.md`/`.docx` filenames so all four

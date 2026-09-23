@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Maintainer notes for this skill. The runtime instructions live in `SKILL.md`; this file records design decisions for anyone editing the skill.
 
 ## What This Is
 
@@ -30,7 +30,7 @@ The skill picks up its evidence base invisibly: if a recent search has been run 
 ```bash
 pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
   -o "[Topic_Name]_Evidence_Summary_[Year].docx" \
-  --reference-doc=assets/reference.docx \
+  --reference-doc="[skill-path]/assets/reference.docx" \
   --from=markdown+yaml_metadata_block \
   --to=docx
 ```
@@ -51,7 +51,7 @@ pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** Claude Opus 4.7 (Anthropic), accessed via Claude Desktop. This skill requires Opus 4.7 for the clinical reasoning and narrative synthesis quality needed.
+**System identity:** the latest Claude Opus model (Anthropic) at maximum effort (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code. The clinical reasoning and narrative synthesis need the strongest available model.
 
 **Intended use:** AI-assisted narrative synthesis of clinical evidence into a structured summary document. The system synthesises and summarises evidence; it does not make clinical decisions.
 
@@ -70,4 +70,4 @@ pandoc "[Topic_Name]_Evidence_Summary_[Year].md" \
 - Frame findings in UK NHS context (MHRA, NICE TAs, UK registries)
 - Numbered in-text citations in square brackets: `[1]`, `[2, 3]`
 - DOIs must be copied verbatim from the YAML reference ledger — never reconstructed from memory
-- Target 15–30 high-quality references per summary
+- Target roughly 20–40 high-quality references per summary; do not pad narrow topics

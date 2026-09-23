@@ -60,7 +60,7 @@ This tool uses AI-assisted evidence synthesis to support clinical protocol revie
 
 Every review document is generated as an explicit draft with a "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) includes a "Reviewed and approved by" placeholder — the clinician fills this in after reviewing and approving the document. References are copied verbatim from the YAML reference ledger, which was verified against PubMed by the `evidence-search` agent.
 
-A local evaluation register (`reviews/evaluation_register.csv`, gitignored) logs each review's outcomes and recommendation counts for ongoing quality monitoring.
+An evaluation register in the researcher's workspace (`clinical-evidence-register.csv`) logs each review's outcomes and recommendation counts for ongoing quality monitoring.
 
 See [`CLAUDE.md`](CLAUDE.md) for the full AI use policy.
 

@@ -155,8 +155,8 @@ After the markdown and docx are done, generate the Zotero exports from the **sam
 validated ledger** using the shared export script — do not hand-write BibTeX:
 
 ```bash
-python ../../shared/scripts/ledger_to_exports.py <workspace>/.literature_search_ledger.yaml \
-  --prefix "[Topic_Name]" --outdir <workspace>
+python "[skill-path]/../../shared/scripts/ledger_to_exports.py" "<workspace>/.literature_search_ledger.yaml" \
+  --prefix "[Topic_Name]" --outdir "<workspace>"
 ```
 
 This writes `[Topic_Name]_References.bib` (one `@article` entry per peer-reviewed

@@ -4,6 +4,28 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0.1] - 2026-09-23
+
+### Changed
+
+- **Recommended model is now Claude Opus 5.5 at maximum effort.** The specific version is named in one place only (the plugin README); skills, agent, and maintainer docs refer to "the latest Claude Opus" so the next model bump is a one-line change. Added Claude Cowork setup notes (select the model in the app and enable extended thinking).
+- **`evidence-search` agent pinned to `model: opus`** (was `inherit`), so the search and reference verification can no longer silently run on a lighter model when the parent session is not Opus.
+- **Model identifier in disclaimers, ledger, and register** now records the self-reported model ID plus the configured tier (e.g. `claude-opus-5-5 (configured: opus, effort max)`), giving the audit trail a second anchor because models can misreport their own ID.
+- Trimmed over-emphatic prompt wording ("think deeply and extensively", "single most important instruction") that is redundant at maximum effort; the reasons behind each rule are kept.
+- Reference guidance relaxed for current models: ~20–40 references (was 15–30) and full text for up to ~15 key papers (was 5–10), still quality over quantity.
+
+### Fixed
+
+- **Evaluation register no longer lives inside the plugin install.** It was written to `reviews/evaluation_register.csv` in the skill directory, which is replaced on every plugin update, wiping the audit trail. It is now `<workspace>/clinical-evidence-register.csv`. If you have an old register, copy it out of the plugin cache before updating.
+- **Script and asset paths are anchored to the skill directory.** Commands such as `python ../../shared/scripts/validate_ledger.py` and `--reference-doc=assets/reference.docx` were relative to the skill directory but run from the researcher's workspace. Every command now uses a `[skill-path]` placeholder resolved to the skill's absolute base directory, with quoting for paths containing spaces.
+- `evidence-search` no longer falls back to a hard-coded `skill_version: "2.0.0"`; it writes `"unknown"` if the dispatcher did not pass a version.
+- Plugin README said "all three skills" share the agent — there are two.
+- Per-skill `CLAUDE.md` files carried "when working with code in this repository" boilerplate; they are now labelled as maintainer notes.
+
+### Compatibility
+
+- No workflow or ledger schema change. Ledger schema stays at `1.0`; existing ledgers remain valid.
+
 ## [2.0.0] - 2026-05-25
 
 ### Removed

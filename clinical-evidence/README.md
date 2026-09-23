@@ -13,7 +13,7 @@ Two skills that share one hidden, verified reference ledger:
 
 ### The `evidence-search` agent
 
-All three skills share a single subagent at [`agents/evidence-search.md`](./agents/evidence-search.md) that runs the actual PubMed + Scholar Gateway + guideline search work in isolated context. Researchers never interact with the agent directly — it's dispatched automatically by whichever skill needs a fresh ledger. Running the search inside an agent keeps the tool-heavy traffic (PubMed metadata calls, Scholar Gateway passages, full-text retrievals, reference verification) out of the main conversation, so downstream synthesis has a clean slate to work from.
+Both skills share a single subagent at [`agents/evidence-search.md`](./agents/evidence-search.md) that runs the actual PubMed + Scholar Gateway + guideline search work in isolated context. Researchers never interact with the agent directly — it's dispatched automatically by whichever skill needs a fresh ledger. Running the search inside an agent keeps the tool-heavy traffic (PubMed metadata calls, Scholar Gateway passages, full-text retrievals, reference verification) out of the main conversation, so downstream synthesis has a clean slate to work from.
 
 ## How it works in practice
 
@@ -43,6 +43,8 @@ Each skill has its own output set. No duplication between skills.
 | `research-summary` | `*_Evidence_Summary_*.md`, `*_Evidence_Summary_*.docx`, `*_References.bib`, `*_PMIDs.txt` |
 | `protocol-reviewer` | `*_Review_*.md`, `*_Review_*.docx`, `*_References.bib`, `*_PMIDs.txt` |
 
+`protocol-reviewer` also appends one row per review to `clinical-evidence-register.csv` in the workspace — the clinician's audit trail (MDT outcome, appraiser, and notes columns are left for you to fill in; the CSV reads straight into R).
+
 The hidden `.literature_search_ledger.yaml` is present in the workspace after any skill runs but is never listed as a user-facing output. The `evidence-search` agent produces only this hidden ledger — no user-facing files of its own.
 
 ## Installation
@@ -54,8 +56,10 @@ The hidden `.literature_search_ledger.yaml` is present in the workspace after an
 
 ## Requirements
 
-- [Claude Desktop](https://claude.ai/download) with MCP connector support
-- Recommended model: **Claude Opus 4.7**
+- [Claude Desktop](https://claude.ai/download) — Claude Cowork or Claude Code — with MCP connector support
+- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at maximum effort.** This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
+  - *Claude Code:* the skills pin `model: opus` + `effort: max` and the `evidence-search` agent pins `model: opus`, so the latest Opus is used automatically.
+  - *Claude Cowork:* the model is chosen in the app — select Opus 5.5 and enable extended thinking before running a skill.
 - MCP connectors enabled:
   - **PubMed** — literature search and article metadata
   - **Scholar Gateway** — semantic search
