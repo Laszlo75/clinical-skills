@@ -35,6 +35,17 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   the plugin version (from `[skill-path]/../../.claude-plugin/plugin.json`) and the
   output path. It returns a short summary when the ledger is written. If the agent
   reports a missing connector, explain in plain language what needs enabling.
+- **Several questions?** You may dispatch several `evidence-search` agents in parallel,
+  each with a cluster of questions and its own output file (e.g.
+  `<workspace>/.clinical-evidence/ledger_parts/part1.yaml`), then combine them:
+
+  ```bash
+  python "[skill-path]/../../shared/scripts/merge_ledgers.py" \
+    "<workspace>"/.clinical-evidence/ledger_parts/*.yaml \
+    --out "<workspace>/.literature_search_ledger.yaml"
+  ```
+
+  Merge before verification — it renumbers `ref_id`s.
 
 ## 2. Verify the references (whenever any reference lacks an `integrity` block)
 

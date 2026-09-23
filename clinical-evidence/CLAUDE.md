@@ -18,7 +18,8 @@ clinical-evidence/
 ├── CLAUDE.md                      # this file
 ├── agents/
 │   ├── evidence-search.md         # runs the PubMed/Scholar/guideline search, writes the ledger
-│   └── reference-checker.md       # independent second reading of every reference (identifiers only)
+│   ├── reference-checker.md       # independent second reading of every reference (identifiers only)
+│   └── second-reviewer.md         # challenges each protocol-review judgement against its evidence
 ├── shared/                        # contract layer, owned by no single skill
 │   ├── references/
 │   │   ├── ledger_schema.md         # SINGLE SOURCE OF TRUTH for the ledger format
@@ -29,6 +30,8 @@ clinical-evidence/
 │       ├── verify_references.py     # cross-checks ledger vs second reading, excludes failures
 │       ├── validate_ledger.py       # executable validator (run by every consumer)
 │       ├── format_references.py     # Vancouver reference list from the ledger
+│       ├── merge_ledgers.py         # combines partial ledgers from parallel searches
+│       ├── review_tables.py         # protocol review: consistency checks, evidence table, traceability, register
 │       └── ledger_to_exports.py     # writes .bib + PMID exports from the ledger
 └── skills/
     ├── research-summary/          # search + narrative evidence summary (user-facing search entry point)
@@ -64,7 +67,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.1.1**.
+Current release: **2.2.0**.
 
 **Semver policy:**
 

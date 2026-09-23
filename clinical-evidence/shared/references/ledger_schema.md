@@ -1,7 +1,7 @@
 # Reference ledger — internal schema
 
-**Schema version:** `1.1`
-**Status:** Stable. 1.1 adds optional verification fields; 1.0 ledgers remain valid.
+**Schema version:** `1.2`
+**Status:** Stable. 1.1 added optional verification fields, 1.2 optional question and appraisal fields; 1.0 and 1.1 ledgers remain valid.
 **Audience:** The `evidence-search` agent (producer) and any skill that consumes its evidence (`research-summary`, `protocol-reviewer`, future consumers). **Not** a user-facing document — researchers never see this file or the ledger it describes.
 
 This document is the **single source of truth** for the internal reference ledger format. The ledger is an internal artifact, not one of the consumers' user-facing outputs.
@@ -93,7 +93,7 @@ Two sections are optional and may be omitted if empty:
 
 ```yaml
 metadata:
-  ledger_schema_version: "1.1"        # REQUIRED — semver of this schema
+  ledger_schema_version: "1.2"        # REQUIRED — semver of this schema
   topic: "CMV prophylaxis in SOT"     # REQUIRED — the clinical topic searched
   search_date: "2026-04-10"           # REQUIRED — ISO 8601 YYYY-MM-DD
   skill_version: "1.0.0"              # REQUIRED — producer version (since clinical-evidence v1.0.0, this is the plugin version)
@@ -202,6 +202,39 @@ excluded_references:                  # optional; references that failed verific
 
 Producers never write these fields. The validator warns when a 1.1 ledger has a reference without `integrity`, and errors if an excluded `ref_id` is still present in `references`.
 
+## Question and appraisal fields (schema 1.2, all optional)
+
+Written by the producer when the dispatching skill supplies review questions (protocol
+review always does):
+
+```yaml
+metadata:
+  questions:                          # the review questions agreed with the clinician
+    - {id: Q1, text: "What rituximab dose is recommended for ABOi desensitisation?"}
+
+guidelines:
+  - # … as above …
+    questions: [Q1]                   # question ids this guideline informs
+    key_recommendations:
+      - text: "…"
+        grade: {system: "BTS", code: "1C", display: "BTS Grade 1C"}
+        source_quote: "…verbatim text as published…"   # lets a reviewer check doses at source
+        section: "4.2 Desensitisation"
+        accessed: "2026-09-23"
+
+references:
+  - # … as above …
+    questions: [Q1, Q3]
+    study_design: "Systematic review and meta-analysis"
+    population: "Adult ABOi kidney transplant recipients"
+    sample_size: 1426                 # integer, or null
+    certainty: "moderate"             # high | moderate | low | very low (GRADE-style)
+```
+
+Parallel searches each write a partial ledger; `shared/scripts/merge_ledgers.py` combines
+them (de-duplicating on PMID/DOI, unioning `questions`, renumbering `ref_id`s) before
+verification.
+
 ## Validation
 
 Every producer and consumer must run `shared/scripts/validate_ledger.py` against the ledger:
@@ -220,6 +253,10 @@ Prose validation in SKILL.md files should defer to this script — a consumer's 
 ---
 
 ## Change log
+
+### 1.2 (2026-09-23)
+- Optional `metadata.questions`; `questions`, `study_design`, `population`, `sample_size`, `certainty` on references; `questions` on guidelines; `source_quote`, `section`, `accessed` on guideline recommendations.
+- Backward compatible: 1.0 and 1.1 ledgers validate unchanged.
 
 ### 1.1 (2026-09-23)
 - Added optional `integrity` block per reference, top-level `excluded_references`, and `metadata.verification` — written by the independent verification step, never by the producer.

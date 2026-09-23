@@ -4,6 +4,37 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.2.0] - 2026-09-23
+
+### Added
+
+- **Question-driven protocol review.** `protocol-reviewer` now:
+  1. maps the protocol into actionable statements (drug, dose, threshold, timing, procedure, monitoring);
+  2. derives PICO-style review questions from them;
+  3. confirms scope and questions with the clinician at a single checkpoint before searching.
+  Each statement then gets a structured judgement: verdict, recommendation, cited evidence, grade, confidence, and safety/commissioning flags.
+- **`second-reviewer` agent.** An independent reviewer that works in a fresh context. It challenges every judgement against the evidence it cites, and checks doses against the BNF/SmPC. Each disagreement must be resolved in writing and is shown in the review.
+- **Evidence table and traceability matrix.** `shared/scripts/review_tables.py` checks the working files for consistency, then writes:
+  - `*_Evidence_Table.csv` + `.xlsx`: one row per cited source, with design, population, size, certainty, key finding and the judgements that cite it;
+  - `*_Traceability.csv`: statement → question → evidence → verdict → second review;
+  - a Markdown matrix for the review's new Appendix A;
+  - the evaluation register row, with counts computed rather than typed.
+- **Parallel searches.** `shared/scripts/merge_ledgers.py` combines partial ledgers from several `evidence-search` agents. It de-duplicates on PMID/DOI, unions each entry's questions and renumbers ref_ids.
+- **Ledger schema 1.2**, additive and optional:
+  - `metadata.questions`;
+  - on references: `questions`, `study_design`, `population`, `sample_size` and `certainty`;
+  - on guideline recommendations: `source_quote`, `section` and `accessed`. The verbatim source quote lets a reviewer check a dose where it was published.
+- Register column `second_review_disagreements`. Existing registers are migrated in place, with new columns appended.
+
+### Fixed
+
+- `verify_references.py --apply` no longer lowers a newer 1.x `ledger_schema_version` to "1.1".
+
+### Compatibility
+
+- 1.0 and 1.1 ledgers remain valid. `research-summary` is unchanged in behaviour; it moves onto the same question-driven pipeline in a later release.
+- `openpyxl` is optional. Without it, the CSVs are still written.
+
 ## [2.1.1] - 2026-09-23
 
 ### Fixed

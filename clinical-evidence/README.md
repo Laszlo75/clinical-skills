@@ -1,6 +1,6 @@
 # clinical-evidence
 
-A Claude Code plugin for clinical evidence synthesis and protocol review. Bundles two co-designed skills and two shared agents that work together invisibly to produce verified reference ledgers, narrative evidence summaries, and protocol review documents for a UK NHS clinical audience.
+A Claude Code plugin for clinical evidence synthesis and protocol review. Bundles two co-designed skills and three agents that work together invisibly to produce verified reference ledgers, narrative evidence summaries, and protocol review documents for a UK NHS clinical audience.
 
 ## What's inside
 
@@ -43,7 +43,7 @@ Each skill has its own output set. No duplication between skills.
 | Skill | User-facing files |
 | --- | --- |
 | `research-summary` | `*_Evidence_Summary_*.md`, `*_Evidence_Summary_*.docx`, `*_References.bib`, `*_PMIDs.txt` |
-| `protocol-reviewer` | `*_Review_*.md`, `*_Review_*.docx`, `*_References.bib`, `*_PMIDs.txt` |
+| `protocol-reviewer` | `*_Review_*.md`, `*_Review_*.docx`, `*_Evidence_Table.xlsx` (+ `.csv`), `*_Traceability.csv`, `*_References.bib`, `*_PMIDs.txt` |
 
 `protocol-reviewer` also appends one row per review to `clinical-evidence-register.csv` in the workspace — the clinician's audit trail (MDT outcome, appraiser, and notes columns are left for you to fill in; the CSV reads straight into R).
 
@@ -87,6 +87,7 @@ Each skill has its own README and `CLAUDE.md` inside its folder:
 - [`skills/protocol-reviewer/CLAUDE.md`](./skills/protocol-reviewer/CLAUDE.md)
 - [`agents/evidence-search.md`](./agents/evidence-search.md) — the shared search agent
 - [`agents/reference-checker.md`](./agents/reference-checker.md) — the independent second reading used for verification
+- [`agents/second-reviewer.md`](./agents/second-reviewer.md) — challenges each protocol-review judgement against its evidence
 - [`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md) — the ledger contract
 - [`shared/references/consumer_integration.md`](./shared/references/consumer_integration.md) — how a consumer plugs in
 

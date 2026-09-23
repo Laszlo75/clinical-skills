@@ -24,7 +24,7 @@ def frontmatter(path):
 
 def test_expected_components_present():
     assert {p.parent.name for p in SKILLS} == {"research-summary", "protocol-reviewer"}
-    assert {p.stem for p in AGENTS} == {"evidence-search", "reference-checker"}
+    assert {p.stem for p in AGENTS} == {"evidence-search", "reference-checker", "second-reviewer"}
 
 
 @pytest.mark.parametrize("path", SKILLS, ids=lambda p: p.parent.name)

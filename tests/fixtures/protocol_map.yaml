@@ -1,0 +1,13 @@
+protocol:
+  title: "ABO Incompatible Renal Transplantation Protocol"
+  version: "v3"
+  date: "2009-05"
+  institution: "Example NHS Trust"
+  domain: "renal transplantation"
+  population: "adult living-donor kidney recipients"
+questions:
+  - {id: Q1, text: "What rituximab dose is recommended for ABOi desensitisation?"}
+  - {id: Q2, text: "What isoagglutinin titre target should be reached before transplantation?"}
+statements:
+  - {id: S1, section: "3.2 Rituximab", text: "Rituximab 375 mg/m2 four weeks pre-transplant", kind: dose, questions: [Q1]}
+  - {id: S2, section: "3.3 Antibody removal", text: "Target IgG titre ≤1:16 on day of transplant", kind: threshold, questions: [Q2]}

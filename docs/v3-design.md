@@ -1,6 +1,6 @@
 # clinical-evidence v3 — review findings and workflow design
 
-> **Status (2026-09-23):** Phase 0 shipped as v2.0.1. Phase 1 shipped as v2.1.0, with two changes to the design below, made on the maintainer's feedback:
+> **Status (2026-09-23):** Phase 0 shipped as v2.0.1, Phase 1 as v2.1.0 (+ 2.1.1 loader fix), Phase 2 (question-driven protocol review, second reviewer, evidence table, traceability matrix) as v2.2.0. Phase 1 made two changes to the design below, on the maintainer's feedback:
 > - **Verification uses the PubMed MCP connector, not direct E-utilities/Crossref calls.** A `reference-checker` agent makes an independent second reading and `verify_references.py` compares the two readings tolerantly.
 > - **pandoc and citeproc are dropped as dependencies.** Claude Desktop/Cowork create `.docx` natively, the model numbers citations, and `format_references.py` generates the reference list.
 >

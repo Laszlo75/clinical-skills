@@ -1,0 +1,21 @@
+- id: J1
+  statement: S1
+  question: Q1
+  verdict: minor_update
+  recommendation: "Consider a single 200 mg dose; evidence suggests non-inferiority."
+  evidence: [2]
+  confidence: moderate
+  safety: false
+  commissioning: false
+  second_review: {status: agree, note: "", resolution: ""}
+- id: J2
+  statement: S2
+  question: Q2
+  verdict: major_update
+  recommendation: "Lower the target titre to ≤1:8 IgG at transplantation."
+  evidence: [1, 3]
+  grade: "BTS Grade 1C"
+  confidence: high
+  safety: true
+  commissioning: false
+  second_review: {status: disagree, note: "Registry data only; grade from BTS.", resolution: "Kept: BTS 1C recommendation is the primary basis; registry is supportive."}

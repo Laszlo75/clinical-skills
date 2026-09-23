@@ -47,3 +47,17 @@ def test_future_major_rejected(workspace):
     data = yaml.safe_load((workspace / "ledger_a.yaml").read_text())
     data["metadata"]["ledger_schema_version"] = "2.0"
     assert vl.validate_ledger(write(workspace, data)) == 1
+
+
+def test_schema_1_2_review_ledger_valid():
+    from conftest import FIXTURES
+    assert vl.validate_ledger(FIXTURES / "review_ledger.yaml") == 0
+
+
+def test_bad_certainty_and_questions(workspace):
+    from conftest import FIXTURES
+    data = yaml.safe_load((FIXTURES / "review_ledger.yaml").read_text())
+    data["references"][0]["certainty"] = "probably fine"
+    data["references"][1]["questions"] = "Q1"
+    data["guidelines"][0]["key_recommendations"][0]["accessed"] = "last week"
+    assert vl.validate_ledger(write(workspace, data)) == 1
