@@ -75,3 +75,15 @@ def test_compare_missing_doi_is_review():
 def test_compare_retraction_fails():
     b = dict(base(), publication_types=["Journal Article", "Retracted Publication"])
     assert rm.compare(base(), b)["fields"]["retraction"] == rm.FAIL
+
+
+def test_identity_only_second_reading():
+    a = base()
+    ok = rm.compare(a, {"pmid": "1", "doi": "10.1/X"})
+    assert ok["status"] == rm.PASS and "title" not in ok["fields"]
+    wrong_paper = rm.compare(a, {"pmid": "1", "doi": "10.9/other"})
+    assert wrong_paper["status"] == rm.FAIL
+    no_doi = rm.compare(a, {"pmid": "1", "doi": None})
+    assert no_doi["status"] == rm.REVIEW
+    retracted = rm.compare(dict(a, title="[Retracted] A trial"), {"pmid": "1", "doi": "10.1/x"})
+    assert retracted["status"] == rm.FAIL

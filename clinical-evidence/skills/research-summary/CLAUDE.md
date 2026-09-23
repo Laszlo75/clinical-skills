@@ -25,8 +25,8 @@ skill's triggers in 2.0.0.
 - **Shared evidence procedure.** Discovery, independent verification, validation,
   reference formatting and exports are defined once in
   `../../shared/references/consumer_integration.md`; this skill follows it.
-- **Verification before citation.** `reference-checker` re-reads every PMID from PubMed
-  given identifiers only; `verify_references.py` cross-checks tolerantly and moves
+- **Verification before citation.** The skill checks every PMID/DOI pair with a PubMed ID
+  conversion (tiny payloads, no extra agent); `verify_references.py` compares and moves
   failures to `excluded_references`. `format_references.py` builds the list, so
   reference text is never retyped.
 - **Native .docx.** Claude Desktop / Cowork create Word files directly; pandoc is an
@@ -36,7 +36,7 @@ skill's triggers in 2.0.0.
 
 ## AI use policy (ISO 42001)
 
-- **System:** the latest Claude Opus at maximum effort (version named in the plugin
+- **System:** the latest Claude Opus at high effort (searches on Sonnet, in parallel) (version named in the plugin
   README), via Claude Cowork or Claude Code.
 - **Intended use:** narrative synthesis of clinical evidence; it does not make clinical
   decisions.

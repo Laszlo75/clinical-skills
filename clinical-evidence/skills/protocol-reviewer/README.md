@@ -61,7 +61,7 @@ This skill ships as part of the **clinical-evidence** plugin in the [clinical-sk
 
 This tool uses AI-assisted evidence synthesis to support clinical protocol review. AI outputs are advisory only and must be critically appraised by a consultant-level clinician before informing protocol changes. The AI system is Claude (Anthropic), accessed via Claude Cowork or Claude Code.
 
-Every review document is generated as an explicit draft with a "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) includes a "Reviewed and approved by" placeholder — the clinician fills this in after reviewing and approving the document. Reference metadata comes from PubMed via the `evidence-search` agent and is independently re-read by the `reference-checker` agent and cross-checked before anything is cited; references that fail the check are excluded.
+Every review document is generated as an explicit draft with a "DRAFT — NOT FOR CLINICAL USE" callout. The transparency disclaimer (section 6) includes a "Reviewed and approved by" placeholder — the clinician fills this in after reviewing and approving the document. Reference metadata comes from PubMed via the `evidence-search` agents. Reference identifiers are checked independently against PubMed (PMID ↔ DOI pairing) before anything is cited; references that fail the check are excluded.
 
 An evaluation register in the researcher's workspace (`clinical-evidence-register.csv`) logs each review's outcomes and recommendation counts for ongoing quality monitoring.
 

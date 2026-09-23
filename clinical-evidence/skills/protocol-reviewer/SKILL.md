@@ -1,7 +1,7 @@
 ---
 name: protocol-reviewer
 model: opus
-effort: max
+effort: high
 description: >
   Review and update clinical protocols against current evidence and national guidelines.
   Automatically picks up recent evidence from the workspace or triggers a fresh literature
@@ -26,8 +26,10 @@ The reader is a consultant-level clinician. Write at peer level: precise, direct
 over-hedging. Where evidence is weak or conflicting, say so plainly; where the protocol is
 already right, say that too.
 
-Run on the latest Claude Opus at maximum effort (see the plugin README for the current
-model; in Claude Cowork, choose it in the app and enable extended thinking).
+Run on the latest Claude Opus at high effort (see the plugin README for the current
+model; in Claude Cowork, choose it in the app). The lead works economically: bulky
+reading (abstracts, full texts, guideline pages) happens inside the search agents, which
+run in parallel; this conversation sees only their short summaries.
 
 ## Paths
 
@@ -52,11 +54,10 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
 
 3. **Get a verified evidence base.** Follow
    [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md).
-   Pass the confirmed questions (ids and text) to `evidence-search` so it tags each
-   source with the questions it answers and records study design, population, size and
-   certainty. For more than ~4 questions, dispatch several agents in parallel, each with a
-   cluster of questions and its own output file, then combine them with
-   `merge_ledgers.py` before verification.
+   Split the confirmed questions into 2–4 clusters and dispatch one `evidence-search`
+   agent per cluster in parallel; each tags its sources with the questions they answer
+   and records study design, population, size and certainty. Merge, then check the
+   references' identifiers (a quick PubMed ID conversion — no extra agent).
 
 4. **Judge each statement.** Write `judgements.yaml`: for each statement (and any
    important omission, as `new_addition`), a verdict —
@@ -73,9 +74,11 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    grade (`grade.display` verbatim), confidence (high/moderate/low), and flags for patient
    safety and commissioning impact. Weigh conflicting sources explicitly.
 
-5. **Second review.** Dispatch the `second-reviewer` agent with the paths to the map,
-   the judgements and the ledger, and `.clinical-evidence/second_review.yaml` as its
-   output. For every `disagree` or `unsupported`, either revise the judgement or keep it
+5. **Second review — where it changes practice.** Dispatch the `second-reviewer`
+   agent with the paths to the map, the judgements and the ledger, the list of judgement
+   ids to review — every `major_update`, `new_addition` and `remove`, plus anything
+   flagged for safety — and `.clinical-evidence/second_review.yaml` as its output.
+   Aligned and minor items are not sent; skip the step entirely if there are none. For every `disagree` or `unsupported`, either revise the judgement or keep it
    and write why; record this in each judgement's `second_review` (status, note,
    resolution). Add judgements for any `missing` issues it raises that you agree with.
 
@@ -88,7 +91,7 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
      --judgements "<workspace>/.clinical-evidence/judgements.yaml" \
      --prefix "[Protocol_Name]" --outdir "<workspace>" \
      --register "<workspace>/clinical-evidence-register.csv" \
-     --model-id "<model id (configured: opus, effort max)>" --skill-version "<plugin version>"
+     --model-id "<model id (configured: opus, effort high)>" --skill-version "<plugin version>"
    ```
 
    It refuses to build if anything is inconsistent — an uncovered statement, a citation
@@ -98,11 +101,10 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    row (never kept in the skill directory, which is replaced on plugin updates).
 
 7. **Write the review** following
-   [`references/document_template.md`](references/document_template.md): `.md` source
-   plus `.docx` in the house style (A4, Arial, navy headings, title page, header/footer),
-   made with the environment's Word-document capability — or pandoc with
-   `[skill-path]/assets/reference.docx` if that's what's available. Build the reference
-   list with `format_references.py`; run `ledger_to_exports.py` for `.bib` + PMIDs.
+   [`references/document_template.md`](references/document_template.md) as Markdown,
+   then convert it with `md_to_docx.py` (house style from `assets/reference.docx`, no
+   tokens spent; see the shared procedure). Build the reference list with
+   `format_references.py`; run `ledger_to_exports.py` for `.bib` + PMIDs.
 
 8. **Hand over:** counts per verdict, the most important and any safety-flagged changes,
    second-review disagreements you kept, references excluded during checking, and the
@@ -119,7 +121,7 @@ python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start <stage
 python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
 ```
 
-Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search`, `verify` (reference-checker + verification), `judge`, `second_review`, `tables`, `document`. For stages that dispatch an agent, pass the token usage the
+Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search` (all parallel agents + merge), `verify`, `judge`, `second_review`, `tables`, `document`. For stages that dispatch an agent, pass the token usage the
 agent reports on completion as `--tokens` when you have it. Close with `end run`, then run
 `run_log.py "<workspace>" summary` and include its output at the end of the hand-over
 message. The script never fails a run; if it warns, carry on.
@@ -143,12 +145,13 @@ message. The script never fails a run; if it warns, carry on.
 
 Plugin version (`[skill-path]/../../.claude-plugin/plugin.json`); model identifier as
 you understand it plus configured tier, e.g. `claude-opus-5-5 (configured: opus, effort
-max)`; search date (`metadata.search_date`); review date (today); verification
+high)`; search date (`metadata.search_date`); review date (today); verification
 (`metadata.verification`); second review (number of judgements challenged / revised).
 
 ## If something is missing
 
-- No Word-document capability and no pandoc: deliver the `.md` and say how to convert it.
+- `md_to_docx.py` exits 3 (no pandoc even after install): build the `.docx` with the
+  environment's Word-document capability; if there is none, deliver the `.md`.
 - PyYAML missing: ask the researcher to `pip install pyyaml`. openpyxl missing: the CSVs
   are still written; mention `pip install openpyxl` for the `.xlsx`.
 - PubMed connector missing and no ledger: explain the search tools need enabling first.

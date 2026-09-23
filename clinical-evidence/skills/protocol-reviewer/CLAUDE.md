@@ -37,8 +37,8 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
   inconsistent (uncovered statement, excluded/unknown citation, unresolved disagreement),
   then writes the evidence table, traceability matrix and register row — counts are
   computed, not typed.
-- **Verification before citation.** `reference-checker` re-reads every PMID from PubMed
-  given identifiers only; `verify_references.py` cross-checks tolerantly and moves
+- **Verification before citation.** The skill checks every PMID/DOI pair with a PubMed ID
+  conversion (tiny payloads, no extra agent); `verify_references.py` compares and moves
   failures to `excluded_references`. `format_references.py` builds the list, so
   reference text is never retyped.
 - **Native .docx.** Claude Desktop / Cowork create Word files directly; pandoc is an
@@ -50,7 +50,7 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
 
 ## AI use policy (ISO 42001)
 
-- **System:** the latest Claude Opus at maximum effort (version named in the plugin
+- **System:** the latest Claude Opus at high effort (searches on Sonnet, in parallel) (version named in the plugin
   README), via Claude Cowork or Claude Code.
 - **Intended use:** evidence synthesis to support protocol review; it does not make
   clinical decisions.

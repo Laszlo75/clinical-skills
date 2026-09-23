@@ -164,8 +164,10 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
             elif ref_id not in index:
                 errors.append(f"{jid}: cites ref_id {ref_id}, which is not in the ledger")
         sr = j.get("second_review")
+        practice_changing = verdict in {"major_update", "new_addition", "remove"} or j.get("safety")
         if not sr:
-            warnings.append(f"{jid}: not second-reviewed")
+            if practice_changing:
+                warnings.append(f"{jid}: practice-changing but not second-reviewed")
         elif sr.get("status") not in SECOND_REVIEW:
             errors.append(f"{jid}: second_review.status must be one of {sorted(SECOND_REVIEW)}")
         elif sr["status"] != "agree" and not _s(sr.get("resolution")):

@@ -76,7 +76,8 @@ ongoing trials (NCT number, phase, size, expected completion).
 > PubMed and Scholar Gateway searches. The AI system was used for literature retrieval and
 > structured analysis; clinical judgement and final recommendations remain the
 > responsibility of the reviewing clinician and the approving MDT. Reference metadata was
-> retrieved from PubMed and independently re-read and cross-checked before citation.*
+> retrieved from PubMed and its identifiers independently checked
+> against PubMed before citation.*
 >
 > **Reviewed and approved by:** ______________________ *(name, title, and institution)*
 >
