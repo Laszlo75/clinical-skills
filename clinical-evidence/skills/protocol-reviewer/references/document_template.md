@@ -80,7 +80,8 @@ rests with the MDT.
 ```
 
 Quote only grades confirmed in the guideline's own text (the build refuses others);
-ungraded guidance is cited without a grade. Grades read naturally in the prose — "(BTS Grade 1C)", "(KDIGO 2C)" — not field names
+ungraded guidance is cited without a grade but keeps the guideline's strength wording
+("NICE recommends offering …" vs "… suggests considering …"). Grades read naturally in the prose — "(BTS Grade 1C)", "(KDIGO 2C)" — not field names
 such as "grade display:". Keep doses, thresholds and durations specific where a guideline
 gives them; "per unit protocol" is only acceptable when no guideline or evidence
 specifies a value, and then say so.

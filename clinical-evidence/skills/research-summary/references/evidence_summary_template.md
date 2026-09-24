@@ -36,7 +36,8 @@ study types prioritised, number of references included, and how references were 
 recommendations with the grade inline, e.g. "BTS recommends a target titre ≤1:8 at
 transplantation (BTS Grade 1C) [2]". Give the edition and say if a guideline is past its
 review date. A grade that could not be confirmed in the guideline's text is left out
-("grade not confirmed"); ungraded guidance (e.g. NICE) is quoted without one.
+("grade not confirmed"); ungraded guidance (e.g. NICE) is quoted without one but keeps its strength wording
+("offer" vs "consider").
 
 **3. Recent Evidence** — one subsection per clinical sub-question; synthesise across
 papers with citations rather than listing them one by one.

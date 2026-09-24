@@ -114,7 +114,8 @@ so rather than guessing at its structure.
   "(BTS Grade 1C)") only when the validator did not flag it as "not found in the quoted
   source text"; otherwise give the recommendation without a grade and say the grade
   could not be confirmed. For `ungraded` recommendations, name the body without a grade
-  ("NICE recommends …"). Mention a guideline whose `currency.status` is not `current`
+  and keep its own strength wording from `source_quote` — NICE's "offer" (strong) vs
+  "consider" (weaker), "must" vs "should". Mention a guideline whose `currency.status` is not `current`
   (e.g. past its review date) where you rely on it.
 - `references[].key_finding` is the quickest way to map evidence to your sections; open
   the full record when you need detail.

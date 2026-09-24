@@ -65,7 +65,10 @@ The grade is what the review quotes inline, so it must be the guideline's own:
   printed with it**. When the grade appears elsewhere (a margin, a table, the line
   below), put that verbatim text in `grade.quote`.
 - If the guideline does not grade the recommendation (NICE, most consensus statements,
-  the Green Book), record `code: ungraded`, `display: "ungraded"`. Never borrow a grade
+  the Green Book), record `code: ungraded`, `display: "ungraded"`, and make sure the
+  `source_quote` keeps its strength wording ("offer" / "consider", "must" / "should").
+  A label the guideline prints for ungraded statements, such as KDIGO's "Not Graded" or
+  a "Good practice point", is copied as the code like any other grade. Never borrow a grade
   from another guideline, a review article or memory.
 - A script checks that each grade code appears in the quoted text; a grade that doesn't
   cannot be quoted in the review.
