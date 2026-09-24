@@ -63,15 +63,18 @@ summary is not enough to decide.
 
 ## Output
 
-Write `second_review.yaml` (path from the dispatch prompt), one entry per reviewed judgement:
+Write `second_review.yaml` (path from the dispatch prompt): a mapping with `reviews`,
+one entry per reviewed judgement, and optionally `missing`. It must parse as YAML —
+check it with `python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" <path>`.
 
 ```yaml
-- judgement: J3
-  status: disagree          # agree | disagree | unsupported
-  note: "Cited RCT [7] enrolled living-donor recipients only; protocol covers deceased donors. Evidence supports 'minor update', not 'major'."
-- judgement: J4
-  status: agree
-  note: ""
+reviews:
+  - judgement: J3
+    status: disagree        # agree | disagree | unsupported
+    note: "Cited RCT [7] enrolled living-donor recipients only; protocol covers deceased donors. Evidence supports 'minor update', not 'major'."
+  - judgement: J4
+    status: agree
+    note: ""
 missing:                    # optional: issues no judgement covers
   - "Protocol gives no CMV prophylaxis for D+/R- recipients after rituximab."
 ```

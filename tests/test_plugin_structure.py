@@ -91,3 +91,15 @@ def test_agent_frontmatter_values(path):
     assert fm.get("model") in {"inherit", "sonnet", "opus", "haiku", "fable"}
     assert fm.get("color") in {"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"}
     assert "<example>" in fm["description"], "agent descriptions need an <example> block"
+
+
+YAML_BLOCK = re.compile(r"```yaml\n(.*?)```", re.S)
+
+
+@pytest.mark.parametrize("path", DOCS + [PLUGIN / "shared" / "references" / "ledger_schema.md"],
+                         ids=lambda p: str(p.relative_to(PLUGIN)))
+def test_yaml_examples_parse(path):
+    """Agents copy these examples literally; an invalid one produces invalid output
+    (2.5.0: the second reviewer's list-plus-`missing:` example could not be parsed)."""
+    for block in YAML_BLOCK.findall(path.read_text(encoding="utf-8")):
+        yaml.safe_load(block)

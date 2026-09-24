@@ -4,6 +4,13 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.5.1] - 2026-09-24
+
+### Fixed
+
+- **Second-review output format.** The example gave a YAML list followed by a top-level `missing:` key, which is not valid YAML, and the reviewer copied it. The format is now a mapping (`reviews:` plus `missing:`), and the reviewer checks that its file parses. A new test parses every YAML example in the prompts and reference docs.
+- **Working files in the researcher's folder.** In Cowork the lead used the sandbox home (`/home/claude/.clinical-evidence`) as the workspace. The run log, register and reusable search were written where the researcher can't see them and lost after the session. `<workspace>` is now defined as the researcher's selected folder, never the shell's home directory.
+
 ## [2.5.0] - 2026-09-24
 
 ### Added

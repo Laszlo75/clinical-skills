@@ -43,7 +43,11 @@ run in parallel; this conversation sees only their short summaries.
 - Guideline cache (kept between runs and plugin updates):
   `${CLAUDE_PLUGIN_DATA}/guideline_cache`. If that still reads as a placeholder, use
   `~/.clinical-evidence/guideline_cache`.
-- `<workspace>` is the researcher's folder; commands run from there, so quote paths.
+- `<workspace>` is the researcher's own folder — the one they selected or shared, where
+  their protocol is and where the outputs are saved. In Cowork this is a mounted folder,
+  **not** the shell's home or starting directory (e.g. not `/home/claude`): working
+  files written there are invisible to the researcher and lost after the session. Use
+  its absolute path and quote it.
 
 The commands below and in the shared reference files use these two folders. If the two
 folders above still read as placeholders rather than real paths, use the absolute path
