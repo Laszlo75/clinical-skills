@@ -55,7 +55,7 @@ def test_manifests_agree():
 
 def test_agent_models():
     models = {p.stem: (frontmatter(p).get("model"), frontmatter(p).get("effort")) for p in AGENTS}
-    assert models["guideline-search"] == ("opus", "medium")   # guidelines are the backbone
+    assert models["guideline-search"] == ("opus", "high")     # guidelines are the backbone
     assert models["evidence-search"][0] == "sonnet"
     for model, effort in models.values():
         assert effort in (None, "low", "medium", "high", "xhigh", "max")

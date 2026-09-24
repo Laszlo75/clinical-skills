@@ -59,8 +59,8 @@ The hidden `.literature_search_ledger.yaml` is present in the workspace after an
 ## Requirements
 
 - [Claude Desktop](https://claude.ai/download) — Claude Cowork or Claude Code — with MCP connector support
-- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at high effort** for the skills; the guideline agent runs on Opus at medium effort and the literature agents on Claude Sonnet. This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
-  - *Claude Code:* the skills pin `model: opus` + `effort: high`, the `guideline-search` agent pins `model: opus` + `effort: medium` (guidelines are the backbone of every review), the `evidence-search` agent pins `model: sonnet` (literature retrieval and tagging) and the `second-reviewer` agent pins `model: opus`.
+- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at high effort** for the skills; the guideline agent runs on Opus at high effort and the literature agents on Claude Sonnet. This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
+  - *Claude Code:* the skills pin `model: opus` + `effort: high`, the `guideline-search` agent pins `model: opus` + `effort: high` (guidelines are the backbone of every review), the `evidence-search` agent pins `model: sonnet` (literature retrieval and tagging) and the `second-reviewer` agent pins `model: opus`.
   - *Claude Cowork:* the model is chosen in the app — select Opus 5.5 and enable extended thinking before running a skill.
 - MCP connectors enabled:
   - **PubMed** — literature search and article metadata

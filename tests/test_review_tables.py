@@ -117,6 +117,15 @@ def test_second_review_warning_only_for_practice_changing(review, monkeypatch, c
     assert "J2: practice-changing but not second-reviewed" in out and "J1:" not in out
 
 
+def test_low_confidence_aligned_should_be_second_reviewed(review, monkeypatch, capsys):
+    ledger, pmap, judgements = load(review)
+    judgements[0].pop("second_review")
+    judgements[0].update(verdict="aligned", confidence="low")
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    assert "J1: aligned with low confidence but not second-reviewed" in capsys.readouterr().out
+
+
 def test_mdt_decision_traced_not_hidden(review, monkeypatch):
     ledger, pmap, judgements = load(review)
     judgements[1]["second_review"]["outcome"] = "mdt_decision"

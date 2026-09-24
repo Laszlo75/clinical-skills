@@ -53,7 +53,7 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
 
 ## AI use policy (ISO 42001)
 
-- **System:** the latest Claude Opus at high effort (guidelines on Opus at medium effort; literature searches on Sonnet; all in parallel) (version named in the plugin
+- **System:** the latest Claude Opus at high effort (guidelines on Opus at high effort; literature searches on Sonnet; all in parallel) (version named in the plugin
   README), via Claude Cowork or Claude Code.
 - **Intended use:** evidence synthesis to support protocol review; it does not make
   clinical decisions.

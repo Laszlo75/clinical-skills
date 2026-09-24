@@ -31,7 +31,8 @@ reads it. You did not write these judgements; don't give them the benefit of the
 A review packet (`review_packet.yaml`) holding exactly what you need:
 
 - `judgements` — the draft judgements to review (normally only those that would change
-  practice, and anything flagged for patient safety), each with the protocol statement
+  practice, anything flagged for patient safety, and aligned judgements with low
+  confidence — for those, ask whether "retain" is really supported), each with the protocol statement
   it concerns: verdict, recommendation, cited `evidence` ref_ids, grade, confidence,
   and any MDT `options`;
 - `evidence` — every source those judgements cite: guidelines with recommendation

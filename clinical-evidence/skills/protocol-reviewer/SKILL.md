@@ -94,9 +94,11 @@ the researcher).
    consistent trends, observational data or expert opinion — ungraded, with the evidence cited, its certainty stated plainly and
    confidence set to match.
 
-5. **Second review — where it changes practice.** Review every `major_update`,
-   `new_addition` and `remove`, plus anything flagged for safety; aligned and minor items
-   are not sent, and the step is skipped if there are none. Build a compact packet —
+5. **Second review — where it changes practice or confidence is low.** Review every
+   `major_update`, `new_addition` and `remove`, anything flagged for safety, and every
+   `aligned` judgement with low confidence (an unchallenged "retain" on thin evidence is
+   where errors hide). Other aligned and minor items are not sent; skip the step if
+   nothing qualifies. Build a compact packet —
    just those judgements, their protocol statements and the evidence they cite — so the
    reviewer doesn't read the whole ledger:
 

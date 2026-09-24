@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Changed (accuracy)
 
+- **Guideline agents run at high effort** (Opus), up from medium. Guidelines are the backbone of every review.
+- **The second review also covers aligned judgements with low confidence.** An unchallenged "retain" on thin evidence is where the 2.4.0 errors hid (the pre-transplant infection interval, the blood-product exclusions). `review_tables.py` warns when one goes unreviewed.
+
 - **The second reviewer sees what was left out.** The review packet also includes `other_evidence`, every uncited ledger entry on the same review questions, so the reviewer can catch evidence that was overlooked or that contradicts a judgement. It also gets the ledger path for wider checks, and is told accuracy outweighs speed.
 - **"Aligned — clarify wording".** Right-but-loosely-worded practice stays aligned instead of counting as a minor update. The 2.5.0 run had 1 aligned against 20 minor updates, which mixed real changes with wording tidy-ups.
 - **Older UK guidance against newer guidance.** When a UK guideline predates different, newer guidance, both are shown with dates, e.g. NICE CG165 (2013) lamivudine against newer entecavir/tenofovir advice. The second reviewer checks for this.

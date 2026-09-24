@@ -189,9 +189,12 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
                 (errors if strict_grades else warnings).append(msg)
         sr = j.get("second_review")
         practice_changing = verdict in {"major_update", "new_addition", "remove"} or j.get("safety")
+        low_aligned = verdict == "aligned" and j.get("confidence") == "low"
         if not sr:
             if practice_changing:
                 warnings.append(f"{jid}: practice-changing but not second-reviewed")
+            elif low_aligned:
+                warnings.append(f"{jid}: aligned with low confidence but not second-reviewed")
         elif sr.get("status") not in SECOND_REVIEW:
             errors.append(f"{jid}: second_review.status must be one of {sorted(SECOND_REVIEW)}")
         elif sr["status"] != "agree":
