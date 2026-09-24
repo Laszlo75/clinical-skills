@@ -135,7 +135,8 @@ ongoing trials (NCT number, phase, size, expected completion).
 >
 > *AI system metadata: clinical-evidence v[plugin version] · [model identifier] · PubMed MCP
 > · Scholar Gateway · Search date [YYYY-MM-DD] · Review date [YYYY-MM-DD] · Verification:
-> [metadata.verification] · Second review: [n] judgements challenged, [m] revised, [k] for
+> [metadata.verification] · Guidelines: [r] read, [c] reused (checked since
+> [oldest cached_on]) · Second review: [n] judgements challenged, [m] revised, [k] for
 > MDT decision ·
 > [github.com/Laszlo75/clinical-skills](https://github.com/Laszlo75/clinical-skills)*
 

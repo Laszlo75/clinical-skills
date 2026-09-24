@@ -81,6 +81,24 @@ The grade is what the review quotes inline, so it must be the guideline's own:
 - A script checks that each grade code appears in the quoted text; a grade that doesn't
   cannot be quoted in the review.
 
+## Reuse the guideline cache
+
+Your dispatch may give a cache file: guidelines already read on this machine, each
+with `cached_on` (when its document was last read) and the recommendations extracted
+so far, with quotes and grades. For each guideline in your bodies:
+
+- **Cached within 30 days:** reuse the entry as it is — copy it into your ledger with
+  `cached_on` kept. Don't fetch the document.
+- **Cached 31–90 days ago:** check currency only (is there a newer edition, update or
+  withdrawal?) and update `currency.checked_on`. Keep `cached_on` if the edition is
+  unchanged; if a newer edition exists, read that one instead.
+- **Either way, if the current questions or protocol statements need a recommendation
+  the entry doesn't have,** read the document for it, add it, and remove `cached_on`
+  (you have now read the document in this run).
+- Not in the cache: search and read as usual.
+
+Keep only the cached recommendations that bear on the current questions.
+
 ## Work economically
 
 - Fetch each guideline document once and extract everything you need from it in that
@@ -145,7 +163,7 @@ Rules the validator enforces: `grade` is a mapping with `system`, `code`, `displ
 
 ```text
 Guidelines written to <path>
-Guidelines: <N> (<bodies>) | recommendations: <M> | graded: <g>, ungraded: <u>
+Guidelines: <N> (<bodies>) | read this run: <r>, reused from cache: <c> | recommendations: <M> | graded: <g>, ungraded: <u>
 Not current: <guideline — status>, or "none"
 Not retrievable: <guideline>, or "none"
 Outside my bodies, worth checking: <guideline>, or "none"

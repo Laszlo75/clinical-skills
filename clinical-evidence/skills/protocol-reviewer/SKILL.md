@@ -36,6 +36,9 @@ run in parallel; this conversation sees only their short summaries.
 - This plugin's folder: `${CLAUDE_PLUGIN_ROOT}` — shared scripts in
   `${CLAUDE_PLUGIN_ROOT}/shared/scripts/`.
 - This skill's folder: `${CLAUDE_SKILL_DIR}` — templates and assets.
+- Guideline cache (kept between runs and plugin updates):
+  `${CLAUDE_PLUGIN_DATA}/guideline_cache`. If that still reads as a placeholder, use
+  `~/.clinical-evidence/guideline_cache`.
 - `<workspace>` is the researcher's folder; commands run from there, so quote paths.
 
 The commands below and in the shared reference files use these two folders. If the two
@@ -172,8 +175,8 @@ message. The script never fails a run; if it warns, carry on.
 Plugin version (`${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`); model identifier as
 you understand it plus configured tier, e.g. `claude-opus-5-5 (configured: opus, effort
 high)`; search date (`metadata.search_date`); review date (today); verification
-(`metadata.verification`); second review (judgements challenged / revised / for MDT
-decision).
+(`metadata.verification`); guidelines (read this run / reused from the cache, oldest
+`cached_on`); second review (judgements challenged / revised / for MDT decision).
 
 ## If something is missing
 

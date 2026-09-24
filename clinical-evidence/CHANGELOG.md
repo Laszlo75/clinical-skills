@@ -4,6 +4,21 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.5.0] - 2026-09-24
+
+### Added
+
+- **Guideline cache.** Checked guidelines are kept in the plugin's persistent data folder (`${CLAUDE_PLUGIN_DATA}/guideline_cache`), which survives plugin updates, and reused across runs. `shared/scripts/guideline_cache.py` provides `get`, `put`, `list` and `clear`.
+  - The skill loads the cache before the search and stores the checked guidelines after verification.
+  - The guideline agents:
+    - reuse an entry checked within 30 days without fetching the document;
+    - re-check only currency for entries 31–90 days old;
+    - read the document again only when the current questions need a recommendation the entry lacks.
+  - Recommendations accumulate across topics. Reusing an entry never refreshes its `cached_on` date (the date its document was last read), so age reflects the last real reading.
+  - The disclaimer states how many guidelines were read in the run and how many were reused, with the oldest check date.
+  - Asking for a fresh guideline check bypasses the cache.
+- Ledger schema 1.3 gains optional `cached_on` on guidelines (backward compatible).
+
 ## [2.4.2] - 2026-09-24
 
 Ideas adopted from Anthropic's `plugin-dev` plugin.

@@ -40,6 +40,9 @@ run in parallel; this conversation sees only their short summaries.
 - This plugin's folder: `${CLAUDE_PLUGIN_ROOT}` — shared scripts in
   `${CLAUDE_PLUGIN_ROOT}/shared/scripts/`.
 - This skill's folder: `${CLAUDE_SKILL_DIR}` — templates and assets.
+- Guideline cache (kept between runs and plugin updates):
+  `${CLAUDE_PLUGIN_DATA}/guideline_cache`. If that still reads as a placeholder, use
+  `~/.clinical-evidence/guideline_cache`.
 - `<workspace>` is the researcher's folder; commands run from there, so quote paths.
 
 The commands below and in the shared reference files use these two folders. If the two
@@ -111,7 +114,9 @@ message. The script never fails a run; if it warns, carry on.
 - model identifier — the model you are running on as you understand it plus the
   configured tier, e.g. `claude-opus-5-5 (configured: opus, effort high)`;
 - search date — `metadata.search_date`; document date — today (ISO 8601);
-- verification — `metadata.verification` (independent second reading, date).
+- verification — `metadata.verification` (independent second reading, date);
+- guidelines — number read in this run and number reused from the cache, with the
+  oldest `cached_on` date.
 
 ## If something is missing
 
