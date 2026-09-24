@@ -4,6 +4,13 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.5.3] - 2026-09-24
+
+### Fixed (accuracy)
+
+- **A real paper excluded as unverifiable.** In the 2.5.1 test run, one reference was excluded "because PubMed holds no DOI for it". A PMID without a DOI should be checked on PMID alone (`review`), not excluded. The lead had recorded it as `not_found`. The shared procedure now spells out the difference, and a PMID is only recorded as `not_found` after a confirming `get_article_metadata` call.
+- **"Aligned — clarify wording" over-used.** 18 items used it, several of them real practice changes: adding DSA testing and biopsy to the AMR pathway, extending the ACE inhibitor rule to ARBs, adding calcium checks. The test is now explicit: clinicians would do exactly the same thing after the edit. Anything that adds a test, drug, step, monitoring or threshold is at least a minor update.
+
 ## [2.5.2] - 2026-09-24
 
 ### Fixed

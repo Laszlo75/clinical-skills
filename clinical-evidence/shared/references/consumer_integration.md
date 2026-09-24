@@ -96,6 +96,11 @@ catches it cheaply:
    ```
 
    Use only the conversion output — not the ledger — so the check stays independent.
+   A PMID that PubMed returns **without a DOI** (common for older papers) is
+   `{pmid: "…", doi: null}` — that is a normal result, checked on PMID alone, and never
+   `not_found`. Use `not_found: true` only when PubMed says the identifier doesn't
+   exist; before recording that for a PMID, confirm it with one
+   `get_article_metadata` call, because a `not_found` PMID is excluded from the review.
 2. Run:
 
    ```bash

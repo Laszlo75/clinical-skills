@@ -80,7 +80,7 @@ the researcher).
 
    | Verdict | Meaning |
    |---|---|
-   | aligned | Matches current guidelines and evidence — including when only the wording needs clarifying (say so in the recommendation: "Aligned — clarify wording: …") |
+   | aligned | Matches current guidelines and evidence — including when only the wording needs clarifying and clinicians would do exactly the same thing after the edit ("Aligned — clarify wording: …"); anything that adds a test, drug, step or monitoring is at least a minor update |
    | minor_update | Approach sound; wording, dose or detail needs adjusting |
    | major_update | Guidelines or evidence now support materially different practice |
    | new_addition | Not covered, but should be |
