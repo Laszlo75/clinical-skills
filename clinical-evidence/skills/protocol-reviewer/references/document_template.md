@@ -71,6 +71,13 @@ when there is nothing to report. The recommendation must match the assessment: "
 means no change — if anything should change, even optionally, it is at least a minor
 update.
 
+Every recommendation, "Retain" included, gives its reason in a sentence — never a bare
+"Retain [6]". Cite evidence for what it actually shows: if it bears on the statement
+only indirectly (e.g. infection risk after desensitisation, cited for a pre-transplant
+infection interval), say so; if no guideline or study addresses the specific value
+(e.g. "60 days"), say it rests on expert opinion. A citation must never imply more
+support than it gives.
+
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add
 a "second reviewer" paragraph to the section.

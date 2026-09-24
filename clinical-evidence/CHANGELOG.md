@@ -19,6 +19,7 @@ The 2.4.0 test run gave the strongest review so far, but the search took 15 min,
 - **Second review split** between two parallel reviewers when more than about eight items are sent.
 - **Citation style:** one bracket per citation point, numbers ascending, runs collapsed (`[2, 22–25]`).
 - **Self-contained protocol positions.** Every subsection, aligned items included, states what the protocol says in terms a reader understands without the heading. "Retain" now means no change; anything else is at least a minor update.
+- **Reasoned recommendations.** Every recommendation gives its reason, "Retain" included. Indirect evidence is labelled as indirect, and a value no source addresses is stated as expert opinion (a 2.4.0 item read "Retain [6]", citing post-desensitisation infection data for a pre-transplant infection interval).
 - **Grades stay with the recommendation that carries them.** A grade is never attached to a statement of what a guideline does not cover.
 
 ## [2.4.0] - 2026-09-24
