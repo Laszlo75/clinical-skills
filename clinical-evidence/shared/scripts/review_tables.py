@@ -189,9 +189,12 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
                 (errors if strict_grades else warnings).append(msg)
         sr = j.get("second_review")
         practice_changing = verdict in {"major_update", "new_addition", "remove"} or j.get("safety")
+        low_aligned = verdict == "aligned" and j.get("confidence") == "low"
         if not sr:
             if practice_changing:
                 warnings.append(f"{jid}: practice-changing but not second-reviewed")
+            elif low_aligned:
+                warnings.append(f"{jid}: aligned with low confidence but not second-reviewed")
         elif sr.get("status") not in SECOND_REVIEW:
             errors.append(f"{jid}: second_review.status must be one of {sorted(SECOND_REVIEW)}")
         elif sr["status"] != "agree":
@@ -312,14 +315,18 @@ def _write_xlsx(path: Path, sheets: list[tuple[str, list[str], list[dict]]]) -> 
 
 
 def _markdown(trace: list[dict]) -> str:
-    cols = ["judgement", "section", "statement", "question_id", "verdict", "evidence_citations",
+    # For the review's appendix: readers navigate by protocol section, so judgement ids
+    # (J1, J2 …) stay in the CSV/xlsx and working files, not in the document.
+    cols = ["section", "statement", "question_id", "verdict", "evidence_citations",
             "grade", "second_review"]
-    head = ["#", "Section", "Protocol statement", "Q", "Assessment", "Evidence", "Grade", "2nd review"]
+    head = ["Protocol section", "Protocol statement", "Q", "Assessment", "Evidence", "Grade",
+            "2nd review"]
     shown = {"": "", "agree": "agreed", "revised": "revised", "kept": "kept (reasoned)",
              "mdt_decision": "for MDT decision"}
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for r in trace:
-        r = {**r, "second_review": shown.get(r["outcome"] or r["second_review"], r["second_review"])}
+        r = {**r, "second_review": shown.get(r["outcome"] or r["second_review"], r["second_review"]),
+             "statement": r["statement"] or "Not in protocol (new addition)"}
         lines.append("| " + " | ".join(_s(r[c]).replace("|", "/").replace("\n", " ") for c in cols) + " |")
     return "\n".join(lines) + "\n"
 

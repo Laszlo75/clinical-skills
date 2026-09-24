@@ -26,20 +26,27 @@ hospital protocol with current guidelines and evidence and drafted one judgement
 protocol statement. Your job is to catch what they got wrong before a consultant MDT
 reads it. You did not write these judgements; don't give them the benefit of the doubt.
 
-## Inputs (paths are in your dispatch prompt)
+## Input (path in your dispatch prompt)
 
-- `protocol_map.yaml` — the protocol's statements (what the protocol currently says)
-  and the review questions.
-- `judgements.yaml` — the draft judgements: verdict, recommendation, cited `evidence`
-  ref_ids, grade, confidence.
-- the verified evidence ledger — guidelines (with recommendation text, grade, and where
-  available a verbatim `source_quote`) and references (with `key_finding`, PMID, DOI).
+A review packet (`review_packet.yaml`) holding exactly what you need:
 
-Your dispatch prompt lists **which judgements to review** — normally only those that would
-change practice (major updates, new additions, removals) and anything flagged for patient
-safety. Review just those; aligned and minor items are left to the clinician's own read,
-which keeps this step quick. Read abstracts or guideline pages only where the ledger
-summary is not enough to decide.
+- `judgements` — the draft judgements to review (normally only those that would change
+  practice, anything flagged for patient safety, and aligned judgements with low
+  confidence — for those, ask whether "retain" is really supported), each with the protocol statement
+  it concerns: verdict, recommendation, cited `evidence` ref_ids, grade, confidence,
+  and any MDT `options`;
+- `evidence` — every source those judgements cite: guidelines with recommendation
+  text, grade and verbatim `source_quote`; papers with identifiers, design,
+  population, size, certainty and `key_finding`;
+- `other_evidence` — every other source on the same review questions that the
+  judgements do **not** cite. Check it: evidence that was overlooked, or that
+  contradicts a judgement, is exactly what a second reviewer is for;
+- `questions` — the review questions they answer.
+
+Work from the packet; the full ledger path is in your dispatch if you need to look
+wider. Read an abstract or a guideline page whenever the packet is not enough to decide
+— accuracy matters more than speed. Aligned and minor items are left to the
+clinician's own read.
 
 ## For each judgement, ask
 
@@ -58,20 +65,26 @@ summary is not enough to decide.
 4. **Doses and thresholds.** For every recommended drug dose, check it against the BNF
    or the MHRA SmPC (web search) and flag unit, frequency or renal/hepatic adjustment
    problems.
-5. **Anything missing?** A safety-relevant issue in the protocol that no judgement
-   addresses.
+5. **Anything overlooked?** Evidence in `other_evidence` that should change a judgement,
+   and any safety-relevant issue in the protocol that no judgement addresses.
+6. **Is the guidance current?** Where a judgement rests on an older UK guideline and
+   newer guidance (UK or international) says something different, is the conflict
+   shown?
 
 ## Output
 
-Write `second_review.yaml` (path from the dispatch prompt), one entry per reviewed judgement:
+Write `second_review.yaml` (path from the dispatch prompt): a mapping with `reviews`,
+one entry per reviewed judgement, and optionally `missing`. It must parse as YAML —
+check it with `python -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" <path>`.
 
 ```yaml
-- judgement: J3
-  status: disagree          # agree | disagree | unsupported
-  note: "Cited RCT [7] enrolled living-donor recipients only; protocol covers deceased donors. Evidence supports 'minor update', not 'major'."
-- judgement: J4
-  status: agree
-  note: ""
+reviews:
+  - judgement: J3
+    status: disagree        # agree | disagree | unsupported
+    note: "Cited RCT [7] enrolled living-donor recipients only; protocol covers deceased donors. Evidence supports 'minor update', not 'major'."
+  - judgement: J4
+    status: agree
+    note: ""
 missing:                    # optional: issues no judgement covers
   - "Protocol gives no CMV prophylaxis for D+/R- recipients after rituximab."
 ```

@@ -43,7 +43,11 @@ run in parallel; this conversation sees only their short summaries.
 - Guideline cache (kept between runs and plugin updates):
   `${CLAUDE_PLUGIN_DATA}/guideline_cache`. If that still reads as a placeholder, use
   `~/.clinical-evidence/guideline_cache`.
-- `<workspace>` is the researcher's folder; commands run from there, so quote paths.
+- `<workspace>` is the researcher's own folder — the one they selected or shared, where
+  their protocol is and where the outputs are saved. In Cowork this is a mounted folder,
+  **not** the shell's home or starting directory (e.g. not `/home/claude`): working
+  files written there are invisible to the researcher and lost after the session. Use
+  its absolute path and quote it.
 
 The commands below and in the shared reference files use these two folders. If the two
 folders above still read as placeholders rather than real paths, use the absolute path
@@ -84,10 +88,13 @@ so the researcher can see where time and tokens go and compare plugin versions:
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start run --skill research-summary
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start <stage>
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" agent <name> --stage <stage> --seconds S --tokens N
 ```
 
-Stages, in order: `search` (all parallel agents + merge), `verify`, `document` (writing the summary, `.docx` and exports). For stages that dispatch an agent, pass the token usage the
-agent reports on completion as `--tokens` when you have it. Close with `end run`, then run
+Stages, in order: `search` (all parallel agents + merge), `verify`, `document` (writing the summary, `.docx` and exports). As each dispatched agent finishes, log it with `agent`
+— a short name (e.g. `guidelines-uk`, `literature-2`, `reviewer-1`), its stage, and the
+duration and tokens it reports on completion — so the summary shows which parallel
+agent set the pace. The stage's tokens are then the sum of its agents'. Close with `end run`, then run
 `run_log.py "<workspace>" summary` and include its output at the end of the hand-over
 message. The script never fails a run; if it warns, carry on.
 

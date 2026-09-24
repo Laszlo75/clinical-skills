@@ -42,7 +42,7 @@ classification scheme.
 **3. Section-by-Section Review** — one subsection per protocol section, in protocol order:
 
 ```markdown
-## 3.1 [Section title from protocol]
+## 3.1 [Plain-English topic, e.g. "Rituximab dose"]
 
 **Current protocol position:** [what the protocol says, self-contained — a reader who
 has not seen the protocol must understand it without the heading, e.g. "Patients who
@@ -57,6 +57,7 @@ a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
 
 **Assessment:** [Aligned | Minor update | Major update | New addition | Remove]
 · Confidence: [high | moderate | low] · [⚠ Patient safety] · [£ Commissioning]
+(an aligned item that only needs clearer wording reads "Aligned — clarify wording")
 
 **Recommendation:** [clear and actionable, with its basis — a guideline grade where one
 exists ("Update target titre to ≤1:8 IgG (BTS Grade 1C; supported by [4, 7]).");
@@ -68,8 +69,15 @@ opinion; no guideline or trial addresses this [5].")]
 Every subsection has a plain-English heading naming the topic and a **Current protocol
 position**, aligned items included; the guideline and evidence lines may be left out
 when there is nothing to report. The recommendation must match the assessment: "Retain"
-means no change — if anything should change, even optionally, it is at least a minor
-update.
+means no change — if the practice should change, even optionally, it is at least a
+minor update. Practice that is right but loosely worded stays **Aligned**, with the
+recommendation starting "Aligned — clarify wording: …", so the MDT can tell real
+changes from tidy-ups.
+
+When a UK guideline is older than newer guidance (UK or international) that says
+something different — e.g. NICE CG165 (2013) recommends lamivudine for HBV prophylaxis,
+where newer guidance prefers entecavir or tenofovir — present both, with dates and
+grades, and say which is newer. Don't quote the older one alone because it is UK.
 
 Every recommendation, "Retain" included, gives its reason in a sentence — never a bare
 "Retain [6]". Cite evidence for what it actually shows: if it bears on the statement
@@ -83,6 +91,11 @@ clear safety evidence behind them; a single study or first-principles reasoning 
 "consider" or "clarify". When current practice is right in most cases and wrong only in
 some (e.g. donor-group plasma, which BSH supports except for bidirectional A↔B
 mismatch), name the case that differs rather than calling the practice unsafe.
+
+No internal identifiers in the document: judgement ids (J1, J2 …) and statement ids
+(S1 …) stay in the working files and the traceability spreadsheet. The reader
+navigates by section number (3.1, 3.2 …) and the review questions (Q1 …) listed in the
+Methodology.
 
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add
@@ -109,13 +122,13 @@ such as "grade display:". Keep doses, thresholds and durations specific where a 
 gives them; "per unit protocol" is only acceptable when no guideline or evidence
 specifies a value, and then say so.
 
-**4. Summary of Recommendations** — table, one row per judgement (J-numbers match the
-traceability matrix); safety-flagged rows first. For MDT-decision items, the key
-recommendation cell reads "MDT decision: [A] vs [B]". Keep cells short and whole — no
-truncation marks:
+**4. Summary of Recommendations** — table, one row per recommendation; safety-flagged
+rows first. "Section" is this document's section number (e.g. 3.23), so each row points
+to its full discussion. For MDT-decision items, the key recommendation cell reads "MDT
+decision: [A] vs [B]". Keep cells short and whole — no truncation marks:
 
-| # | Section | Topic | Assessment | Key recommendation |
-|---|---------|-------|------------|--------------------|
+| Section | Topic | Assessment | Key recommendation |
+|---------|-------|------------|--------------------|
 
 **5. Additional Considerations** — topics the protocol omits but current guidelines or
 evidence require (e.g. registry reporting, consent, service standards), commissioning or

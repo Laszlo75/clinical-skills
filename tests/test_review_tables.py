@@ -45,7 +45,7 @@ def test_happy_path_outputs(review, monkeypatch):
     assert evidence[1]["cited_in"] == "J1" and evidence[1]["verification"] == "pass"
     assert "BTS Grade 1C" in evidence[0]["key_finding"]
     md = (review / ".clinical-evidence" / "traceability.md").read_text()
-    assert md.startswith("| # | Section") and "J2" in md
+    assert md.startswith("| Protocol section | Protocol statement") and "J1" not in md and "J2" not in md
 
 
 def test_xlsx_written_when_openpyxl_available(review, monkeypatch):
@@ -115,6 +115,15 @@ def test_second_review_warning_only_for_practice_changing(review, monkeypatch, c
     assert run(review, monkeypatch) == 0
     out = capsys.readouterr().out
     assert "J2: practice-changing but not second-reviewed" in out and "J1:" not in out
+
+
+def test_low_confidence_aligned_should_be_second_reviewed(review, monkeypatch, capsys):
+    ledger, pmap, judgements = load(review)
+    judgements[0].pop("second_review")
+    judgements[0].update(verdict="aligned", confidence="low")
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    assert "J1: aligned with low confidence but not second-reviewed" in capsys.readouterr().out
 
 
 def test_mdt_decision_traced_not_hidden(review, monkeypatch):

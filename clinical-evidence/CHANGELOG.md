@@ -4,6 +4,31 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.5.1] - 2026-09-24
+
+### Added
+
+- **Per-agent timing.** `run_log.py agent <name> --stage <stage> --seconds S --tokens N` records each dispatched agent's own duration and tokens. The summary lists them under their stage, slowest first, so it shows which parallel agent set the pace. The 2.5.0 search took 12:39 against a 6–8 minute estimate, and the stage total couldn't show why.
+- **Compact second-review packet.** `shared/scripts/review_packet.py` gives the second reviewer only the judgements to review, their protocol statements and the evidence they cite, instead of the whole ledger. In 2.5.0 two parallel reviewers each read the full ledger: second-review tokens rose 54% and the time barely moved.
+
+### Changed (readability)
+
+- **No judgement ids in the document.** J1, J2 … stay in the working files and the traceability spreadsheet. The document uses plain topic headings and section numbers; the summary table's first column is the section number, and the appendix matrix starts with the protocol section.
+
+### Changed (accuracy)
+
+- **Guideline agents run at high effort** (Opus), up from medium. Guidelines are the backbone of every review.
+- **The second review also covers aligned judgements with low confidence.** An unchallenged "retain" on thin evidence is where the 2.4.0 errors hid (the pre-transplant infection interval, the blood-product exclusions). `review_tables.py` warns when one goes unreviewed.
+
+- **The second reviewer sees what was left out.** The review packet also includes `other_evidence`, every uncited ledger entry on the same review questions, so the reviewer can catch evidence that was overlooked or that contradicts a judgement. It also gets the ledger path for wider checks, and is told accuracy outweighs speed.
+- **"Aligned — clarify wording".** Right-but-loosely-worded practice stays aligned instead of counting as a minor update. The 2.5.0 run had 1 aligned against 20 minor updates, which mixed real changes with wording tidy-ups.
+- **Older UK guidance against newer guidance.** When a UK guideline predates different, newer guidance, both are shown with dates, e.g. NICE CG165 (2013) lamivudine against newer entecavir/tenofovir advice. The second reviewer checks for this.
+
+### Fixed
+
+- **Second-review output format.** The example gave a YAML list followed by a top-level `missing:` key, which is not valid YAML, and the reviewer copied it. The format is now a mapping (`reviews:` plus `missing:`), and the reviewer checks that its file parses. A new test parses every YAML example in the prompts and reference docs.
+- **Working files in the researcher's folder.** In Cowork the lead used the sandbox home (`/home/claude/.clinical-evidence`) as the workspace. The run log, register and reusable search were written where the researcher can't see them and lost after the session. `<workspace>` is now defined as the researcher's selected folder, never the shell's home directory.
+
 ## [2.5.0] - 2026-09-24
 
 ### Added

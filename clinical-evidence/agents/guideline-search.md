@@ -20,7 +20,7 @@ description: >-
   </commentary>
   </example>
 model: opus
-effort: medium
+effort: high
 color: green
 ---
 
@@ -117,7 +117,7 @@ metadata:
   topic: "ABO-incompatible kidney transplantation"
   search_date: "2026-09-24"
   skill_version: "<plugin version from the dispatch>"
-  model_id: "<session model id> (configured: opus, effort medium)"
+  model_id: "<session model id> (configured: opus, effort high)"
   mesh_terms: []
   guideline_bodies: ["BTS", "BSH", "NICE", "KDIGO"]
   questions:                            # as given in the dispatch

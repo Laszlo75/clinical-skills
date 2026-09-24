@@ -36,7 +36,7 @@ skill's triggers in 2.0.0.
 
 ## AI use policy (ISO 42001)
 
-- **System:** the latest Claude Opus at high effort (guidelines on Opus at medium effort; literature searches on Sonnet; all in parallel) (version named in the plugin
+- **System:** the latest Claude Opus at high effort (guidelines on Opus at high effort; literature searches on Sonnet; all in parallel) (version named in the plugin
   README), via Claude Cowork or Claude Code.
 - **Intended use:** narrative synthesis of clinical evidence; it does not make clinical
   decisions.

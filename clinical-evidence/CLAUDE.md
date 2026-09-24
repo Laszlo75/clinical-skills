@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working on the 
 
 ## What This Is
 
-A Claude Code plugin that bundles two co-designed clinical skills — `research-summary` and `protocol-reviewer` — plus three shared subagents: `guideline-search` (Opus, medium effort), which reads the current guideline documents and copies each recommendation and grade as printed; `evidence-search`, which does the PubMed/Scholar Gateway literature retrieval (several run in parallel, on Sonnet); and `second-reviewer`, which challenges practice-changing protocol-review judgements. The skills share a hidden YAML reference ledger produced by the agent. Together they take a clinical topic or an uploaded protocol and produce a draft evidence summary and/or a draft protocol review document, all framed in UK NHS context and carrying ISO 42001 transparency disclaimers. `research-summary` is the user-facing entry point for a literature search or evidence summary (it dispatches the agent and also writes Zotero exports); `protocol-reviewer` reviews an uploaded protocol against the same evidence.
+A Claude Code plugin that bundles two co-designed clinical skills — `research-summary` and `protocol-reviewer` — plus three shared subagents: `guideline-search` (Opus, high effort), which reads the current guideline documents and copies each recommendation and grade as printed; `evidence-search`, which does the PubMed/Scholar Gateway literature retrieval (several run in parallel, on Sonnet); and `second-reviewer`, which challenges practice-changing protocol-review judgements. The skills share a hidden YAML reference ledger produced by the agent. Together they take a clinical topic or an uploaded protocol and produce a draft evidence summary and/or a draft protocol review document, all framed in UK NHS context and carrying ISO 42001 transparency disclaimers. `research-summary` is the user-facing entry point for a literature search or evidence summary (it dispatches the agent and also writes Zotero exports); `protocol-reviewer` reviews an uploaded protocol against the same evidence.
 
 The plugin is the single distributable unit: the two skills and the agent are co-designed, share the hidden reference ledger and a plugin-level `shared/` contract directory, and are not intended to be installed independently.
 
@@ -33,6 +33,7 @@ clinical-evidence/
 │       ├── merge_ledgers.py         # combines partial ledgers from parallel searches
 │       ├── guideline_cache.py       # keeps checked guidelines between runs (plugin data folder)
 │       ├── review_tables.py         # protocol review: consistency checks, evidence table, traceability, register
+│       ├── review_packet.py         # compact packet for the second reviewer (judgements, cited + same-question evidence)
 │       ├── run_log.py               # per-stage timing (and agent token) log for benchmarking runs
 │       ├── md_to_docx.py            # Markdown → .docx via pandoc (installs pypandoc_binary if needed)
 │       └── ledger_to_exports.py     # writes .bib + PMID exports from the ledger
@@ -70,7 +71,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.5.0**.
+Current release: **2.5.1**.
 
 **Semver policy:**
 
@@ -117,7 +118,7 @@ Optional connectors (enhance search coverage):
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** the latest Claude Opus model (Anthropic) at high effort, with Opus at medium effort for the guideline agent and Claude Sonnet for the literature agents (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code in Claude Desktop.
+**System identity:** the latest Claude Opus model (Anthropic) at high effort, with Opus at high effort for the guideline agent and Claude Sonnet for the literature agents (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code in Claude Desktop.
 
 **Intended use:** AI-assisted literature search, evidence synthesis, and cross-referencing of clinical protocols against current guidelines. The plugin retrieves, structures, and summarises evidence; it does not make clinical decisions.
 
