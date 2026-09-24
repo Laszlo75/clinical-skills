@@ -44,7 +44,11 @@ classification scheme.
 ```markdown
 ## 3.1 [Section title from protocol]
 
-**Current protocol position:** [brief paraphrase]
+**Current protocol position:** [what the protocol says, self-contained — a reader who
+has not seen the protocol must understand it without the heading, e.g. "Patients who
+cannot receive blood products (medical or religious reasons, e.g. Jehovah's Witnesses),
+or who previously did not tolerate plasma exchange or anti-T/B-cell antibodies, are
+excluded." — not "These patients are excluded."]
 
 **National guideline position:** [what guidelines say, grade inline — e.g. "BTS recommends
 a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
@@ -60,6 +64,12 @@ otherwise the evidence it rests on ("Consider low-dose rituximab (200 mg): obser
 data suggest similar outcomes with fewer infections, low certainty [9, 12]." or "Expert
 opinion; no guideline or trial addresses this [5].")]
 ```
+
+Every subsection has a plain-English heading naming the topic and a **Current protocol
+position**, aligned items included; the guideline and evidence lines may be left out
+when there is nothing to report. The recommendation must match the assessment: "Retain"
+means no change — if anything should change, even optionally, it is at least a minor
+update.
 
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add

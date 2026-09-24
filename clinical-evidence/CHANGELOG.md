@@ -18,6 +18,7 @@ The 2.4.0 test run gave the strongest review so far, but the search took 15 min,
   Each agent names important guidelines from outside its own bodies rather than reading them. Every document is still read once, on Opus, so token use should be similar.
 - **Second review split** between two parallel reviewers when more than about eight items are sent.
 - **Citation style:** one bracket per citation point, numbers ascending, runs collapsed (`[2, 22–25]`).
+- **Self-contained protocol positions.** Every subsection, aligned items included, states what the protocol says in terms a reader understands without the heading. "Retain" now means no change; anything else is at least a minor update.
 - **Grades stay with the recommendation that carries them.** A grade is never attached to a statement of what a guideline does not cover.
 
 ## [2.4.0] - 2026-09-24
