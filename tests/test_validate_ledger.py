@@ -79,3 +79,12 @@ def test_schema_1_3_currency_and_grade_grounding(workspace, capsys):
     assert "not found in the quoted source text" not in capsys.readouterr().out
     g["currency"]["status"] = "old"
     assert vl.validate_ledger(write(workspace, data)) == 1
+
+
+def test_cached_on_date(workspace):
+    from conftest import FIXTURES
+    data = yaml.safe_load((FIXTURES / "review_ledger.yaml").read_text())
+    data["guidelines"][0]["cached_on"] = "2026-09-01"
+    assert vl.validate_ledger(write(workspace, data)) == 0
+    data["guidelines"][0]["cached_on"] = "last month"
+    assert vl.validate_ledger(write(workspace, data)) == 1

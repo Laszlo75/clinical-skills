@@ -4,8 +4,9 @@
 `research-summary` and `protocol-reviewer`). This is the one shared procedure; SKILL.md
 files point here instead of repeating it.
 
-**Paths.** `[skill-path]` is the consuming skill's absolute base directory, so the
-scripts live at `[skill-path]/../../shared/scripts/`. `<workspace>` is the researcher's
+**Paths.** `${CLAUDE_PLUGIN_ROOT}` is the plugin folder and `${CLAUDE_SKILL_DIR}` the
+consuming skill's folder — use the absolute paths the skill's Paths section gives for
+them (this file is not filled in automatically). `<workspace>` is the researcher's
 working folder. Shell commands run from the workspace, so always use absolute, quoted
 paths.
 
@@ -34,8 +35,17 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   in one line what search you are about to use and how old it is, so they can ask for a
   fresh one. If the topic clearly doesn't match the current task, or the search is old
   for a fast-moving field (roughly > 6 months), offer a fresh search instead.
-- **Absent (or the researcher wants a fresh one): search in parallel.** In **one
-  message**, so they run concurrently, dispatch:
+- **Absent (or the researcher wants a fresh one): search in parallel.** First load the
+  guideline cache — guidelines already read on this machine (skip this if the
+  researcher asks for a fresh guideline check):
+
+  ```bash
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/guideline_cache.py" get \
+    "<cache>" --out "<workspace>/.clinical-evidence/guideline_cache.yaml"
+  ```
+
+  `<cache>` is the plugin data folder's `guideline_cache` (the skill's Paths section
+  gives it). Then, in **one message**, so they run concurrently, dispatch:
   - `guideline-search` agents with **all** the questions and — for a protocol review —
     the protocol's concrete doses, thresholds and timings, so they pull the exact
     recommendations. Split the guideline bodies between 2–3 agents so no single agent
@@ -45,17 +55,18 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
        MHRA/SmPC, BSAC);
     3. international bodies (e.g. KDIGO, TTS, ASFA, ESOT, AST).
 
-    Name each agent's bodies in its dispatch. Output:
+    Name each agent's bodies in its dispatch, and give each the cache file path.
+    Output:
     `<workspace>/.clinical-evidence/ledger_parts/guidelines<N>.yaml`.
   - one `evidence-search` agent per cluster of related questions (2–4 clusters; one is
     fine for a single narrow question) for the primary literature. Output:
     `<workspace>/.clinical-evidence/ledger_parts/part<N>.yaml`.
 
   Give every agent the topic and population, its questions (ids and text) and the plugin
-  version (from `[skill-path]/../../.claude-plugin/plugin.json`). Then merge:
+  version (from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Then merge:
 
   ```bash
-  python "[skill-path]/../../shared/scripts/merge_ledgers.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/merge_ledgers.py" \
     "<workspace>"/.clinical-evidence/ledger_parts/*.yaml \
     --out "<workspace>/.literature_search_ledger.yaml"
   ```
@@ -87,7 +98,7 @@ catches it cheaply:
 2. Run:
 
    ```bash
-   python "[skill-path]/../../shared/scripts/verify_references.py" \
+   python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/verify_references.py" \
      "<workspace>/.literature_search_ledger.yaml" \
      --against "<workspace>/.clinical-evidence/refs_b.yaml" --apply
    ```
@@ -103,10 +114,17 @@ catches it cheaply:
 (`verify_references.py` also accepts a fuller second reading with titles, authors and
 years, compared tolerantly — useful for audits, not needed for routine runs.)
 
+After verification, store the checked guidelines for the next run:
+
+```bash
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/guideline_cache.py" put \
+  "<cache>" "<workspace>/.literature_search_ledger.yaml"
+```
+
 ## 3. Validate
 
 ```bash
-python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 Exit 0 → proceed (surface warnings only if clinically relevant). Exit 1 → explain the
@@ -123,7 +141,9 @@ so rather than guessing at its structure.
   could not be confirmed. For `ungraded` recommendations, name the body without a grade
   and keep its own strength wording from `source_quote` — NICE's "offer" (strong) vs
   "consider" (weaker), "must" vs "should". Mention a guideline whose `currency.status` is not `current`
-  (e.g. past its review date) where you rely on it.
+  (e.g. past its review date) where you rely on it. In the methods or disclaimer, say
+  how many guidelines were read in this run and how many were reused from an earlier
+  check (with the oldest `cached_on` date).
 - `references[].key_finding` is the quickest way to map evidence to your sections; open
   the full record when you need detail.
 - Cite only entries in `guidelines`, `references` and `preprints`. Never cite anything
@@ -131,7 +151,7 @@ so rather than guessing at its structure.
 - **Reference list:** decide your citation order, then run
 
   ```bash
-  python "[skill-path]/../../shared/scripts/format_references.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/format_references.py" \
     "<workspace>/.literature_search_ledger.yaml" --ids 5,2,9
   ```
 
@@ -140,8 +160,8 @@ so rather than guessing at its structure.
 - **Word document:** write the Markdown, then convert it without spending tokens:
 
   ```bash
-  python "[skill-path]/../../shared/scripts/md_to_docx.py" "<file>.md" "<file>.docx" \
-    --reference-doc "[skill-path]/assets/reference.docx" --install
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/md_to_docx.py" "<file>.md" "<file>.docx" \
+    --reference-doc "${CLAUDE_SKILL_DIR}/assets/reference.docx" --install
   ```
 
   Exit 3 means no pandoc could be found or installed — only then build the `.docx` with
@@ -149,7 +169,7 @@ so rather than guessing at its structure.
 - **Zotero exports:**
 
   ```bash
-  python "[skill-path]/../../shared/scripts/ledger_to_exports.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/ledger_to_exports.py" \
     "<workspace>/.literature_search_ledger.yaml" --prefix "<Name>" --outdir "<workspace>"
   ```
 

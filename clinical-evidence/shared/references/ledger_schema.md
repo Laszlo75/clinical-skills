@@ -259,6 +259,10 @@ guidelines:
         source_quote: "…verbatim recommendation text, with the grade where printed with it…"
 ```
 
+**Reuse from the guideline cache.** A guideline taken unread from the plugin's guideline
+cache (`shared/scripts/guideline_cache.py`) carries `cached_on: "YYYY-MM-DD"`, the date
+its document was last read. No `cached_on` means the agent read it in this run.
+
 **Grade provenance.** A grade counts as confirmed only if its `code` appears, as a whole
 token, in `source_quote` or `grade.quote` (`refmatch.grade_in_source`). The validator
 warns about every unconfirmed grade; consumers don't quote those, and `review_tables.py`
@@ -288,7 +292,7 @@ Prose validation in SKILL.md files should defer to this script — a consumer's 
 ## Change log
 
 ### 1.3 (2026-09-24)
-- Optional `edition`, `currency`, `pmid`, `doi` on guidelines; optional `grade.quote`; `code: ungraded` for recommendations a guideline doesn't grade.
+- Optional `edition`, `currency`, `pmid`, `doi`, `cached_on` on guidelines; optional `grade.quote`; `code: ungraded` for recommendations a guideline doesn't grade.
 - Validator warns when a grade code is not found in the quoted source text, and when a guideline is not current.
 - Backward compatible: 1.0–1.2 ledgers validate unchanged.
 

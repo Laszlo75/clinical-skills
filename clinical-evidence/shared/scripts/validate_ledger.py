@@ -207,6 +207,9 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
             issues.error(f"{base}.year", "must be an integer")
         _check_questions_field(g, base, issues)
         _check_optional_str(g, ("edition",), base, issues)
+        cached = g.get("cached_on")
+        if cached is not None and not (isinstance(cached, date) or ISO_DATE_RE.match(str(cached))):
+            issues.error(f"{base}.cached_on", f"not ISO 8601 YYYY-MM-DD: {cached!r}")
         cur = g.get("currency")
         if cur is not None:
             if not isinstance(cur, dict) or cur.get("status") not in ALLOWED_CURRENCY:

@@ -31,6 +31,7 @@ clinical-evidence/
 │       ├── validate_ledger.py       # executable validator (run by every consumer)
 │       ├── format_references.py     # Vancouver reference list from the ledger
 │       ├── merge_ledgers.py         # combines partial ledgers from parallel searches
+│       ├── guideline_cache.py       # keeps checked guidelines between runs (plugin data folder)
 │       ├── review_tables.py         # protocol review: consistency checks, evidence table, traceability, register
 │       ├── run_log.py               # per-stage timing (and agent token) log for benchmarking runs
 │       ├── md_to_docx.py            # Markdown → .docx via pandoc (installs pypandoc_binary if needed)
@@ -69,7 +70,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.4.1**.
+Current release: **2.5.0**.
 
 **Semver policy:**
 
@@ -83,10 +84,10 @@ Both skills write a `.md` source and a `.docx`. The `.docx` is made with the env
 
 ```bash
 pandoc "[Name]_[DocType]_[Year].md" -o "[Name]_[DocType]_[Year].docx" \
-  --reference-doc="[skill-path]/assets/reference.docx" --from=markdown+yaml_metadata_block
+  --reference-doc="${CLAUDE_SKILL_DIR}/assets/reference.docx" --from=markdown+yaml_metadata_block
 ```
 
-`[skill-path]` is the skill's absolute base directory: shell commands run from the researcher's workspace, so every script and asset path must be anchored to it.
+Paths use Claude Code's built-in variables, which are filled in inside SKILL.md: `${CLAUDE_PLUGIN_ROOT}` (the installed plugin folder) and `${CLAUDE_SKILL_DIR}` (the skill's folder). Shell commands run from the researcher's workspace, so every script and asset path is anchored to them. Files read with the Read tool, such as `shared/references/*.md`, are not filled in, so the skill's Paths section gives the absolute values.
 
 ## Prompt style
 
