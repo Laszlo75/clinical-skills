@@ -163,3 +163,15 @@ def test_grade_must_be_printed_in_cited_guideline(review, monkeypatch, capsys):
     assert run(review, monkeypatch) == 0
     ev = rows(review / "ABOi_Evidence_Table.csv")[0]
     assert ev["currency"] == "current" and "not confirmed" not in ev["key_finding"]
+
+
+def test_ungraded_recommendation_from_literature_allowed(review, monkeypatch):
+    """No guideline covers it: a recommendation resting on observational data or expert
+    opinion, with no grade, builds even under the strict 1.3 grade check."""
+    ledger, pmap, judgements = load(review)
+    ledger["metadata"]["ledger_schema_version"] = "1.3"
+    judgements[1].pop("grade")
+    judgements[1].update(evidence=[3], confidence="low")
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0

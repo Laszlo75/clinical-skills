@@ -74,8 +74,11 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
 
    — plus an actionable recommendation, the ledger `ref_id`s it rests on, the guideline
    grade (`grade.display` verbatim, only from a cited guideline whose grade the validator
-   confirmed in its source text), confidence (high/moderate/low), and flags for patient
-   safety and commissioning impact. Weigh conflicting sources explicitly.
+   confirmed in its source text; leave it empty when no guideline grades the point), confidence (high/moderate/low), and flags for patient
+   safety and commissioning impact. Weigh conflicting sources explicitly. Where no
+   guideline covers a point, still recommend on consistent trends, observational data or
+   expert opinion — ungraded, with the evidence cited, its certainty stated plainly and
+   confidence set to match.
 
 5. **Second review — where it changes practice.** Dispatch the `second-reviewer`
    agent with the paths to the map, the judgements and the ledger, the list of judgement

@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
   - reads the guideline documents themselves;
   - extracts the specific recommendations (doses, thresholds, timings);
   - copies each grade exactly as printed, with a verbatim quote. Ungraded guidance is recorded as `ungraded`, never given a borrowed grade.
-- **Grade provenance check.** A grade counts only if it appears in the guideline's quoted text (`refmatch.grade_in_source`).
+- **Grade provenance check.** A grade counts only if it appears in the guideline's quoted text (`refmatch.grade_in_source`). Recommendations with no guideline behind them (trends, observational data, expert opinion) stay allowed: they are written ungraded, with their evidence and certainty stated.
   - `validate_ledger.py` warns about unconfirmed grades and about guidelines that are not current.
   - Consumers don't quote unconfirmed grades.
   - `review_tables.py` refuses (for schema 1.3 ledgers) a judgement whose grade isn't a confirmed grade of a guideline it cites.

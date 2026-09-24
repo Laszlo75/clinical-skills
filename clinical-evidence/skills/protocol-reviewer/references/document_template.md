@@ -54,8 +54,11 @@ a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
 **Assessment:** [Aligned | Minor update | Major update | New addition | Remove]
 · Confidence: [high | moderate | low] · [⚠ Patient safety] · [£ Commissioning]
 
-**Recommendation:** [clear, actionable, graded — "Update target titre to ≤1:8 IgG
-(BTS Grade 1C; supported by [4, 7])."]
+**Recommendation:** [clear and actionable, with its basis — a guideline grade where one
+exists ("Update target titre to ≤1:8 IgG (BTS Grade 1C; supported by [4, 7]).");
+otherwise the evidence it rests on ("Consider low-dose rituximab (200 mg): observational
+data suggest similar outcomes with fewer infections, low certainty [9, 12]." or "Expert
+opinion; no guideline or trial addresses this [5].")]
 ```
 
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
