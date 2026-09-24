@@ -78,6 +78,12 @@ infection interval), say so; if no guideline or study addresses the specific val
 (e.g. "60 days"), say it rests on expert opinion. A citation must never imply more
 support than it gives.
 
+Match the strength of wording to the evidence. "Must" and "unsafe" need a guideline or
+clear safety evidence behind them; a single study or first-principles reasoning supports
+"consider" or "clarify". When current practice is right in most cases and wrong only in
+some (e.g. donor-group plasma, which BSH supports except for bidirectional A↔B
+mismatch), name the case that differs rather than calling the practice unsafe.
+
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add
 a "second reviewer" paragraph to the section.
