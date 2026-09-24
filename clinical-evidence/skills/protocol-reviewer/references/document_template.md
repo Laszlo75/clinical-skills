@@ -72,7 +72,11 @@ when there is nothing to report. The recommendation must match the assessment: "
 means no change — if the practice should change, even optionally, it is at least a
 minor update. Practice that is right but loosely worded stays **Aligned**, with the
 recommendation starting "Aligned — clarify wording: …", so the MDT can tell real
-changes from tidy-ups.
+changes from tidy-ups. The test: after the edit, would clinicians do exactly the same
+thing? Renaming a disease, naming the lab method already used, or updating contacts is
+wording. Adding a test, drug, step, monitoring, threshold or patient group (e.g. "add
+DSA testing and a biopsy", "extend to ARBs", "check calcium before each session") is a
+change — at least a minor update.
 
 When a UK guideline is older than newer guidance (UK or international) that says
 something different — e.g. NICE CG165 (2013) recommends lamivudine for HBV prophylaxis,
