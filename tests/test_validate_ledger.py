@@ -88,3 +88,17 @@ def test_cached_on_date(workspace):
     assert vl.validate_ledger(write(workspace, data)) == 0
     data["guidelines"][0]["cached_on"] = "last month"
     assert vl.validate_ledger(write(workspace, data)) == 1
+
+
+def test_unretrieved_guidelines(workspace, capsys):
+    from conftest import FIXTURES
+    data = yaml.safe_load((FIXTURES / "review_ledger.yaml").read_text())
+    data["metadata"]["unretrieved_guidelines"] = [
+        {"organisation": "BSH", "title": "FFP guideline", "year": 2018, "importance": "key"}]
+    data["guidelines"][0]["source_file"] = "bts_ait_2016.pdf"
+    assert vl.validate_ledger(write(workspace, data)) == 0
+    assert "key guideline not read: BSH 2018" in capsys.readouterr().out
+    data["metadata"]["unretrieved_guidelines"][0]["importance"] = "vital"
+    assert vl.validate_ledger(write(workspace, data)) == 1
+    data["metadata"]["unretrieved_guidelines"] = ["BSH FFP"]
+    assert vl.validate_ledger(write(workspace, data)) == 1

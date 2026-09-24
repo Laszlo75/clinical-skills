@@ -72,8 +72,10 @@ the researcher).
    with all the questions and the protocol's concrete doses, thresholds and timings
    (guidelines are the backbone of the review: they read the current guideline documents
    and copy each grade as printed), and one `evidence-search` agent per cluster of 2–4
-   question clusters for the literature. Merge, then check the references' identifiers (a quick PubMed ID
-   conversion — no extra agent).
+   question clusters for the literature. Merge. If a key guideline couldn't be read,
+   ask the researcher to supply it (see the shared procedure) — accuracy matters more
+   than finishing without them. Then check the references' identifiers (a quick PubMed
+   ID conversion — no extra agent).
 
 4. **Judge each statement.** Write `judgements.yaml`: for each statement (and any
    important omission, as `new_addition`), a verdict —
@@ -170,7 +172,7 @@ python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" end <stag
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" agent <name> --stage <stage> --seconds S --tokens N
 ```
 
-Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search` (all parallel agents + merge), `verify`, `judge`, `second_review`, `tables`, `document`. As each dispatched agent finishes, log it with `agent`
+Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search` (all parallel agents + merge), `guideline_help` (only if you asked for guideline files: waiting for them and reading them), `verify`, `judge`, `second_review`, `tables`, `document`. As each dispatched agent finishes, log it with `agent`
 — a short name (e.g. `guidelines-uk`, `literature-2`, `reviewer-1`), its stage, and the
 duration and tokens it reports on completion — so the summary shows which parallel
 agent set the pace. The stage's tokens are then the sum of its agents'. Close with `end run`, then run

@@ -65,7 +65,9 @@ of the folder holding this SKILL.md, and the plugin folder two levels above it.
    reuse the ledger, or run 1–2 `guideline-search` agents (split by guideline body)
    alongside one `evidence-search` agent per cluster of 2–3 sub-question clusters, in parallel,
    then merge; check the references' identifiers (a quick PubMed ID conversion) and
-   validate. Quote only guideline grades the validator confirmed in the source text.
+   validate. If a key guideline couldn't be read, ask the researcher to supply it (see
+   the shared procedure). Quote only guideline grades the validator confirmed in the
+   source text.
 
 3. **Write the summary** following
    [`references/evidence_summary_template.md`](references/evidence_summary_template.md)
@@ -92,7 +94,7 @@ python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" end <stag
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" agent <name> --stage <stage> --seconds S --tokens N
 ```
 
-Stages, in order: `search` (all parallel agents + merge), `verify`, `document` (writing the summary, `.docx` and exports). As each dispatched agent finishes, log it with `agent`
+Stages, in order: `search` (all parallel agents + merge), `guideline_help` (only if you asked for guideline files), `verify`, `document` (writing the summary, `.docx` and exports). As each dispatched agent finishes, log it with `agent`
 — a short name (e.g. `guidelines-uk`, `literature-2`, `reviewer-1`), its stage, and the
 duration and tokens it reports on completion — so the summary shows which parallel
 agent set the pace. The stage's tokens are then the sum of its agents'. Close with `end run`, then run

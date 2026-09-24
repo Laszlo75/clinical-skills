@@ -259,6 +259,14 @@ guidelines:
         source_quote: "…verbatim recommendation text, with the grade where printed with it…"
 ```
 
+**Guidelines that couldn't be read.** `metadata.unretrieved_guidelines` lists guideline
+documents the agent needed but couldn't read in full — each with `organisation`,
+`title`, optional `year`, `url`, `questions`, `reason` and `importance` (`key` when no
+other current guideline covers those questions, else `supporting`). The skill asks the
+researcher to supply key ones; a guideline read from a supplied file carries
+`source_file` (the file name). `merge_ledgers.py` drops an entry once another part
+supplies that guideline.
+
 **Reuse from the guideline cache.** A guideline taken unread from the plugin's guideline
 cache (`shared/scripts/guideline_cache.py`) carries `cached_on: "YYYY-MM-DD"`, the date
 its document was last read. No `cached_on` means the agent read it in this run.
@@ -292,7 +300,7 @@ Prose validation in SKILL.md files should defer to this script — a consumer's 
 ## Change log
 
 ### 1.3 (2026-09-24)
-- Optional `edition`, `currency`, `pmid`, `doi`, `cached_on` on guidelines; optional `grade.quote`; `code: ungraded` for recommendations a guideline doesn't grade.
+- Optional `edition`, `currency`, `pmid`, `doi`, `cached_on`, `source_file` on guidelines; optional `metadata.unretrieved_guidelines`; optional `grade.quote`; `code: ungraded` for recommendations a guideline doesn't grade.
 - Validator warns when a grade code is not found in the quoted source text, and when a guideline is not current.
 - Backward compatible: 1.0–1.2 ledgers validate unchanged.
 
