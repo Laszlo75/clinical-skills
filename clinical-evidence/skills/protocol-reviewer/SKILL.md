@@ -78,9 +78,18 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    agent with the paths to the map, the judgements and the ledger, the list of judgement
    ids to review — every `major_update`, `new_addition` and `remove`, plus anything
    flagged for safety — and `.clinical-evidence/second_review.yaml` as its output.
-   Aligned and minor items are not sent; skip the step entirely if there are none. For every `disagree` or `unsupported`, either revise the judgement or keep it
-   and write why; record this in each judgement's `second_review` (status, note,
-   resolution). Add judgements for any `missing` issues it raises that you agree with.
+   Aligned and minor items are not sent; skip the step entirely if there are none.
+   Reconcile every `disagree` or `unsupported` into **one** recommendation, recording
+   status, note, `outcome` and a written `resolution` in the judgement's `second_review`:
+   - `revised` — the challenge holds; change the judgement.
+   - `kept` — the evidence supports your original judgement; say why.
+   - `mdt_decision` — both positions are defensible and the evidence doesn't settle it.
+     List the `options` (at least two), each with its position, cited pros and cons,
+     and evidence; the document presents them for the MDT to decide rather than picking one.
+   Don't settle a disagreement by retreating to "per unit protocol" when a guideline
+   gives a specific value. Add judgements for any `missing` issues you agree with. The
+   second reviewer's view stays in the traceability files; the document shows only the
+   reconciled result.
 
 6. **Build the tables and register row:**
 
@@ -95,7 +104,7 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    ```
 
    It refuses to build if anything is inconsistent — an uncovered statement, a citation
-   to an excluded or unknown reference, an unresolved second-review disagreement. Fix the
+   to an excluded or unknown reference, a second-review disagreement without an outcome. Fix the
    working files and re-run. It writes the evidence table (`.csv` + `.xlsx`), the
    traceability matrix (`.csv`, and Markdown for the appendix) and appends the register
    row (never kept in the skill directory, which is replaced on plugin updates).
@@ -107,8 +116,7 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    `format_references.py`; run `ledger_to_exports.py` for `.bib` + PMIDs.
 
 8. **Hand over:** counts per verdict, the most important and any safety-flagged changes,
-   second-review disagreements you kept, references excluded during checking, and the
-   file list.
+   items left for MDT decision, references excluded during checking, and the file list.
 
 ## Timing log
 
@@ -132,7 +140,8 @@ message. The script never fails a run; if it warns, carry on.
   author list yourself; never cite anything outside the ledger or in
   `excluded_references`.
 - **Every guideline-backed statement carries its grade inline** (`grade.display`
-  verbatim) and every factual claim a numbered citation.
+  verbatim, written naturally, e.g. "(BTS Grade 1C)") and every factual claim a numbered
+  citation.
 - **Every recommendation in the document appears in the traceability matrix** — the
   document and `judgements.yaml` must agree.
 - **Draft status is explicit:** DRAFT callout and transparency disclaimer always present.
@@ -146,7 +155,8 @@ message. The script never fails a run; if it warns, carry on.
 Plugin version (`[skill-path]/../../.claude-plugin/plugin.json`); model identifier as
 you understand it plus configured tier, e.g. `claude-opus-5-5 (configured: opus, effort
 high)`; search date (`metadata.search_date`); review date (today); verification
-(`metadata.verification`); second review (number of judgements challenged / revised).
+(`metadata.verification`); second review (judgements challenged / revised / for MDT
+decision).
 
 ## If something is missing
 

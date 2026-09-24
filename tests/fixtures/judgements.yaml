@@ -18,4 +18,4 @@
   confidence: high
   safety: true
   commissioning: false
-  second_review: {status: disagree, note: "Registry data only; grade from BTS.", resolution: "Kept: BTS 1C recommendation is the primary basis; registry is supportive."}
+  second_review: {status: disagree, note: "Registry data only; grade from BTS.", outcome: kept, resolution: "Kept: BTS 1C recommendation is the primary basis; registry is supportive."}

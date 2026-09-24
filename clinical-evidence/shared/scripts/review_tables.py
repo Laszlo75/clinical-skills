@@ -25,11 +25,16 @@ Inputs (written by the protocol-reviewer skill in <workspace>/.clinical-evidence
       commissioning: false     # needs commissioner approval / business case
       confidence: high         # high | moderate | low
       second_review: {status: agree, note: "", resolution: ""}   # after second review
+      # When status is disagree/unsupported: outcome revised | kept | mdt_decision, plus a
+      # written resolution. mdt_decision (neither view clearly right) also needs options:
+      options:                 # only for outcome mdt_decision; at least two
+        - {position: "...", pros: "...", cons: "...", evidence: [4]}
 
 Checks (any ERROR → exit 1, nothing written): unique ids; statements and questions
 referenced exist; every statement has at least one judgement; verdict and confidence
 values valid; every evidence ref_id exists in the ledger and was not excluded by
-verification; a second-review disagreement has a written resolution.
+verification; a second-review disagreement has an outcome and a written resolution; an
+MDT-decision item lists at least two options, each with a position and valid evidence.
 
 Outputs:
   <prefix>_Evidence_Table.csv        one row per cited source (R-friendly)
@@ -66,6 +71,7 @@ VERDICTS = {
 }
 CONFIDENCE = {"high", "moderate", "low"}
 SECOND_REVIEW = {"agree", "disagree", "unsupported"}
+OUTCOMES = {"revised", "kept", "mdt_decision"}
 
 EVIDENCE_COLUMNS = [
     "ref_id", "type", "citation", "title", "journal", "year", "pmid", "doi", "study_design",
@@ -75,14 +81,15 @@ EVIDENCE_COLUMNS = [
 TRACE_COLUMNS = [
     "judgement", "section", "statement_id", "statement", "kind", "question_id", "question",
     "verdict", "recommendation", "evidence", "evidence_citations", "grade", "safety",
-    "commissioning", "confidence", "second_review", "second_review_note", "resolution",
+    "commissioning", "confidence", "second_review", "second_review_note", "outcome",
+    "resolution", "mdt_options",
 ]
 REGISTER_COLUMNS = [
     "review_date", "protocol_name", "protocol_version", "clinical_domain", "skill_version",
     "model_id", "total_references", "guidelines_consulted", "recommendations_aligned",
     "recommendations_minor_update", "recommendations_major_update",
     "recommendations_new_addition", "recommendations_remove", "references_excluded",
-    "second_review_disagreements", "mdt_outcome", "appraiser", "notes",
+    "second_review_disagreements", "for_mdt_decision", "mdt_outcome", "appraiser", "notes",
 ]
 
 
@@ -155,7 +162,9 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
             errors.append(f"{jid}: recommendation is empty")
         if j.get("confidence") not in CONFIDENCE:
             errors.append(f"{jid}: confidence must be one of {sorted(CONFIDENCE)}")
-        evidence = j.get("evidence") or []
+        evidence = list(j.get("evidence") or [])
+        for opt in j.get("options") or []:
+            evidence += (opt.get("evidence") or []) if isinstance(opt, dict) else []
         if not evidence and verdict != "aligned":
             warnings.append(f"{jid}: {VERDICTS.get(verdict, verdict)} with no cited evidence")
         for ref_id in evidence:
@@ -170,8 +179,17 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
                 warnings.append(f"{jid}: practice-changing but not second-reviewed")
         elif sr.get("status") not in SECOND_REVIEW:
             errors.append(f"{jid}: second_review.status must be one of {sorted(SECOND_REVIEW)}")
-        elif sr["status"] != "agree" and not _s(sr.get("resolution")):
-            errors.append(f"{jid}: second reviewer {sr['status']} — a resolution is required")
+        elif sr["status"] != "agree":
+            if not _s(sr.get("resolution")):
+                errors.append(f"{jid}: second reviewer {sr['status']} — a resolution is required")
+            if sr.get("outcome") not in OUTCOMES:
+                errors.append(f"{jid}: second_review.outcome must be one of {sorted(OUTCOMES)}")
+        options = j.get("options") or []
+        if (sr or {}).get("outcome") == "mdt_decision":
+            if len(options) < 2 or not all(isinstance(o, dict) and _s(o.get("position")) for o in options):
+                errors.append(f"{jid}: an MDT decision needs at least two options, each with a position")
+        elif options:
+            errors.append(f"{jid}: options are only for second_review.outcome mdt_decision")
 
     for sid in statements:
         if sid not in covered:
@@ -187,7 +205,10 @@ def build(ledger: dict, pmap: dict, judgements: list) -> tuple[list[dict], list[
     cited_in: dict[int, list[str]] = {}
     trace = []
     for j in judgements:
-        for ref_id in j.get("evidence") or []:
+        refs = list(j.get("evidence") or [])
+        for opt in j.get("options") or []:
+            refs += [r for r in opt.get("evidence") or [] if r not in refs]
+        for ref_id in refs:
             cited_in.setdefault(ref_id, []).append(j["id"])
         st = statements.get(j.get("statement")) or {}
         q = questions.get(j.get("question")) or {}
@@ -198,12 +219,16 @@ def build(ledger: dict, pmap: dict, judgements: list) -> tuple[list[dict], list[
             "kind": _s(st.get("kind")), "question_id": _s(j.get("question")),
             "question": _s(q.get("text")), "verdict": VERDICTS[j["verdict"]],
             "recommendation": _s(j.get("recommendation")),
-            "evidence": _join(j.get("evidence")),
-            "evidence_citations": _join(_citation(*index[r]) for r in j.get("evidence") or []),
+            "evidence": _join(refs),
+            "evidence_citations": _join(_citation(*index[r]) for r in refs),
             "grade": _s(j.get("grade")), "safety": "yes" if j.get("safety") else "no",
             "commissioning": "yes" if j.get("commissioning") else "no",
             "confidence": _s(j.get("confidence")), "second_review": _s(sr.get("status")),
-            "second_review_note": _s(sr.get("note")), "resolution": _s(sr.get("resolution")),
+            "second_review_note": _s(sr.get("note")), "outcome": _s(sr.get("outcome")),
+            "resolution": _s(sr.get("resolution")),
+            "mdt_options": " || ".join(
+                f"{_s(o.get('position'))} (pros: {_s(o.get('pros'))}; cons: {_s(o.get('cons'))})"
+                for o in j.get("options") or []),
         })
 
     evidence = []
@@ -231,6 +256,8 @@ def build(ledger: dict, pmap: dict, judgements: list) -> tuple[list[dict], list[
     counts["references_excluded"] = len(ledger.get("excluded_references") or [])
     counts["second_review_disagreements"] = sum(
         1 for j in judgements if (j.get("second_review") or {}).get("status") in {"disagree", "unsupported"})
+    counts["for_mdt_decision"] = sum(
+        1 for j in judgements if (j.get("second_review") or {}).get("outcome") == "mdt_decision")
     counts["safety_flags"] = sum(1 for j in judgements if j.get("safety"))
     return evidence, trace, counts
 
@@ -271,8 +298,11 @@ def _markdown(trace: list[dict]) -> str:
     cols = ["judgement", "section", "statement", "question_id", "verdict", "evidence_citations",
             "grade", "second_review"]
     head = ["#", "Section", "Protocol statement", "Q", "Assessment", "Evidence", "Grade", "2nd review"]
+    shown = {"": "", "agree": "agreed", "revised": "revised", "kept": "kept (reasoned)",
+             "mdt_decision": "for MDT decision"}
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for r in trace:
+        r = {**r, "second_review": shown.get(r["outcome"] or r["second_review"], r["second_review"])}
         lines.append("| " + " | ".join(_s(r[c]).replace("|", "/").replace("\n", " ") for c in cols) + " |")
     return "\n".join(lines) + "\n"
 
@@ -350,6 +380,7 @@ def main() -> int:
             **{f"recommendations_{v}": counts[v] for v in VERDICTS},
             "references_excluded": counts["references_excluded"],
             "second_review_disagreements": counts["second_review_disagreements"],
+            "for_mdt_decision": counts["for_mdt_decision"],
         })
 
     print(json.dumps(counts))

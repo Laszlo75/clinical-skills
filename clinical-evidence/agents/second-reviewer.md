@@ -75,8 +75,11 @@ missing:                    # optional: issues no judgement covers
 
 `unsupported` means the cited evidence does not support the recommendation at all;
 `disagree` means it is supported in part but the verdict, wording, grade or dose is
-wrong. Keep notes short and specific — cite ref_ids, not memory. Don't rewrite the
-review; the first reviewer resolves your points.
+wrong. Keep notes short and specific — cite ref_ids, not memory. When you disagree,
+say what you would recommend instead and on what evidence; "defer to unit protocol" is
+not an answer when a guideline gives a specific dose, threshold or duration. If you think
+the evidence genuinely supports either view, say so — the item then goes to the MDT with
+both options. Don't rewrite the review; the first reviewer reconciles your points.
 
 ## Return
 

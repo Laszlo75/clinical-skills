@@ -4,6 +4,15 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.3.1] - 2026-09-24
+
+### Changed
+
+- **One reconciled recommendation per item.** The review document no longer shows "Second reviewer" paragraphs. The lead reconciles each challenge as `revised`, `kept` (with reasons) or `mdt_decision`. The second reviewer's comments and the resolution stay in the traceability CSV/xlsx and appendix, for audit.
+- **Uncertainty goes to the MDT.** When both views are defensible, the document presents a "For MDT decision" block: two or more options, each with cited pros and cons, and the choice left to the MDT. `review_tables.py` requires an `outcome` for every disagreement, and at least two options (with valid evidence) for an MDT decision. It adds `outcome` and `mdt_options` to the traceability table, and a `for_mdt_decision` count to the register (older registers are migrated).
+- **Specificity kept.** The second reviewer must propose an evidence-based alternative rather than defer to "unit protocol" when a guideline gives a specific value; the lead may not resolve a disagreement that way either.
+- **Cleaner prose.** Grades are written naturally ("(BTS Grade 1C)"), with no field names; summary-table cells are short and never truncated.
+
 ## [2.3.0] - 2026-09-23
 
 A leaner pipeline to cut both run time and token use. A 2.2.0 protocol review took about 30 minutes; with more capable models it should get faster, not slower. The main causes were one long sequential search, blanket full-text reading, a second agent re-reading every record, and maximum effort on every step.

@@ -77,6 +77,13 @@ def test_register_row_and_header_migration(review, monkeypatch):
     (lambda l, m, j: j[0].update(evidence=[99]), "not in the ledger"),
     (lambda l, m, j: j[0].update(verdict="partly"), "verdict must be one of"),
     (lambda l, m, j: j[1]["second_review"].update(resolution=""), "a resolution is required"),
+    (lambda l, m, j: j[1]["second_review"].pop("outcome"), "second_review.outcome must be one of"),
+    (lambda l, m, j: j[1]["second_review"].update(outcome="mdt_decision"), "at least two options"),
+    (lambda l, m, j: j[0].update(options=[{"position": "x"}]), "options are only for"),
+    (lambda l, m, j: (j[1]["second_review"].update(outcome="mdt_decision"),
+                      j[1].update(options=[{"position": "a", "evidence": [1]},
+                                           {"position": "b", "evidence": [4]}])),
+     "excluded by verification"),
     (lambda l, m, j: j[0].update(statement=None), "only new_addition"),
     (lambda l, m, j: m["statements"][0].update(questions=["Q9"]), "unknown question Q9"),
 ])
@@ -108,3 +115,20 @@ def test_second_review_warning_only_for_practice_changing(review, monkeypatch, c
     assert run(review, monkeypatch) == 0
     out = capsys.readouterr().out
     assert "J2: practice-changing but not second-reviewed" in out and "J1:" not in out
+
+
+def test_mdt_decision_traced_not_hidden(review, monkeypatch):
+    ledger, pmap, judgements = load(review)
+    judgements[1]["second_review"]["outcome"] = "mdt_decision"
+    judgements[1]["options"] = [
+        {"position": "Target ≤1:8", "pros": "BTS 1C", "cons": "More apheresis", "evidence": [1]},
+        {"position": "Target ≤1:16", "pros": "Fewer sessions", "cons": "Registry only", "evidence": [3, 2]},
+    ]
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    reg = review / "register.csv"
+    assert run(review, monkeypatch, "--register", str(reg)) == 0
+    j2 = rows(review / "ABOi_Traceability.csv")[1]
+    assert j2["outcome"] == "mdt_decision" and "Target ≤1:16 (pros: Fewer sessions" in j2["mdt_options"]
+    assert j2["evidence"] == "1; 3; 2"
+    assert "for MDT decision" in (review / ".clinical-evidence" / "traceability.md").read_text()
+    assert rows(reg)[0]["for_mdt_decision"] == "1"
