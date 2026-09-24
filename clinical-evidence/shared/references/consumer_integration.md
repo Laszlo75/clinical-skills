@@ -4,8 +4,9 @@
 `research-summary` and `protocol-reviewer`). This is the one shared procedure; SKILL.md
 files point here instead of repeating it.
 
-**Paths.** `[skill-path]` is the consuming skill's absolute base directory, so the
-scripts live at `[skill-path]/../../shared/scripts/`. `<workspace>` is the researcher's
+**Paths.** `${CLAUDE_PLUGIN_ROOT}` is the plugin folder and `${CLAUDE_SKILL_DIR}` the
+consuming skill's folder — use the absolute paths the skill's Paths section gives for
+them (this file is not filled in automatically). `<workspace>` is the researcher's
 working folder. Shell commands run from the workspace, so always use absolute, quoted
 paths.
 
@@ -52,10 +53,10 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
     `<workspace>/.clinical-evidence/ledger_parts/part<N>.yaml`.
 
   Give every agent the topic and population, its questions (ids and text) and the plugin
-  version (from `[skill-path]/../../.claude-plugin/plugin.json`). Then merge:
+  version (from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`). Then merge:
 
   ```bash
-  python "[skill-path]/../../shared/scripts/merge_ledgers.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/merge_ledgers.py" \
     "<workspace>"/.clinical-evidence/ledger_parts/*.yaml \
     --out "<workspace>/.literature_search_ledger.yaml"
   ```
@@ -87,7 +88,7 @@ catches it cheaply:
 2. Run:
 
    ```bash
-   python "[skill-path]/../../shared/scripts/verify_references.py" \
+   python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/verify_references.py" \
      "<workspace>/.literature_search_ledger.yaml" \
      --against "<workspace>/.clinical-evidence/refs_b.yaml" --apply
    ```
@@ -106,7 +107,7 @@ years, compared tolerantly — useful for audits, not needed for routine runs.)
 ## 3. Validate
 
 ```bash
-python "[skill-path]/../../shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/validate_ledger.py" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 Exit 0 → proceed (surface warnings only if clinically relevant). Exit 1 → explain the
@@ -131,7 +132,7 @@ so rather than guessing at its structure.
 - **Reference list:** decide your citation order, then run
 
   ```bash
-  python "[skill-path]/../../shared/scripts/format_references.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/format_references.py" \
     "<workspace>/.literature_search_ledger.yaml" --ids 5,2,9
   ```
 
@@ -140,8 +141,8 @@ so rather than guessing at its structure.
 - **Word document:** write the Markdown, then convert it without spending tokens:
 
   ```bash
-  python "[skill-path]/../../shared/scripts/md_to_docx.py" "<file>.md" "<file>.docx" \
-    --reference-doc "[skill-path]/assets/reference.docx" --install
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/md_to_docx.py" "<file>.md" "<file>.docx" \
+    --reference-doc "${CLAUDE_SKILL_DIR}/assets/reference.docx" --install
   ```
 
   Exit 3 means no pandoc could be found or installed — only then build the `.docx` with
@@ -149,7 +150,7 @@ so rather than guessing at its structure.
 - **Zotero exports:**
 
   ```bash
-  python "[skill-path]/../../shared/scripts/ledger_to_exports.py" \
+  python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/ledger_to_exports.py" \
     "<workspace>/.literature_search_ledger.yaml" --prefix "<Name>" --outdir "<workspace>"
   ```
 

@@ -37,10 +37,14 @@ run in parallel; this conversation sees only their short summaries.
 
 ## Paths
 
-Paths in this skill are relative to its base directory (the folder holding this
-SKILL.md). Commands run from the researcher's workspace, so write `[skill-path]` as that
-absolute base directory, quoted, and `<workspace>` as the researcher's folder. Shared
-scripts are in `[skill-path]/../../shared/scripts/`.
+- This plugin's folder: `${CLAUDE_PLUGIN_ROOT}` — shared scripts in
+  `${CLAUDE_PLUGIN_ROOT}/shared/scripts/`.
+- This skill's folder: `${CLAUDE_SKILL_DIR}` — templates and assets.
+- `<workspace>` is the researcher's folder; commands run from there, so quote paths.
+
+The commands below and in the shared reference files use these two folders. If the two
+folders above still read as placeholders rather than real paths, use the absolute path
+of the folder holding this SKILL.md, and the plugin folder two levels above it.
 
 ## Workflow
 
@@ -74,9 +78,9 @@ Log stage boundaries with the shared timing script — one short command per bou
 so the researcher can see where time and tokens go and compare plugin versions:
 
 ```bash
-python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start run --skill research-summary
-python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" start <stage>
-python "[skill-path]/../../shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start run --skill research-summary
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start <stage>
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
 ```
 
 Stages, in order: `search` (all parallel agents + merge), `verify`, `document` (writing the summary, `.docx` and exports). For stages that dispatch an agent, pass the token usage the
@@ -103,7 +107,7 @@ message. The script never fails a run; if it warns, carry on.
 
 ## Transparency disclaimer fields
 
-- plugin version — from `[skill-path]/../../.claude-plugin/plugin.json`;
+- plugin version — from `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`;
 - model identifier — the model you are running on as you understand it plus the
   configured tier, e.g. `claude-opus-5-5 (configured: opus, effort high)`;
 - search date — `metadata.search_date`; document date — today (ISO 8601);

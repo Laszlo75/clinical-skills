@@ -4,6 +4,18 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.2] - 2026-09-24
+
+Ideas adopted from Anthropic's `plugin-dev` plugin.
+
+### Changed
+
+- **Built-in path variables.** Skills now use `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_SKILL_DIR}`, which Claude Code fills in with the real install paths. Previously the model had to work out the absolute path behind a `[skill-path]/../../` placeholder at every command. A fallback remains for environments that don't fill them in.
+
+### Added
+
+- **Reference-integrity tests.** Every script, template or asset a prompt points to (through the path variables or a Markdown link) must exist. Agent frontmatter must use a valid model and colour and include an `<example>` block. A broken path now fails CI instead of a clinical run.
+
 ## [2.4.1] - 2026-09-24
 
 The 2.4.0 test run gave the strongest review so far, but the search took 15 min, against 6 in 2.3.0: the single guideline agent was the bottleneck while the literature agents waited.

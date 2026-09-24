@@ -59,3 +59,35 @@ def test_agent_models():
     assert models["evidence-search"][0] == "sonnet"
     for model, effort in models.values():
         assert effort in (None, "low", "medium", "high", "xhigh", "max")
+
+
+DOCS = SKILLS + AGENTS + sorted((PLUGIN / "shared" / "references").glob("*.md")) \
+    + sorted(PLUGIN.glob("skills/*/references/*.md"))
+PATH_VAR = re.compile(r"\$\{(CLAUDE_PLUGIN_ROOT|CLAUDE_SKILL_DIR)\}/([\w./-]+\.\w+)")
+MD_LINK = re.compile(r"\]\((?!https?://|#|mailto:)([^)#\s]+)")
+
+
+@pytest.mark.parametrize("path", DOCS, ids=lambda p: str(p.relative_to(PLUGIN)))
+def test_referenced_files_exist(path):
+    """A prompt that points at a missing script or template fails only at run time."""
+    text = path.read_text(encoding="utf-8")
+    skill_dirs = [path.parent] if path.name == "SKILL.md" else [s.parent for s in SKILLS]
+    for var, rel in PATH_VAR.findall(text):
+        roots = [PLUGIN] if var == "CLAUDE_PLUGIN_ROOT" else skill_dirs
+        for root in roots:
+            assert (root / rel).exists(), f"{path.name}: ${{{var}}}/{rel} not found under {root}"
+    for rel in MD_LINK.findall(text):
+        assert (path.parent / rel).exists(), f"{path.name}: link {rel} does not resolve"
+
+
+def test_no_legacy_path_placeholder():
+    for path in DOCS:
+        assert "[skill-path]" not in path.read_text(encoding="utf-8"), path
+
+
+@pytest.mark.parametrize("path", AGENTS, ids=lambda p: p.stem)
+def test_agent_frontmatter_values(path):
+    fm = frontmatter(path)
+    assert fm.get("model") in {"inherit", "sonnet", "opus", "haiku", "fable"}
+    assert fm.get("color") in {"red", "blue", "green", "yellow", "purple", "orange", "pink", "cyan"}
+    assert "<example>" in fm["description"], "agent descriptions need an <example> block"
