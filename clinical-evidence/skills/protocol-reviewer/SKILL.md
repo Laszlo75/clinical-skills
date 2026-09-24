@@ -94,14 +94,25 @@ the researcher).
    consistent trends, observational data or expert opinion — ungraded, with the evidence cited, its certainty stated plainly and
    confidence set to match.
 
-5. **Second review — where it changes practice.** Dispatch the `second-reviewer`
-   agent with the paths to the map, the judgements and the ledger, the list of judgement
-   ids to review — every `major_update`, `new_addition` and `remove`, plus anything
-   flagged for safety — and `.clinical-evidence/second_review.yaml` as its output.
-   Aligned and minor items are not sent; skip the step entirely if there are none. With
-   more than about eight items, split them between two reviewers dispatched in the same
-   message (`second_review_1.yaml`, `second_review_2.yaml`), keeping related items
-   together.
+5. **Second review — where it changes practice.** Review every `major_update`,
+   `new_addition` and `remove`, plus anything flagged for safety; aligned and minor items
+   are not sent, and the step is skipped if there are none. Build a compact packet —
+   just those judgements, their protocol statements and the evidence they cite — so the
+   reviewer doesn't read the whole ledger:
+
+   ```bash
+   python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/review_packet.py" \
+     --ledger "<workspace>/.literature_search_ledger.yaml" \
+     --map "<workspace>/.clinical-evidence/protocol_map.yaml" \
+     --judgements "<workspace>/.clinical-evidence/judgements.yaml" \
+     --ids J3,J5,J9 --out "<workspace>/.clinical-evidence/review_packet.yaml"
+   ```
+
+   Dispatch the `second-reviewer` agent with the packet path and
+   `.clinical-evidence/second_review.yaml` as its output. With more than about eight
+   items, split them (keeping related items together) into two packets
+   (`review_packet_1.yaml`, `review_packet_2.yaml`) and two reviewers dispatched in the
+   same message (`second_review_1.yaml`, `second_review_2.yaml`).
    Reconcile every `disagree` or `unsupported` into **one** recommendation, recording
    status, note, `outcome` and a written `resolution` in the judgement's `second_review`:
    - `revised` — the challenge holds; change the judgement.
@@ -151,10 +162,13 @@ so the researcher can see where time and tokens go and compare plugin versions:
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start run --skill protocol-reviewer
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" start <stage>
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" end <stage> [--tokens N]
+python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/run_log.py" "<workspace>" agent <name> --stage <stage> --seconds S --tokens N
 ```
 
-Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search` (all parallel agents + merge), `verify`, `judge`, `second_review`, `tables`, `document`. For stages that dispatch an agent, pass the token usage the
-agent reports on completion as `--tokens` when you have it. Close with `end run`, then run
+Stages, in order: `map` (reading and mapping the protocol), `checkpoint` (waiting for the researcher's confirmation), `search` (all parallel agents + merge), `verify`, `judge`, `second_review`, `tables`, `document`. As each dispatched agent finishes, log it with `agent`
+— a short name (e.g. `guidelines-uk`, `literature-2`, `reviewer-1`), its stage, and the
+duration and tokens it reports on completion — so the summary shows which parallel
+agent set the pace. The stage's tokens are then the sum of its agents'. Close with `end run`, then run
 `run_log.py "<workspace>" summary` and include its output at the end of the hand-over
 message. The script never fails a run; if it warns, carry on.
 

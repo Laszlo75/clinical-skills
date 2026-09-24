@@ -4,6 +4,7 @@
 Usage:
     python run_log.py <workspace> start <stage> [--skill NAME]
     python run_log.py <workspace> end <stage> [--tokens N] [--note TEXT]
+    python run_log.py <workspace> agent <name> --stage <stage> [--seconds S] [--tokens N]
     python run_log.py <workspace> summary
 
 Appends to <workspace>/.clinical-evidence/run_log.csv (created if needed):
@@ -14,6 +15,9 @@ Appends to <workspace>/.clinical-evidence/run_log.csv (created if needed):
 - `end` computes the seconds since the matching `start` of that stage in this run.
 - `--tokens` is the agent's reported token usage for the stage (e.g. from the
   subagent's completion report); leave it out when unknown.
+- `agent` records one dispatched agent's own duration and tokens, as reported when it
+  finishes (e.g. `agent guidelines-uk --stage search --seconds 540 --tokens 210000`).
+  Parallel agents overlap, so the slowest one sets the stage time; this shows which.
 - `summary` prints one line per stage of the latest run — seconds, share of the total,
   tokens — plus the total, for the hand-over message and for benchmarking versions
   against each other. The CSV reads straight into R.
@@ -80,6 +84,20 @@ def record(workspace: Path, event: str, stage: str, skill: str = "", tokens: str
     return seconds
 
 
+def record_agent(workspace: Path, name: str, stage: str, seconds: str, tokens: str) -> None:
+    path = _path(workspace)
+    rows = _read(path)
+    run = _current_run(rows) or 1
+    skill = next((r["skill"] for r in reversed(rows) if r["run"] == str(run) and r["skill"]), "")
+    _append(path, {"timestamp_utc": _now().isoformat(), "run": run, "skill": skill,
+                   "stage": f"{stage}/{name}", "event": "agent", "seconds": seconds,
+                   "tokens": tokens, "note": ""})
+
+
+def _fmt(seconds: int) -> str:
+    return f"{seconds // 60:3d} min {seconds % 60:02d} s"
+
+
 def summary(workspace: Path) -> str:
     rows = _read(_path(workspace))
     if not rows:
@@ -91,13 +109,21 @@ def summary(workspace: Path) -> str:
     total = int(total_row["seconds"]) if total_row else sum(int(r["seconds"]) for r in stages)
     lines = [f"Run {run} ({stages[0]['skill'] if stages and stages[0]['skill'] else 'clinical-evidence'}): "
              f"{total // 60} min {total % 60:02d} s total"]
+    agents = [r for r in rows if r["run"] == run and r["event"] == "agent"]
     tok_total = 0
     for r in stages:
         s = int(r["seconds"])
         share = f"{100 * s / total:3.0f}%" if total else "  - "
-        tok = f" · {int(r['tokens']):,} tokens" if r["tokens"].isdigit() else ""
-        tok_total += int(r["tokens"]) if r["tokens"].isdigit() else 0
-        lines.append(f"  {r['stage']:<16} {s // 60:3d} min {s % 60:02d} s  {share}{tok}")
+        mine = [a for a in agents if a["stage"].split("/", 1)[0] == r["stage"]]
+        tokens = int(r["tokens"]) if r["tokens"].isdigit() else \
+            sum(int(a["tokens"]) for a in mine if a["tokens"].isdigit())
+        tok = f" · {tokens:,} tokens" if tokens else ""
+        tok_total += tokens
+        lines.append(f"  {r['stage']:<16} {_fmt(s)}  {share}{tok}")
+        for a in sorted(mine, key=lambda a: -int(a["seconds"] or 0)):
+            secs = _fmt(int(a["seconds"])) if a["seconds"].isdigit() else "        ?"
+            atok = f" · {int(a['tokens']):,} tokens" if a["tokens"].isdigit() else ""
+            lines.append(f"    - {a['stage'].split('/', 1)[1]:<20} {secs}{atok}")
     if tok_total:
         lines.append(f"  agent tokens reported: {tok_total:,}")
     return "\n".join(lines)
@@ -110,6 +136,13 @@ def main(argv: list[str]) -> int:
         workspace, command = Path(argv[0]), argv[1]
         if command == "summary":
             print(summary(workspace))
+            return 0
+        if command == "agent" and len(argv) >= 3:
+            opts = argv[3:]
+            get = lambda flag: opts[opts.index(flag) + 1] if flag in opts and opts.index(flag) + 1 < len(opts) else ""
+            secs, tokens = get("--seconds"), get("--tokens").replace(",", "")
+            record_agent(workspace, argv[2], get("--stage") or "search",
+                         secs if secs.isdigit() else "", tokens if tokens.isdigit() else "")
             return 0
         if command not in ("start", "end") or len(argv) < 3:
             raise ValueError("usage: run_log.py <workspace> start|end <stage> [options]")

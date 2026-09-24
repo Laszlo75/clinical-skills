@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [2.5.1] - 2026-09-24
 
+### Added
+
+- **Per-agent timing.** `run_log.py agent <name> --stage <stage> --seconds S --tokens N` records each dispatched agent's own duration and tokens. The summary lists them under their stage, slowest first, so it shows which parallel agent set the pace. The 2.5.0 search took 12:39 against a 6–8 minute estimate, and the stage total couldn't show why.
+- **Compact second-review packet.** `shared/scripts/review_packet.py` gives the second reviewer only the judgements to review, their protocol statements and the evidence they cite, instead of the whole ledger. In 2.5.0 two parallel reviewers each read the full ledger: second-review tokens rose 54% and the time barely moved.
+
 ### Fixed
 
 - **Second-review output format.** The example gave a YAML list followed by a top-level `missing:` key, which is not valid YAML, and the reviewer copied it. The format is now a mapping (`reviews:` plus `missing:`), and the reviewer checks that its file parses. A new test parses every YAML example in the prompts and reference docs.

@@ -33,6 +33,7 @@ clinical-evidence/
 │       ├── merge_ledgers.py         # combines partial ledgers from parallel searches
 │       ├── guideline_cache.py       # keeps checked guidelines between runs (plugin data folder)
 │       ├── review_tables.py         # protocol review: consistency checks, evidence table, traceability, register
+│       ├── review_packet.py         # compact packet for the second reviewer (judgements + cited evidence only)
 │       ├── run_log.py               # per-stage timing (and agent token) log for benchmarking runs
 │       ├── md_to_docx.py            # Markdown → .docx via pandoc (installs pypandoc_binary if needed)
 │       └── ledger_to_exports.py     # writes .bib + PMID exports from the ledger
