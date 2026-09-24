@@ -42,7 +42,7 @@ classification scheme.
 **3. Section-by-Section Review** — one subsection per protocol section, in protocol order:
 
 ```markdown
-## 3.1 [Section title from protocol]
+## 3.1 [Plain-English topic, e.g. "Rituximab dose"]
 
 **Current protocol position:** [what the protocol says, self-contained — a reader who
 has not seen the protocol must understand it without the heading, e.g. "Patients who
@@ -92,6 +92,11 @@ clear safety evidence behind them; a single study or first-principles reasoning 
 some (e.g. donor-group plasma, which BSH supports except for bidirectional A↔B
 mismatch), name the case that differs rather than calling the practice unsafe.
 
+No internal identifiers in the document: judgement ids (J1, J2 …) and statement ids
+(S1 …) stay in the working files and the traceability spreadsheet. The reader
+navigates by section number (3.1, 3.2 …) and the review questions (Q1 …) listed in the
+Methodology.
+
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add
 a "second reviewer" paragraph to the section.
@@ -117,13 +122,13 @@ such as "grade display:". Keep doses, thresholds and durations specific where a 
 gives them; "per unit protocol" is only acceptable when no guideline or evidence
 specifies a value, and then say so.
 
-**4. Summary of Recommendations** — table, one row per judgement (J-numbers match the
-traceability matrix); safety-flagged rows first. For MDT-decision items, the key
-recommendation cell reads "MDT decision: [A] vs [B]". Keep cells short and whole — no
-truncation marks:
+**4. Summary of Recommendations** — table, one row per recommendation; safety-flagged
+rows first. "Section" is this document's section number (e.g. 3.23), so each row points
+to its full discussion. For MDT-decision items, the key recommendation cell reads "MDT
+decision: [A] vs [B]". Keep cells short and whole — no truncation marks:
 
-| # | Section | Topic | Assessment | Key recommendation |
-|---|---------|-------|------------|--------------------|
+| Section | Topic | Assessment | Key recommendation |
+|---------|-------|------------|--------------------|
 
 **5. Additional Considerations** — topics the protocol omits but current guidelines or
 evidence require (e.g. registry reporting, consent, service standards), commissioning or

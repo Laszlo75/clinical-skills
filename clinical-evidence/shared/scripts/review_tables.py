@@ -312,14 +312,18 @@ def _write_xlsx(path: Path, sheets: list[tuple[str, list[str], list[dict]]]) -> 
 
 
 def _markdown(trace: list[dict]) -> str:
-    cols = ["judgement", "section", "statement", "question_id", "verdict", "evidence_citations",
+    # For the review's appendix: readers navigate by protocol section, so judgement ids
+    # (J1, J2 …) stay in the CSV/xlsx and working files, not in the document.
+    cols = ["section", "statement", "question_id", "verdict", "evidence_citations",
             "grade", "second_review"]
-    head = ["#", "Section", "Protocol statement", "Q", "Assessment", "Evidence", "Grade", "2nd review"]
+    head = ["Protocol section", "Protocol statement", "Q", "Assessment", "Evidence", "Grade",
+            "2nd review"]
     shown = {"": "", "agree": "agreed", "revised": "revised", "kept": "kept (reasoned)",
              "mdt_decision": "for MDT decision"}
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     for r in trace:
-        r = {**r, "second_review": shown.get(r["outcome"] or r["second_review"], r["second_review"])}
+        r = {**r, "second_review": shown.get(r["outcome"] or r["second_review"], r["second_review"]),
+             "statement": r["statement"] or "Not in protocol (new addition)"}
         lines.append("| " + " | ".join(_s(r[c]).replace("|", "/").replace("\n", " ") for c in cols) + " |")
     return "\n".join(lines) + "\n"
 

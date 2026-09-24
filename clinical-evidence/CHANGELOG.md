@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - **Per-agent timing.** `run_log.py agent <name> --stage <stage> --seconds S --tokens N` records each dispatched agent's own duration and tokens. The summary lists them under their stage, slowest first, so it shows which parallel agent set the pace. The 2.5.0 search took 12:39 against a 6–8 minute estimate, and the stage total couldn't show why.
 - **Compact second-review packet.** `shared/scripts/review_packet.py` gives the second reviewer only the judgements to review, their protocol statements and the evidence they cite, instead of the whole ledger. In 2.5.0 two parallel reviewers each read the full ledger: second-review tokens rose 54% and the time barely moved.
 
+### Changed (readability)
+
+- **No judgement ids in the document.** J1, J2 … stay in the working files and the traceability spreadsheet. The document uses plain topic headings and section numbers; the summary table's first column is the section number, and the appendix matrix starts with the protocol section.
+
 ### Changed (accuracy)
 
 - **The second reviewer sees what was left out.** The review packet also includes `other_evidence`, every uncited ledger entry on the same review questions, so the reviewer can catch evidence that was overlooked or that contradicts a judgement. It also gets the ledger path for wider checks, and is told accuracy outweighs speed.
