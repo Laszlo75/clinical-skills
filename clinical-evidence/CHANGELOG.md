@@ -4,6 +4,22 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] - 2026-09-24
+
+The 2.4.0 test run gave the strongest review so far, but the search took 15 min, against 6 in 2.3.0: the single guideline agent was the bottleneck while the literature agents waited.
+
+### Changed
+
+- **Guideline work split across 2–3 parallel `guideline-search` agents**, by guideline body:
+  - UK bodies of the core specialty;
+  - UK cross-specialty bodies (NICE, BSH, Green Book, MHRA …);
+  - international bodies.
+
+  Each agent names important guidelines from outside its own bodies rather than reading them. Every document is still read once, on Opus, so token use should be similar.
+- **Second review split** between two parallel reviewers when more than about eight items are sent.
+- **Citation style:** one bracket per citation point, numbers ascending, runs collapsed (`[2, 22–25]`).
+- **Grades stay with the recommendation that carries them.** A grade is never attached to a statement of what a guideline does not cover.
+
 ## [2.4.0] - 2026-09-24
 
 ### Added

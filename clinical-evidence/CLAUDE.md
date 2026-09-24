@@ -59,7 +59,7 @@ Per-skill `CLAUDE.md` files live inside each skill folder and hold the skill-spe
 
 The two skills and the agents are tightly coupled by design:
 
-- **Shared subagents.** Both skills dispatch the same [`evidence-search` agent](./agents/evidence-search.md) to do the actual search work in isolated context. The agent runs in its own conversation so the tool-heavy traffic (PubMed metadata, Scholar Gateway passages, full-text retrievals) never reaches the parent skill's context. This keeps the main conversation clean and lets downstream synthesis work from a short structured summary rather than thousands of lines of tool output. Searches run in parallel — one `guideline-search` agent for all questions plus one `evidence-search` agent per question cluster — then are merged with `merge_ledgers.py`.
+- **Shared subagents.** Both skills dispatch the same [`evidence-search` agent](./agents/evidence-search.md) to do the actual search work in isolated context. The agent runs in its own conversation so the tool-heavy traffic (PubMed metadata, Scholar Gateway passages, full-text retrievals) never reaches the parent skill's context. This keeps the main conversation clean and lets downstream synthesis work from a short structured summary rather than thousands of lines of tool output. Searches run in parallel — 2–3 `guideline-search` agents split by guideline body plus one `evidence-search` agent per question cluster — then are merged with `merge_ledgers.py`.
 - **Shared contract directory.** `research-summary/SKILL.md` and `protocol-reviewer/SKILL.md` reference [`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md), [`shared/references/consumer_integration.md`](./shared/references/consumer_integration.md), [`shared/scripts/validate_ledger.py`](./shared/scripts/validate_ledger.py), and [`shared/scripts/ledger_to_exports.py`](./shared/scripts/ledger_to_exports.py) via `../../shared/...`. Each skill sits at `skills/<skill>/`, two levels below the plugin root, so those paths resolve. Splitting the plugin would break these pointers.
 - **Shared hidden ledger.** When any skill dispatches the `evidence-search` agent, the agent writes an internal reference ledger to `<workspace>/.literature_search_ledger.yaml`. Any skill run later in the same workspace discovers, validates, and consumes that ledger automatically. Researchers never see or manage the ledger.
 - **Single reference contract.** The ledger format is defined in exactly one place ([`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md)). Every skill and the agent point at that file rather than duplicating the schema, and every consumer runs the bundled validator script to enforce it. The agent inlines the essential schema fields in its prompt because it can't reliably read the reference doc from its isolated context, but the executable validator is the ground truth that prevents drift.
@@ -69,7 +69,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.4.0**.
+Current release: **2.4.1**.
 
 **Semver policy:**
 

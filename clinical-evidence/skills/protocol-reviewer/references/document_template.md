@@ -127,5 +127,8 @@ table and matrix are provided as `[Protocol_Name]_Evidence_Table.xlsx` / `.csv`.
 
 ## Citation style
 
-Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]`. Every factual claim cited; every
-listed reference cited at least once.
+Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]` — one bracket per citation point,
+numbers ascending, runs collapsed (`[2, 22–25]`, not `[22, 2], [23, 24, 25]`). Every
+factual claim cited; every listed reference cited at least once. Attach a guideline
+grade only to the recommendation that carries it — never to a statement of what a
+guideline does not cover.
