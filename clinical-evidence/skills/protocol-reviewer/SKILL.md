@@ -54,10 +54,12 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
 
 3. **Get a verified evidence base.** Follow
    [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md).
-   Split the confirmed questions into 2–4 clusters and dispatch one `evidence-search`
-   agent per cluster in parallel; each tags its sources with the questions they answer
-   and records study design, population, size and certainty. Merge, then check the
-   references' identifiers (a quick PubMed ID conversion — no extra agent).
+   In one message, dispatch the `guideline-search` agent with all the questions and the
+   protocol's concrete doses, thresholds and timings (guidelines are the backbone of the
+   review: it reads the current guideline documents and copies each grade as printed),
+   and one `evidence-search` agent per cluster of 2–4 question clusters for the
+   literature. Merge, then check the references' identifiers (a quick PubMed ID
+   conversion — no extra agent).
 
 4. **Judge each statement.** Write `judgements.yaml`: for each statement (and any
    important omission, as `new_addition`), a verdict —
@@ -71,7 +73,8 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    | remove | Outdated or no longer recommended |
 
    — plus an actionable recommendation, the ledger `ref_id`s it rests on, the guideline
-   grade (`grade.display` verbatim), confidence (high/moderate/low), and flags for patient
+   grade (`grade.display` verbatim, only from a cited guideline whose grade the validator
+   confirmed in its source text), confidence (high/moderate/low), and flags for patient
    safety and commissioning impact. Weigh conflicting sources explicitly.
 
 5. **Second review — where it changes practice.** Dispatch the `second-reviewer`
@@ -104,7 +107,8 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    ```
 
    It refuses to build if anything is inconsistent — an uncovered statement, a citation
-   to an excluded or unknown reference, a second-review disagreement without an outcome. Fix the
+   to an excluded or unknown reference, a grade not printed in the cited guideline, a
+  second-review disagreement without an outcome. Fix the
    working files and re-run. It writes the evidence table (`.csv` + `.xlsx`), the
    traceability matrix (`.csv`, and Markdown for the appendix) and appends the register
    row (never kept in the skill directory, which is replaced on plugin updates).

@@ -24,7 +24,7 @@ def frontmatter(path):
 
 def test_expected_components_present():
     assert {p.parent.name for p in SKILLS} == {"research-summary", "protocol-reviewer"}
-    assert {p.stem for p in AGENTS} == {"evidence-search", "second-reviewer"}
+    assert {p.stem for p in AGENTS} == {"evidence-search", "guideline-search", "second-reviewer"}
 
 
 @pytest.mark.parametrize("path", SKILLS, ids=lambda p: p.parent.name)
@@ -51,3 +51,11 @@ def test_manifests_agree():
     entry = next(p for p in market["plugins"] if p["name"] == plugin["name"])
     assert (ROOT / entry["source"]).resolve() == PLUGIN.resolve()
     assert re.fullmatch(r"\d+\.\d+\.\d+", plugin["version"])
+
+
+def test_agent_models():
+    models = {p.stem: (frontmatter(p).get("model"), frontmatter(p).get("effort")) for p in AGENTS}
+    assert models["guideline-search"] == ("opus", "medium")   # guidelines are the backbone
+    assert models["evidence-search"][0] == "sonnet"
+    for model, effort in models.values():
+        assert effort in (None, "low", "medium", "high", "xhigh", "max")

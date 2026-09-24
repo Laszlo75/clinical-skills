@@ -212,3 +212,28 @@ def compare(a: dict, b: dict) -> dict:
         "title_score": round(score, 3),
         "notes": notes,
     }
+
+
+UNGRADED = "ungraded"
+
+
+def grade_in_source(rec: dict) -> bool:
+    """True if a guideline recommendation's grade code is printed in its quoted source text.
+
+    The grade code must appear, as a whole token, in `source_quote` or `grade.quote`
+    (verbatim text where the guideline prints the grade, e.g. a margin or table).
+    Whitespace and case are ignored. A recommendation recorded as `ungraded` has
+    nothing to ground and passes. This catches grades supplied from memory rather than
+    copied from the guideline; it cannot tell whether the quote itself is genuine.
+    """
+    grade = rec.get("grade") if isinstance(rec, dict) else None
+    if not isinstance(grade, dict):
+        return False
+    code = " ".join(str(grade.get("code") or "").split())
+    if not code:
+        return False
+    if code.casefold() == UNGRADED:
+        return True
+    text = " ".join(f"{rec.get('source_quote') or ''} {grade.get('quote') or ''}".split())
+    pattern = r"(?<![0-9A-Za-z])" + re.escape(code) + r"(?![0-9A-Za-z])"
+    return re.search(pattern, text, flags=re.IGNORECASE) is not None

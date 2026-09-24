@@ -8,14 +8,14 @@ Two skills that share one hidden, verified reference ledger:
 
 | Skill | What it does |
 | --- | --- |
-| [`research-summary`](./skills/research-summary/) | The user-facing entry point for a literature search or evidence summary. Dispatches the `evidence-search` agent (or reuses a ledger already in the workspace), then writes a structured narrative evidence summary (`.md` + `.docx`) plus Zotero export files (`.bib` + PMID list). Covers guidelines, recent evidence, conflicting recommendations, emerging evidence, and evidence gaps. |
-| [`protocol-reviewer`](./skills/protocol-reviewer/) | Reads an uploaded clinical protocol (PDF/Word), cross-references it against the ledger, and produces a section-by-section `.docx` review document with actionable recommendations, evidence grades, and Zotero exports. Dispatches `evidence-search` if no ledger exists. |
+| [`research-summary`](./skills/research-summary/) | The user-facing entry point for a literature search or evidence summary. Dispatches the search agents (or reuses a ledger already in the workspace), then writes a structured narrative evidence summary (`.md` + `.docx`) plus Zotero export files (`.bib` + PMID list). Covers guidelines, recent evidence, conflicting recommendations, emerging evidence, and evidence gaps. |
+| [`protocol-reviewer`](./skills/protocol-reviewer/) | Reads an uploaded clinical protocol (PDF/Word), cross-references it against the ledger, and produces a section-by-section `.docx` review document with actionable recommendations, evidence grades, and Zotero exports. Dispatches the search agents if no ledger exists. |
 
 ### The agents
 
-Both skills share a single subagent at [`agents/evidence-search.md`](./agents/evidence-search.md) that runs the actual PubMed + Scholar Gateway + guideline search work in isolated context. Researchers never interact with the agent directly — it's dispatched automatically by whichever skill needs a fresh ledger. Running the search inside an agent keeps the tool-heavy traffic (PubMed metadata calls, Scholar Gateway passages, full-text retrievals) out of the main conversation, so downstream synthesis has a clean slate to work from.
+Both skills share two search subagents that work in isolated context: [`agents/guideline-search.md`](./agents/guideline-search.md) reads the current UK and international guideline documents and copies each recommendation and grade exactly as printed, and [`agents/evidence-search.md`](./agents/evidence-search.md) searches PubMed and Scholar Gateway for the primary literature. Researchers never interact with the agents directly — it's dispatched automatically by whichever skill needs a fresh ledger. Running the search inside an agent keeps the tool-heavy traffic (PubMed metadata calls, Scholar Gateway passages, full-text retrievals) out of the main conversation, so downstream synthesis has a clean slate to work from.
 
-Searches run as several `evidence-search` agents in parallel — one per cluster of questions — and are merged. The skill then checks every PMID/DOI pair independently with PubMed's ID converter, and `shared/scripts/verify_references.py` excludes anything that doesn't match before a single reference is cited.
+Searches run in parallel — the guideline agent plus one `evidence-search` agent per cluster of questions — and are merged. A guideline grade is only quoted if it appears in the guideline's own text. The skill then checks every PMID/DOI pair independently with PubMed's ID converter, and `shared/scripts/verify_references.py` excludes anything that doesn't match before a single reference is cited.
 
 ## How it works in practice
 
@@ -59,8 +59,8 @@ The hidden `.literature_search_ledger.yaml` is present in the workspace after an
 ## Requirements
 
 - [Claude Desktop](https://claude.ai/download) — Claude Cowork or Claude Code — with MCP connector support
-- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at high effort** for the skills; the search agents run on Claude Sonnet. This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
-  - *Claude Code:* the skills pin `model: opus` + `effort: high`, the `evidence-search` agent pins `model: sonnet` (retrieval and tagging) and the `second-reviewer` agent pins `model: opus`.
+- **Recommended model: Claude Opus 5.5 (`claude-opus-5-5`) at high effort** for the skills; the guideline agent runs on Opus at medium effort and the literature agents on Claude Sonnet. This is the one place the plugin names a specific model version; everything else refers to "the latest Claude Opus".
+  - *Claude Code:* the skills pin `model: opus` + `effort: high`, the `guideline-search` agent pins `model: opus` + `effort: medium` (guidelines are the backbone of every review), the `evidence-search` agent pins `model: sonnet` (literature retrieval and tagging) and the `second-reviewer` agent pins `model: opus`.
   - *Claude Cowork:* the model is chosen in the app — select Opus 5.5 and enable extended thinking before running a skill.
 - MCP connectors enabled:
   - **PubMed** — literature search and article metadata
@@ -85,7 +85,8 @@ Each skill has its own README and `CLAUDE.md` inside its folder:
 - [`skills/research-summary/CLAUDE.md`](./skills/research-summary/CLAUDE.md)
 - [`skills/protocol-reviewer/README.md`](./skills/protocol-reviewer/README.md)
 - [`skills/protocol-reviewer/CLAUDE.md`](./skills/protocol-reviewer/CLAUDE.md)
-- [`agents/evidence-search.md`](./agents/evidence-search.md) — the shared search agent
+- [`agents/guideline-search.md`](./agents/guideline-search.md) — the guideline agent
+- [`agents/evidence-search.md`](./agents/evidence-search.md) — the literature search agent
 - [`agents/second-reviewer.md`](./agents/second-reviewer.md) — challenges each protocol-review judgement against its evidence
 - [`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md) — the ledger contract
 - [`shared/references/consumer_integration.md`](./shared/references/consumer_integration.md) — how a consumer plugs in

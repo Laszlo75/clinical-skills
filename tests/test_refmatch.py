@@ -87,3 +87,18 @@ def test_identity_only_second_reading():
     assert no_doi["status"] == rm.REVIEW
     retracted = rm.compare(dict(a, title="[Retracted] A trial"), {"pmid": "1", "doi": "10.1/x"})
     assert retracted["status"] == rm.FAIL
+
+
+@pytest.mark.parametrize("code,quote,gq,expected", [
+    ("1C", "We recommend a target titre of ≤1:8 at transplantation (1C).", None, True),
+    ("1C", "We recommend a target titre of ≤1:8 at transplantation.", None, False),   # grade from memory
+    ("1C", "We recommend a target titre of ≤1:8.", "Grade 1C", True),                 # grade printed elsewhere
+    ("1C", "Monitor HbA1c at 3 months.", None, False),                                # not a whole token
+    ("Category I, Grade 1B", "ABOi kidney: Category  I, grade 1B", None, True),       # spacing and case
+    ("ungraded", "Offer vaccination before transplant.", None, True),
+])
+def test_grade_in_source(code, quote, gq, expected):
+    grade = {"system": "BTS", "code": code, "display": f"BTS {code}"}
+    if gq:
+        grade["quote"] = gq
+    assert rm.grade_in_source({"source_quote": quote, "grade": grade}) is expected

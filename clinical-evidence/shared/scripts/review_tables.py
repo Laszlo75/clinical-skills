@@ -20,7 +20,7 @@ Inputs (written by the protocol-reviewer skill in <workspace>/.clinical-evidence
       verdict: major_update    # aligned | minor_update | major_update | new_addition | remove
       recommendation: "..."
       evidence: [4, 7]         # ledger ref_ids
-      grade: "BTS Grade 1C"    # optional, grade.display verbatim
+      grade: "BTS Grade 1C"    # optional: grade.display of cited guideline recommendation(s), ";"-separated
       safety: false            # patient-safety relevant change
       commissioning: false     # needs commissioner approval / business case
       confidence: high         # high | moderate | low
@@ -33,8 +33,10 @@ Inputs (written by the protocol-reviewer skill in <workspace>/.clinical-evidence
 Checks (any ERROR → exit 1, nothing written): unique ids; statements and questions
 referenced exist; every statement has at least one judgement; verdict and confidence
 values valid; every evidence ref_id exists in the ledger and was not excluded by
-verification; a second-review disagreement has an outcome and a written resolution; an
-MDT-decision item lists at least two options, each with a position and valid evidence.
+verification; each quoted grade (several separated by ";") belongs to a cited guideline
+recommendation whose source text prints it (schema 1.3; a warning for older ledgers); a
+second-review disagreement has an outcome and a written resolution; an MDT-decision item
+lists at least two options, each with a position and valid evidence.
 
 Outputs:
   <prefix>_Evidence_Table.csv        one row per cited source (R-friendly)
@@ -62,6 +64,9 @@ except ImportError:
     sys.stderr.write("ERROR: PyYAML is not installed. Install with: pip install pyyaml\n")
     sys.exit(2)
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from refmatch import grade_in_source  # noqa: E402
+
 VERDICTS = {
     "aligned": "Aligned",
     "minor_update": "Minor update",
@@ -76,7 +81,7 @@ OUTCOMES = {"revised", "kept", "mdt_decision"}
 EVIDENCE_COLUMNS = [
     "ref_id", "type", "citation", "title", "journal", "year", "pmid", "doi", "study_design",
     "population", "sample_size", "certainty", "key_finding", "questions", "cited_in",
-    "verification",
+    "verification", "currency",
 ]
 TRACE_COLUMNS = [
     "judgement", "section", "statement_id", "statement", "kind", "question_id", "question",
@@ -127,6 +132,8 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
     warnings: list[str] = []
     index = index_ledger(ledger)
     excluded = {e.get("ref_id") for e in ledger.get("excluded_references") or [] if isinstance(e, dict)}
+    version = str((ledger.get("metadata") or {}).get("ledger_schema_version") or "0")
+    strict_grades = tuple(int(x) for x in version.split(".")[:2] if x.isdigit()) >= (1, 3)
 
     questions = {q.get("id"): q for q in pmap.get("questions") or [] if isinstance(q, dict)}
     if len(questions) != len(pmap.get("questions") or []):
@@ -172,6 +179,14 @@ def check(ledger: dict, pmap: dict, judgements: list) -> tuple[list[str], list[s
                 errors.append(f"{jid}: cites ref_id {ref_id}, which was excluded by verification")
             elif ref_id not in index:
                 errors.append(f"{jid}: cites ref_id {ref_id}, which is not in the ledger")
+        for grade in filter(None, (g.strip() for g in _s(j.get("grade")).split(";"))):
+            recs = [r for ref_id in evidence if index.get(ref_id, ("",))[0] == "guideline"
+                    for r in index[ref_id][1].get("key_recommendations") or []
+                    if _s((r.get("grade") or {}).get("display")) == grade]
+            if not any(grade_in_source(r) for r in recs):
+                msg = (f"{jid}: grade {grade!r} is not " + ("printed in the quoted text of a cited "
+                       "guideline recommendation" if recs else "a grade of any cited guideline"))
+                (errors if strict_grades else warnings).append(msg)
         sr = j.get("second_review")
         practice_changing = verdict in {"major_update", "new_addition", "remove"} or j.get("safety")
         if not sr:
@@ -236,7 +251,8 @@ def build(ledger: dict, pmap: dict, judgements: list) -> tuple[list[dict], list[
         kind, e = index[ref_id]
         if kind == "guideline":
             finding = " | ".join(
-                f"{_s(r.get('text'))} ({_s((r.get('grade') or {}).get('display'))})"
+                f"{_s(r.get('text'))} ({_s((r.get('grade') or {}).get('display'))}"
+                + ("" if grade_in_source(r) else ", grade not confirmed in source") + ")"
                 for r in e.get("key_recommendations") or [])
         else:
             finding = _s(e.get("key_finding"))
@@ -249,6 +265,7 @@ def build(ledger: dict, pmap: dict, judgements: list) -> tuple[list[dict], list[
             "key_finding": finding, "questions": _join(e.get("questions")),
             "cited_in": _join(cited_in[ref_id]),
             "verification": _s((e.get("integrity") or {}).get("status")) or ("n/a" if kind == "guideline" else ""),
+            "currency": _s((e.get("currency") or {}).get("status")) if kind == "guideline" else "",
         })
 
     counts = {v: sum(1 for j in judgements if j["verdict"] == v) for v in VERDICTS}

@@ -51,7 +51,10 @@ summary is not enough to decide.
 2. **Is the verdict proportionate?** Aligned / minor / major / new / remove should match
    the size of the gap between protocol and evidence. Over-calling a major update wastes
    an MDT's time; under-calling one is a safety risk.
-3. **Is the grade right?** Any grade quoted must match the guideline's `grade.display`.
+3. **Is the grade right?** Any grade quoted must be the cited guideline's own grade for
+   that recommendation, printed in its `source_quote` / `grade.quote`. For safety-flagged
+   items, open the guideline document and check the quote and grade at source.
+   Is the guideline the current edition (`currency`)?
 4. **Doses and thresholds.** For every recommended drug dose, check it against the BNF
    or the MHRA SmPC (web search) and flag unit, frequency or renal/hepatic adjustment
    problems.

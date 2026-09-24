@@ -132,3 +132,34 @@ def test_mdt_decision_traced_not_hidden(review, monkeypatch):
     assert j2["evidence"] == "1; 3; 2"
     assert "for MDT decision" in (review / ".clinical-evidence" / "traceability.md").read_text()
     assert rows(reg)[0]["for_mdt_decision"] == "1"
+
+
+def test_grade_must_be_printed_in_cited_guideline(review, monkeypatch, capsys):
+    ledger, pmap, judgements = load(review)
+    # schema 1.2: an ungrounded grade (fixture quote omits "1C") only warns
+    assert run(review, monkeypatch) == 0
+    assert "J2: grade 'BTS Grade 1C' is not printed in the quoted text" in capsys.readouterr().out
+    # schema 1.3: it blocks the build
+    ledger["metadata"]["ledger_schema_version"] = "1.3"
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    # a grade the cited guideline never gave is caught too
+    judgements[1]["grade"] = "BTS Grade 1A"
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    assert "not a grade of any cited guideline" in capsys.readouterr().out
+    # once the quote carries the grade, the original grade passes
+    judgements[1]["grade"] = "BTS Grade 1C"
+    ledger["guidelines"][0]["key_recommendations"][0]["source_quote"] += " (Grade 1C)"
+    ledger["guidelines"][0]["currency"] = {"status": "current", "checked_on": "2026-09-24"}
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    judgements[1]["grade"] = "BTS Grade 1C; BTS Grade 1A"          # each grade is checked
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    judgements[1]["grade"] = "BTS Grade 1C"
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    ev = rows(review / "ABOi_Evidence_Table.csv")[0]
+    assert ev["currency"] == "current" and "not confirmed" not in ev["key_finding"]

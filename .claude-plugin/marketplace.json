@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "clinical-evidence",
-      "description": "Systematic literature search and clinical protocol review against current guidelines. Bundles two skills that share a verified reference ledger built by the evidence-search agent: research-summary (literature search + narrative evidence summary + Zotero exports) and protocol-reviewer (cross-references an uploaded protocol against the evidence base). AI-assisted draft; clinician approval required.",
+      "description": "Systematic literature search and clinical protocol review against current guidelines. Bundles two skills that share a verified reference ledger built by the guideline-search and evidence-search agents: research-summary (literature search + narrative evidence summary + Zotero exports) and protocol-reviewer (cross-references an uploaded protocol against the evidence base). AI-assisted draft; clinician approval required.",
       "author": {
         "name": "Laszlo Szabo",
         "url": "https://github.com/Laszlo75"

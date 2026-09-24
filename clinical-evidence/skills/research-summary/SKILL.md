@@ -50,9 +50,10 @@ scripts are in `[skill-path]/../../shared/scripts/`.
 
 2. **Get a verified evidence base.** Follow
    [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md):
-   reuse the ledger, or split the sub-questions into 2–3 clusters and run one
-   `evidence-search` agent per cluster in parallel, then merge; check the references'
-   identifiers (a quick PubMed ID conversion) and validate.
+   reuse the ledger, or run the `guideline-search` agent (all sub-questions) alongside
+   one `evidence-search` agent per cluster of 2–3 sub-question clusters, in parallel,
+   then merge; check the references' identifiers (a quick PubMed ID conversion) and
+   validate. Quote only guideline grades the validator confirmed in the source text.
 
 3. **Write the summary** following
    [`references/evidence_summary_template.md`](references/evidence_summary_template.md)

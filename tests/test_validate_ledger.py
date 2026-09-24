@@ -61,3 +61,21 @@ def test_bad_certainty_and_questions(workspace):
     data["references"][1]["questions"] = "Q1"
     data["guidelines"][0]["key_recommendations"][0]["accessed"] = "last week"
     assert vl.validate_ledger(write(workspace, data)) == 1
+
+
+def test_schema_1_3_currency_and_grade_grounding(workspace, capsys):
+    from conftest import FIXTURES
+    data = yaml.safe_load((FIXTURES / "review_ledger.yaml").read_text())
+    data["metadata"]["ledger_schema_version"] = "1.3"
+    g = data["guidelines"][0]
+    g["edition"] = "Third edition"
+    g["currency"] = {"status": "past_review_date", "checked_on": "2026-09-24", "note": "review due 2019"}
+    assert vl.validate_ledger(write(workspace, data)) == 0
+    out = capsys.readouterr().out
+    assert "past_review_date — review due 2019" in out
+    assert "not found in the quoted source text" in out      # fixture quote omits "1C"
+    g["key_recommendations"][0]["source_quote"] += " (1C)"
+    vl.validate_ledger(write(workspace, data))
+    assert "not found in the quoted source text" not in capsys.readouterr().out
+    g["currency"]["status"] = "old"
+    assert vl.validate_ledger(write(workspace, data)) == 1

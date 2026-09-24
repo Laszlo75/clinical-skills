@@ -34,7 +34,9 @@ study types prioritised, number of references included, and how references were 
 
 **2. National and International Guidelines** — one subsection per guideline body: key
 recommendations with the grade inline, e.g. "BTS recommends a target titre ≤1:8 at
-transplantation (BTS Grade 1C) [2]".
+transplantation (BTS Grade 1C) [2]". Give the edition and say if a guideline is past its
+review date. A grade that could not be confirmed in the guideline's text is left out
+("grade not confirmed"); ungraded guidance (e.g. NICE) is quoted without one.
 
 **3. Recent Evidence** — one subsection per clinical sub-question; synthesise across
 papers with citations rather than listing them one by one.
