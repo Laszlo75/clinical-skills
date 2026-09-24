@@ -4,6 +4,12 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.5.2] - 2026-09-24
+
+### Fixed
+
+- **The guideline cache now persists in Cowork.** Cowork runs each task in a temporary sandbox and doesn't provide the plugin data folder (`$CLAUDE_PLUGIN_DATA` unset). The 2.5.0 cache therefore went to the sandbox home and vanished at the end of the session. The cache now lives in the researcher's selected folder (`<workspace>/.clinical-evidence/guideline_cache`), the only place that persists; reviews run from the same folder share it. The per-run snapshot for the agents is renamed `cache_hits.yaml`.
+
 ## [2.5.1] - 2026-09-24
 
 ### Added

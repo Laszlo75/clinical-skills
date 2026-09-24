@@ -36,9 +36,10 @@ run in parallel; this conversation sees only their short summaries.
 - This plugin's folder: `${CLAUDE_PLUGIN_ROOT}` — shared scripts in
   `${CLAUDE_PLUGIN_ROOT}/shared/scripts/`.
 - This skill's folder: `${CLAUDE_SKILL_DIR}` — templates and assets.
-- Guideline cache (kept between runs and plugin updates):
-  `${CLAUDE_PLUGIN_DATA}/guideline_cache`. If that still reads as a placeholder, use
-  `~/.clinical-evidence/guideline_cache`.
+- Guideline cache: `<workspace>/.clinical-evidence/guideline_cache` — in the
+  researcher's own folder, because that is the only place that survives between
+  sessions (Cowork runs each task in a temporary sandbox). Reviews run from the same
+  folder share it.
 - `<workspace>` is the researcher's own folder — the one they selected or shared, where
   their protocol is and where the outputs are saved. In Cowork this is a mounted folder,
   **not** the shell's home or starting directory (e.g. not `/home/claude`): working

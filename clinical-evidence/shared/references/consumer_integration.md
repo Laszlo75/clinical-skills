@@ -41,11 +41,12 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
 
   ```bash
   python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/guideline_cache.py" get \
-    "<cache>" --out "<workspace>/.clinical-evidence/guideline_cache.yaml"
+    "<workspace>/.clinical-evidence/guideline_cache" \
+    --out "<workspace>/.clinical-evidence/cache_hits.yaml"
   ```
 
-  `<cache>` is the plugin data folder's `guideline_cache` (the skill's Paths section
-  gives it). Then, in **one message**, so they run concurrently, dispatch:
+  The cache lives in the researcher's folder, the only place that persists between
+  sessions; give the guideline agents the `cache_hits.yaml` path. Then, in **one message**, so they run concurrently, dispatch:
   - `guideline-search` agents with **all** the questions and — for a protocol review —
     the protocol's concrete doses, thresholds and timings, so they pull the exact
     recommendations. Split the guideline bodies between 2–3 agents so no single agent
@@ -118,7 +119,7 @@ After verification, store the checked guidelines for the next run:
 
 ```bash
 python "${CLAUDE_PLUGIN_ROOT}/shared/scripts/guideline_cache.py" put \
-  "<cache>" "<workspace>/.literature_search_ledger.yaml"
+  "<workspace>/.clinical-evidence/guideline_cache" "<workspace>/.literature_search_ledger.yaml"
 ```
 
 ## 3. Validate

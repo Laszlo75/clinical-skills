@@ -7,9 +7,10 @@ Usage:
     python guideline_cache.py list  <cache_dir>
     python guideline_cache.py clear <cache_dir> [--older-than-days N]
 
-The cache lives in the plugin's persistent data folder (`${CLAUDE_PLUGIN_DATA}`), which
-survives plugin updates, so every review on this machine can reuse it. One YAML file
-per guideline edition (organisation + title + year), holding the ledger entry: edition,
+The cache lives in the researcher's own folder (`<workspace>/.clinical-evidence/
+guideline_cache`): in Claude Cowork each task runs in a temporary sandbox and the plugin
+data folder isn't provided, so the selected folder is the only place that persists.
+Every review run from the same folder reuses it. One YAML file per guideline edition (organisation + title + year), holding the ledger entry: edition,
 currency, and every recommendation extracted so far with its verbatim quote, grade and
 `accessed` date.
 
