@@ -32,7 +32,10 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
   verdict.
 - **Second reviewer.** The `second-reviewer` agent, in a fresh context, challenges each
   judgement against its cited evidence and checks doses against BNF/SmPC — the dual-review
-  step of a systematic review. Disagreements must be resolved in writing.
+  step of a systematic review. Each disagreement is reconciled into one recommendation
+  (revised, kept with reasons, or — when neither view is clearly right — presented to the
+  MDT as options with cited pros and cons). The second reviewer's comments stay in the
+  traceability files; the document shows only the reconciled result (2.4.0).
 - **Scripted tables.** `review_tables.py` refuses to build if the working files are
   inconsistent (uncovered statement, excluded/unknown citation, unresolved disagreement),
   then writes the evidence table, traceability matrix and register row — counts are
@@ -50,7 +53,7 @@ recommendations, plus Zotero exports and a row in the workspace evaluation regis
 
 ## AI use policy (ISO 42001)
 
-- **System:** the latest Claude Opus at high effort (searches on Sonnet, in parallel) (version named in the plugin
+- **System:** the latest Claude Opus at high effort (guidelines on Opus at medium effort; literature searches on Sonnet; all in parallel) (version named in the plugin
   README), via Claude Cowork or Claude Code.
 - **Intended use:** evidence synthesis to support protocol review; it does not make
   clinical decisions.

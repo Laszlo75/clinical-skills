@@ -77,6 +77,13 @@ def test_register_row_and_header_migration(review, monkeypatch):
     (lambda l, m, j: j[0].update(evidence=[99]), "not in the ledger"),
     (lambda l, m, j: j[0].update(verdict="partly"), "verdict must be one of"),
     (lambda l, m, j: j[1]["second_review"].update(resolution=""), "a resolution is required"),
+    (lambda l, m, j: j[1]["second_review"].pop("outcome"), "second_review.outcome must be one of"),
+    (lambda l, m, j: j[1]["second_review"].update(outcome="mdt_decision"), "at least two options"),
+    (lambda l, m, j: j[0].update(options=[{"position": "x"}]), "options are only for"),
+    (lambda l, m, j: (j[1]["second_review"].update(outcome="mdt_decision"),
+                      j[1].update(options=[{"position": "a", "evidence": [1]},
+                                           {"position": "b", "evidence": [4]}])),
+     "excluded by verification"),
     (lambda l, m, j: j[0].update(statement=None), "only new_addition"),
     (lambda l, m, j: m["statements"][0].update(questions=["Q9"]), "unknown question Q9"),
 ])
@@ -108,3 +115,63 @@ def test_second_review_warning_only_for_practice_changing(review, monkeypatch, c
     assert run(review, monkeypatch) == 0
     out = capsys.readouterr().out
     assert "J2: practice-changing but not second-reviewed" in out and "J1:" not in out
+
+
+def test_mdt_decision_traced_not_hidden(review, monkeypatch):
+    ledger, pmap, judgements = load(review)
+    judgements[1]["second_review"]["outcome"] = "mdt_decision"
+    judgements[1]["options"] = [
+        {"position": "Target ≤1:8", "pros": "BTS 1C", "cons": "More apheresis", "evidence": [1]},
+        {"position": "Target ≤1:16", "pros": "Fewer sessions", "cons": "Registry only", "evidence": [3, 2]},
+    ]
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    reg = review / "register.csv"
+    assert run(review, monkeypatch, "--register", str(reg)) == 0
+    j2 = rows(review / "ABOi_Traceability.csv")[1]
+    assert j2["outcome"] == "mdt_decision" and "Target ≤1:16 (pros: Fewer sessions" in j2["mdt_options"]
+    assert j2["evidence"] == "1; 3; 2"
+    assert "for MDT decision" in (review / ".clinical-evidence" / "traceability.md").read_text()
+    assert rows(reg)[0]["for_mdt_decision"] == "1"
+
+
+def test_grade_must_be_printed_in_cited_guideline(review, monkeypatch, capsys):
+    ledger, pmap, judgements = load(review)
+    # schema 1.2: an ungrounded grade (fixture quote omits "1C") only warns
+    assert run(review, monkeypatch) == 0
+    assert "J2: grade 'BTS Grade 1C' is not printed in the quoted text" in capsys.readouterr().out
+    # schema 1.3: it blocks the build
+    ledger["metadata"]["ledger_schema_version"] = "1.3"
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    # a grade the cited guideline never gave is caught too
+    judgements[1]["grade"] = "BTS Grade 1A"
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    assert "not a grade of any cited guideline" in capsys.readouterr().out
+    # once the quote carries the grade, the original grade passes
+    judgements[1]["grade"] = "BTS Grade 1C"
+    ledger["guidelines"][0]["key_recommendations"][0]["source_quote"] += " (Grade 1C)"
+    ledger["guidelines"][0]["currency"] = {"status": "current", "checked_on": "2026-09-24"}
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    judgements[1]["grade"] = "BTS Grade 1C; BTS Grade 1A"          # each grade is checked
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 1
+    judgements[1]["grade"] = "BTS Grade 1C"
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0
+    ev = rows(review / "ABOi_Evidence_Table.csv")[0]
+    assert ev["currency"] == "current" and "not confirmed" not in ev["key_finding"]
+
+
+def test_ungraded_recommendation_from_literature_allowed(review, monkeypatch):
+    """No guideline covers it: a recommendation resting on observational data or expert
+    opinion, with no grade, builds even under the strict 1.3 grade check."""
+    ledger, pmap, judgements = load(review)
+    ledger["metadata"]["ledger_schema_version"] = "1.3"
+    judgements[1].pop("grade")
+    judgements[1].update(evidence=[3], confidence="low")
+    (review / "review_ledger.yaml").write_text(yaml.safe_dump(ledger, allow_unicode=True))
+    (review / "judgements.yaml").write_text(yaml.safe_dump(judgements, allow_unicode=True))
+    assert run(review, monkeypatch) == 0

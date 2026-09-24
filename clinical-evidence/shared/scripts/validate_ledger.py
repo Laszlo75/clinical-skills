@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a clinical-evidence YAML reference ledger against schema v1.x (1.0–1.2).
+"""Validate a clinical-evidence YAML reference ledger against schema v1.x (1.0–1.3).
 
 Usage:
     python validate_ledger.py <path_to_ledger.yaml>
@@ -34,7 +34,7 @@ except ImportError:
     sys.exit(2)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from refmatch import norm_doi  # noqa: E402
+from refmatch import grade_in_source, norm_doi  # noqa: E402
 
 
 SUPPORTED_MAJOR = 1
@@ -47,6 +47,7 @@ ALLOWED_TRIAL_PHASES = {"Phase I", "Phase II", "Phase III", "Phase IV"}
 ALLOWED_TRIAL_STATUSES = {"RECRUITING", "ACTIVE_NOT_RECRUITING", "COMPLETED"}
 ALLOWED_INTEGRITY_STATUSES = {"pass", "review"}  # "fail" rows are moved to excluded_references
 ALLOWED_CERTAINTY = {"high", "moderate", "low", "very low"}  # GRADE certainty (schema 1.2)
+ALLOWED_CURRENCY = {"current", "past_review_date", "superseded", "withdrawn", "draft", "unknown"}  # 1.3
 RETRACTION_MARKERS = ("[Retracted]", "[Retraction of:", "Retracted:")
 
 
@@ -205,6 +206,14 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
         if not isinstance(g.get("year"), int):
             issues.error(f"{base}.year", "must be an integer")
         _check_questions_field(g, base, issues)
+        _check_optional_str(g, ("edition",), base, issues)
+        cur = g.get("currency")
+        if cur is not None:
+            if not isinstance(cur, dict) or cur.get("status") not in ALLOWED_CURRENCY:
+                issues.error(f"{base}.currency.status", f"must be one of {sorted(ALLOWED_CURRENCY)}")
+            elif cur["status"] != "current":
+                issues.warn(f"{base}.currency", f"{g.get('organisation')} {g.get('year')}: {cur['status']}"
+                            + (f" — {cur['note']}" if cur.get("note") else ""))
         recs = g.get("key_recommendations")
         if recs is None:
             issues.warn(f"{base}.key_recommendations", "missing — empty list recommended")
@@ -219,6 +228,10 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
                 if not isinstance(r.get("text"), str) or not r.get("text").strip():
                     issues.error(f"{rpath}.text", "missing or not a non-empty string")
                 _check_grade(r.get("grade"), rpath, issues)
+                if isinstance(r.get("grade"), dict) and not grade_in_source(r):
+                    issues.warn(f"{rpath}.grade",
+                                f"{r['grade'].get('display')!r} not found in the quoted source text "
+                                "— don't quote it as the guideline's grade")
                 _check_optional_str(r, ("source_quote", "section"), rpath, issues)
                 acc = r.get("accessed")
                 if acc is not None and not (isinstance(acc, date) or ISO_DATE_RE.match(str(acc))):

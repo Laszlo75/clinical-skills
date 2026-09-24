@@ -4,6 +4,32 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.0] - 2026-09-24
+
+### Added
+
+- **`guideline-search` agent (Opus, medium effort).** Guidelines are the backbone of every review, so a dedicated agent now covers them, in parallel with the literature agents:
+  - finds the UK and international guidelines for all the questions, including adjacent bodies (e.g. BSH, UKHSA Green Book and MHRA for a transplant protocol);
+  - confirms each is the current edition (`currency`: current, past review date, superseded …);
+  - reads the guideline documents themselves;
+  - extracts the specific recommendations (doses, thresholds, timings);
+  - copies each grade exactly as printed, with a verbatim quote. Ungraded guidance is recorded as `ungraded`, never given a borrowed grade.
+- **Grade provenance check.** A grade counts only if it appears in the guideline's quoted text (`refmatch.grade_in_source`). Recommendations with no guideline behind them (trends, observational data, expert opinion) stay allowed: they are written ungraded, with their evidence and certainty stated.
+  - `validate_ledger.py` warns about unconfirmed grades and about guidelines that are not current.
+  - Consumers don't quote unconfirmed grades.
+  - `review_tables.py` refuses (for schema 1.3 ledgers) a judgement whose grade isn't a confirmed grade of a guideline it cites.
+  - The evidence table gains a `currency` column and marks unconfirmed grades.
+- **Ledger schema 1.3** (backward compatible): optional `edition`, `currency`, `pmid`, `doi` on guidelines, and `grade.quote`.
+
+### Changed
+
+- `evidence-search` (Sonnet) now covers only the primary literature and no longer fetches guideline pages.
+- The second reviewer checks grades and currency at source for safety-flagged items.
+- **One reconciled recommendation per item.** The review document no longer shows "Second reviewer" paragraphs. The lead reconciles each challenge as `revised`, `kept` (with reasons) or `mdt_decision`. The second reviewer's comments and the resolution stay in the traceability CSV/xlsx and appendix, for audit.
+- **Uncertainty goes to the MDT.** When both views are defensible, the document presents a "For MDT decision" block: two or more options, each with cited pros and cons, and the choice left to the MDT. `review_tables.py` requires an `outcome` for every disagreement, and at least two options (with valid evidence) for an MDT decision. It adds `outcome` and `mdt_options` to the traceability table, and a `for_mdt_decision` count to the register (older registers are migrated).
+- **Specificity kept.** The second reviewer must propose an evidence-based alternative rather than defer to "unit protocol" when a guideline gives a specific value; the lead may not resolve a disagreement that way either.
+- **Cleaner prose.** Grades are written naturally ("(BTS Grade 1C)"), with no field names; summary-table cells are short and never truncated.
+
 ## [2.3.0] - 2026-09-23
 
 A leaner pipeline to cut both run time and token use. A 2.2.0 protocol review took about 30 minutes; with more capable models it should get faster, not slower. The main causes were one long sequential search, blanket full-text reading, a second agent re-reading every record, and maximum effort on every step.

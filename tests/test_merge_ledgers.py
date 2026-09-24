@@ -39,3 +39,20 @@ def test_merged_ledger_validates(tmp_path):
     out = tmp_path / "merged.yaml"
     out.write_text(yaml.safe_dump(ml.merge(list(parts())), allow_unicode=True))
     assert vl.validate_ledger(out) == 0
+
+
+def test_guideline_part_merges_with_literature_parts(tmp_path):
+    a, b = parts()
+    g = copy.deepcopy(a)
+    g["references"] = []
+    g["metadata"].update(ledger_schema_version="1.3", model_id="opus (effort medium)")
+    g["guidelines"][0]["currency"] = {"status": "current", "checked_on": "2026-09-24"}
+    a["guidelines"] = b["guidelines"] = []
+    merged = ml.merge([g, a, b])
+    assert len(merged["guidelines"]) == 1 and merged["guidelines"][0]["ref_id"] == 1
+    assert [r["ref_id"] for r in merged["references"]] == [2, 3]
+    assert merged["metadata"]["ledger_schema_version"] == "1.3"
+    assert merged["metadata"]["model_id"].count(";") == 1
+    out = tmp_path / "merged.yaml"
+    out.write_text(yaml.safe_dump(merged, allow_unicode=True))
+    assert vl.validate_ledger(out) == 0

@@ -15,7 +15,7 @@ ledger. This script combines them:
 - `questions` lists on duplicate entries are unioned, so an entry keeps every review
   question it was found for;
 - ref_ids are renumbered 1..N (guidelines, then references, then preprints);
-- metadata: topics joined, mesh_terms / guideline_bodies / questions unioned, latest
+- metadata: topics and distinct model ids joined, mesh_terms / guideline_bodies / questions unioned, latest
   search_date, highest ledger_schema_version.
 
 Run it before verification — ref_ids change here and nothing has cited them yet.
@@ -91,6 +91,8 @@ def merge(parts: list[dict]) -> dict:
             for field in ("mesh_terms", "guideline_bodies", "questions"):
                 if m.get(field):
                     meta[field] = _union(meta.get(field), m[field])
+            if m.get("model_id") and m["model_id"] not in str(meta.get("model_id", "")):
+                meta["model_id"] = f"{meta['model_id']}; {m['model_id']}" if meta.get("model_id") else m["model_id"]
             if str(m.get("search_date", "")) > str(meta.get("search_date", "")):
                 meta["search_date"] = m["search_date"]
             if _version_key(m.get("ledger_schema_version")) > _version_key(meta.get("ledger_schema_version")):

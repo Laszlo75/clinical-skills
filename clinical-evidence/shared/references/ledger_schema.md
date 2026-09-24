@@ -235,6 +235,39 @@ Parallel searches each write a partial ledger; `shared/scripts/merge_ledgers.py`
 them (de-duplicating on PMID/DOI, unioning `questions`, renumbering `ref_id`s) before
 verification.
 
+## Guideline currency and grade provenance (schema 1.3, all optional)
+
+Written by the `guideline-search` agent, which reads the guideline documents themselves:
+
+```yaml
+guidelines:
+  - # … as above …
+    edition: "Third edition"
+    pmid: null                        # only when the guideline is a journal publication
+    doi: null
+    currency:
+      status: "past_review_date"      # current | past_review_date | superseded | withdrawn | draft | unknown
+      checked_on: "2026-09-24"
+      note: "Review date 2019; no newer edition found"
+    key_recommendations:
+      - text: "…"
+        grade:
+          system: "BTS"
+          code: "1C"                  # exactly as the guideline prints it; "ungraded" if it gives none
+          display: "BTS Grade 1C"
+          quote: "Grade 1C"           # optional: verbatim text where the grade is printed, if not in source_quote
+        source_quote: "…verbatim recommendation text, with the grade where printed with it…"
+```
+
+**Grade provenance.** A grade counts as confirmed only if its `code` appears, as a whole
+token, in `source_quote` or `grade.quote` (`refmatch.grade_in_source`). The validator
+warns about every unconfirmed grade; consumers don't quote those, and `review_tables.py`
+refuses (for 1.3 ledgers) a judgement whose grade isn't a confirmed grade of a guideline it
+cites. This catches grades supplied from memory — the commonest way a plausible but wrong
+grade reaches a document. It does not prove the quote itself is genuine; that is why the
+agent reads the source document and the second reviewer re-checks grades on
+practice-changing items.
+
 ## Validation
 
 Every producer and consumer must run `shared/scripts/validate_ledger.py` against the ledger:
@@ -253,6 +286,11 @@ Prose validation in SKILL.md files should defer to this script — a consumer's 
 ---
 
 ## Change log
+
+### 1.3 (2026-09-24)
+- Optional `edition`, `currency`, `pmid`, `doi` on guidelines; optional `grade.quote`; `code: ungraded` for recommendations a guideline doesn't grade.
+- Validator warns when a grade code is not found in the quoted source text, and when a guideline is not current.
+- Backward compatible: 1.0–1.2 ledgers validate unchanged.
 
 ### 1.2 (2026-09-23)
 - Optional `metadata.questions`; `questions`, `study_design`, `population`, `sample_size`, `certainty` on references; `questions` on guidelines; `source_quote`, `section`, `accessed` on guideline recommendations.

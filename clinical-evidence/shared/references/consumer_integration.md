@@ -10,9 +10,10 @@ working folder. Shell commands run from the workspace, so always use absolute, q
 paths.
 
 ```text
-skill (lead) ─┬─ evidence-search: questions A ─┐
-              ├─ evidence-search: questions B  ├─ in parallel → ledger_parts/*.yaml
-              └─ evidence-search: questions C ─┘
+skill (lead) ─┬─ guideline-search: all questions ─┐
+              ├─ evidence-search: questions A     ├─ in parallel → ledger_parts/*.yaml
+              ├─ evidence-search: questions B     │
+              └─ evidence-search: questions C ────┘
 merge_ledgers.py → .literature_search_ledger.yaml (hidden)
 PubMed ID conversion (skill) → refs_b.yaml → verify_references.py → validate_ledger.py
 skill writes its document; format_references.py builds the reference list
@@ -33,13 +34,18 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   in one line what search you are about to use and how old it is, so they can ask for a
   fresh one. If the topic clearly doesn't match the current task, or the search is old
   for a fast-moving field (roughly > 6 months), offer a fresh search instead.
-- **Absent (or the researcher wants a fresh one): search in parallel.** Split the
-  questions into 2–4 clusters of related questions (one cluster is fine for a single
-  narrow question) and dispatch one `evidence-search` agent per cluster **in the same
-  message**, so they run concurrently. Give each: its questions (ids and text), the
-  topic and population, likely guideline bodies, the plugin version (from
-  `[skill-path]/../../.claude-plugin/plugin.json`) and its own output file,
-  `<workspace>/.clinical-evidence/ledger_parts/part<N>.yaml`. Then merge:
+- **Absent (or the researcher wants a fresh one): search in parallel.** In **one
+  message**, so they run concurrently, dispatch:
+  - one `guideline-search` agent with **all** the questions, the likely guideline
+    bodies (UK first, then international), and — for a protocol review — the protocol's
+    concrete doses, thresholds and timings, so it pulls the exact recommendations.
+    Output: `<workspace>/.clinical-evidence/ledger_parts/guidelines.yaml`.
+  - one `evidence-search` agent per cluster of related questions (2–4 clusters; one is
+    fine for a single narrow question) for the primary literature. Output:
+    `<workspace>/.clinical-evidence/ledger_parts/part<N>.yaml`.
+
+  Give every agent the topic and population, its questions (ids and text) and the plugin
+  version (from `[skill-path]/../../.claude-plugin/plugin.json`). Then merge:
 
   ```bash
   python "[skill-path]/../../shared/scripts/merge_ledgers.py" \
@@ -104,7 +110,13 @@ so rather than guessing at its structure.
 ## 4. Use it
 
 - Read the ledger from disk; don't work from memory of the agents' summaries.
-- Guidelines are your benchmarks. Quote grades using `grade.display` verbatim.
+- Guidelines are your benchmarks. Quote a grade (as `grade.display`, written naturally —
+  "(BTS Grade 1C)") only when the validator did not flag it as "not found in the quoted
+  source text"; otherwise give the recommendation without a grade and say the grade
+  could not be confirmed. For `ungraded` recommendations, name the body without a grade
+  and keep its own strength wording from `source_quote` — NICE's "offer" (strong) vs
+  "consider" (weaker), "must" vs "should". Mention a guideline whose `currency.status` is not `current`
+  (e.g. past its review date) where you rely on it.
 - `references[].key_finding` is the quickest way to map evidence to your sections; open
   the full record when you need detail.
 - Cite only entries in `guidelines`, `references` and `preprints`. Never cite anything

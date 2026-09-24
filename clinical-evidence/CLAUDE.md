@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working on the 
 
 ## What This Is
 
-A Claude Code plugin that bundles two co-designed clinical skills — `research-summary` and `protocol-reviewer` — plus two shared subagents: `evidence-search`, which does the PubMed/Scholar Gateway/guideline retrieval (several run in parallel, on Sonnet), and `second-reviewer`, which challenges practice-changing protocol-review judgements. The skills share a hidden YAML reference ledger produced by the agent. Together they take a clinical topic or an uploaded protocol and produce a draft evidence summary and/or a draft protocol review document, all framed in UK NHS context and carrying ISO 42001 transparency disclaimers. `research-summary` is the user-facing entry point for a literature search or evidence summary (it dispatches the agent and also writes Zotero exports); `protocol-reviewer` reviews an uploaded protocol against the same evidence.
+A Claude Code plugin that bundles two co-designed clinical skills — `research-summary` and `protocol-reviewer` — plus three shared subagents: `guideline-search` (Opus, medium effort), which reads the current guideline documents and copies each recommendation and grade as printed; `evidence-search`, which does the PubMed/Scholar Gateway literature retrieval (several run in parallel, on Sonnet); and `second-reviewer`, which challenges practice-changing protocol-review judgements. The skills share a hidden YAML reference ledger produced by the agent. Together they take a clinical topic or an uploaded protocol and produce a draft evidence summary and/or a draft protocol review document, all framed in UK NHS context and carrying ISO 42001 transparency disclaimers. `research-summary` is the user-facing entry point for a literature search or evidence summary (it dispatches the agent and also writes Zotero exports); `protocol-reviewer` reviews an uploaded protocol against the same evidence.
 
 The plugin is the single distributable unit: the two skills and the agent are co-designed, share the hidden reference ledger and a plugin-level `shared/` contract directory, and are not intended to be installed independently.
 
@@ -17,7 +17,8 @@ clinical-evidence/
 ├── CHANGELOG.md                   # plugin-level changelog (single source of version history)
 ├── CLAUDE.md                      # this file
 ├── agents/
-│   ├── evidence-search.md         # runs the PubMed/Scholar/guideline search, writes the ledger
+│   ├── guideline-search.md        # current guidelines: recommendations + grades copied from source
+│   ├── evidence-search.md         # PubMed/Scholar literature search, writes a partial ledger
 │   └── second-reviewer.md         # challenges practice-changing protocol-review judgements
 ├── shared/                        # contract layer, owned by no single skill
 │   ├── references/
@@ -58,7 +59,7 @@ Per-skill `CLAUDE.md` files live inside each skill folder and hold the skill-spe
 
 The two skills and the agents are tightly coupled by design:
 
-- **Shared subagents.** Both skills dispatch the same [`evidence-search` agent](./agents/evidence-search.md) to do the actual search work in isolated context. The agent runs in its own conversation so the tool-heavy traffic (PubMed metadata, Scholar Gateway passages, full-text retrievals) never reaches the parent skill's context. This keeps the main conversation clean and lets downstream synthesis work from a short structured summary rather than thousands of lines of tool output. Searches are split into question clusters and run in parallel, then merged with `merge_ledgers.py`.
+- **Shared subagents.** Both skills dispatch the same [`evidence-search` agent](./agents/evidence-search.md) to do the actual search work in isolated context. The agent runs in its own conversation so the tool-heavy traffic (PubMed metadata, Scholar Gateway passages, full-text retrievals) never reaches the parent skill's context. This keeps the main conversation clean and lets downstream synthesis work from a short structured summary rather than thousands of lines of tool output. Searches run in parallel — one `guideline-search` agent for all questions plus one `evidence-search` agent per question cluster — then are merged with `merge_ledgers.py`.
 - **Shared contract directory.** `research-summary/SKILL.md` and `protocol-reviewer/SKILL.md` reference [`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md), [`shared/references/consumer_integration.md`](./shared/references/consumer_integration.md), [`shared/scripts/validate_ledger.py`](./shared/scripts/validate_ledger.py), and [`shared/scripts/ledger_to_exports.py`](./shared/scripts/ledger_to_exports.py) via `../../shared/...`. Each skill sits at `skills/<skill>/`, two levels below the plugin root, so those paths resolve. Splitting the plugin would break these pointers.
 - **Shared hidden ledger.** When any skill dispatches the `evidence-search` agent, the agent writes an internal reference ledger to `<workspace>/.literature_search_ledger.yaml`. Any skill run later in the same workspace discovers, validates, and consumes that ledger automatically. Researchers never see or manage the ledger.
 - **Single reference contract.** The ledger format is defined in exactly one place ([`shared/references/ledger_schema.md`](./shared/references/ledger_schema.md)). Every skill and the agent point at that file rather than duplicating the schema, and every consumer runs the bundled validator script to enforce it. The agent inlines the essential schema fields in its prompt because it can't reliably read the reference doc from its isolated context, but the executable validator is the ground truth that prevents drift.
@@ -68,7 +69,7 @@ The two skills and the agents are tightly coupled by design:
 
 The plugin is the only versioned unit. Per-skill SKILL.md files have no `version` frontmatter field, and per-skill CHANGELOGs do not exist. See the plugin-level [`CHANGELOG.md`](./CHANGELOG.md) for release history.
 
-Current release: **2.3.0**.
+Current release: **2.4.0**.
 
 **Semver policy:**
 
@@ -102,7 +103,7 @@ Required (whole plugin):
 - **Python 3 + PyYAML** — used by the verification, validation, formatting and export scripts
 - **PubMed MCP** — literature search and article metadata (used by the `evidence-search` agent)
 - **Scholar Gateway MCP** — semantic search (used by the agent)
-- **WebSearch / WebFetch** — national guideline pages (used by the agent)
+- **WebSearch / WebFetch** — guideline documents (used by the `guideline-search` agent)
 
 Optional:
 
@@ -115,7 +116,7 @@ Optional connectors (enhance search coverage):
 
 ## AI Use Policy (ISO 42001)
 
-**System identity:** the latest Claude Opus model (Anthropic) at high effort, with Claude Sonnet for the search agents (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code in Claude Desktop.
+**System identity:** the latest Claude Opus model (Anthropic) at high effort, with Opus at medium effort for the guideline agent and Claude Sonnet for the literature agents (the currently recommended version is named in the plugin README) accessed via Claude Cowork or Claude Code in Claude Desktop.
 
 **Intended use:** AI-assisted literature search, evidence synthesis, and cross-referencing of clinical protocols against current guidelines. The plugin retrieves, structures, and summarises evidence; it does not make clinical decisions.
 
@@ -124,3 +125,5 @@ Optional connectors (enhance search coverage):
 **Transparency:** Every generated document carries a "DRAFT — NOT FOR CLINICAL USE" callout and a transparency disclaimer naming the plugin (`clinical-evidence v…`), the model, the MCP sources used, and the generation date.
 
 **Reference integrity:** the `evidence-search` agent copies reference metadata into the hidden ledger straight from PubMed tool output. Before anything is cited, the skill checks every PMID/DOI pair independently with PubMed's ID converter, and `verify_references.py` excludes any reference whose identifiers point to different papers, or that is retracted. The validator then checks structure, and `format_references.py` generates the reference list so reference text is never retyped.
+
+**Guideline grades:** the `guideline-search` agent copies each grade exactly as the guideline prints it, with a verbatim quote. A grade counts as confirmed only if it appears in that quote (`refmatch.grade_in_source`); the validator flags unconfirmed grades, consumers don't quote them, and `review_tables.py` refuses a protocol-review grade that isn't a confirmed grade of a cited guideline.
