@@ -4,6 +4,25 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.4.1] - 2026-09-24
+
+The 2.4.0 test run gave the strongest review so far, but the search took 15 min, against 6 in 2.3.0: the single guideline agent was the bottleneck while the literature agents waited.
+
+### Changed
+
+- **Guideline work split across 2–3 parallel `guideline-search` agents**, by guideline body:
+  - UK bodies of the core specialty;
+  - UK cross-specialty bodies (NICE, BSH, Green Book, MHRA …);
+  - international bodies.
+
+  Each agent names important guidelines from outside its own bodies rather than reading them. Every document is still read once, on Opus, so token use should be similar.
+- **Second review split** between two parallel reviewers when more than about eight items are sent.
+- **Citation style:** one bracket per citation point, numbers ascending, runs collapsed (`[2, 22–25]`).
+- **Self-contained protocol positions.** Every subsection, aligned items included, states what the protocol says in terms a reader understands without the heading. "Retain" now means no change; anything else is at least a minor update.
+- **Reasoned recommendations.** Every recommendation gives its reason, "Retain" included. Indirect evidence is labelled as indirect, and a value no source addresses is stated as expert opinion (a 2.4.0 item read "Retain [6]", citing post-desensitisation infection data for a pre-transplant infection interval).
+- **Wording matches the evidence.** "Must" and "unsafe" need a guideline or clear safety evidence. When current practice is wrong only in some cases, the review names those cases. (A 2.4.0 review called donor-group plasma unsafe on the strength of one study; BSH supports it except for bidirectional mismatch.)
+- **Grades stay with the recommendation that carries them.** A grade is never attached to a statement of what a guideline does not cover.
+
 ## [2.4.0] - 2026-09-24
 
 ### Added

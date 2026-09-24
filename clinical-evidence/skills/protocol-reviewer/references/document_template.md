@@ -44,7 +44,11 @@ classification scheme.
 ```markdown
 ## 3.1 [Section title from protocol]
 
-**Current protocol position:** [brief paraphrase]
+**Current protocol position:** [what the protocol says, self-contained — a reader who
+has not seen the protocol must understand it without the heading, e.g. "Patients who
+cannot receive blood products (medical or religious reasons, e.g. Jehovah's Witnesses),
+or who previously did not tolerate plasma exchange or anti-T/B-cell antibodies, are
+excluded." — not "These patients are excluded."]
 
 **National guideline position:** [what guidelines say, grade inline — e.g. "BTS recommends
 a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
@@ -60,6 +64,25 @@ otherwise the evidence it rests on ("Consider low-dose rituximab (200 mg): obser
 data suggest similar outcomes with fewer infections, low certainty [9, 12]." or "Expert
 opinion; no guideline or trial addresses this [5].")]
 ```
+
+Every subsection has a plain-English heading naming the topic and a **Current protocol
+position**, aligned items included; the guideline and evidence lines may be left out
+when there is nothing to report. The recommendation must match the assessment: "Retain"
+means no change — if anything should change, even optionally, it is at least a minor
+update.
+
+Every recommendation, "Retain" included, gives its reason in a sentence — never a bare
+"Retain [6]". Cite evidence for what it actually shows: if it bears on the statement
+only indirectly (e.g. infection risk after desensitisation, cited for a pre-transplant
+infection interval), say so; if no guideline or study addresses the specific value
+(e.g. "60 days"), say it rests on expert opinion. A citation must never imply more
+support than it gives.
+
+Match the strength of wording to the evidence. "Must" and "unsafe" need a guideline or
+clear safety evidence behind them; a single study or first-principles reasoning supports
+"consider" or "clarify". When current practice is right in most cases and wrong only in
+some (e.g. donor-group plasma, which BSH supports except for bidirectional A↔B
+mismatch), name the case that differs rather than calling the practice unsafe.
 
 The reader sees one reconciled recommendation per item. The second reviewer's comments,
 and how each was resolved, stay in the traceability matrix and evidence table; don't add
@@ -127,5 +150,8 @@ table and matrix are provided as `[Protocol_Name]_Evidence_Table.xlsx` / `.csv`.
 
 ## Citation style
 
-Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]`. Every factual claim cited; every
-listed reference cited at least once.
+Numbered, square brackets: `[1]`, `[2, 3]`, `[4–6]` — one bracket per citation point,
+numbers ascending, runs collapsed (`[2, 22–25]`, not `[22, 2], [23, 24, 25]`). Every
+factual claim cited; every listed reference cited at least once. Attach a guideline
+grade only to the recommendation that carries it — never to a statement of what a
+guideline does not cover.

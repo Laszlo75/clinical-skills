@@ -10,7 +10,7 @@ working folder. Shell commands run from the workspace, so always use absolute, q
 paths.
 
 ```text
-skill (lead) ─┬─ guideline-search: all questions ─┐
+skill (lead) ─┬─ guideline-search ×2–3: by body ─┐
               ├─ evidence-search: questions A     ├─ in parallel → ledger_parts/*.yaml
               ├─ evidence-search: questions B     │
               └─ evidence-search: questions C ────┘
@@ -36,10 +36,17 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   for a fast-moving field (roughly > 6 months), offer a fresh search instead.
 - **Absent (or the researcher wants a fresh one): search in parallel.** In **one
   message**, so they run concurrently, dispatch:
-  - one `guideline-search` agent with **all** the questions, the likely guideline
-    bodies (UK first, then international), and — for a protocol review — the protocol's
-    concrete doses, thresholds and timings, so it pulls the exact recommendations.
-    Output: `<workspace>/.clinical-evidence/ledger_parts/guidelines.yaml`.
+  - `guideline-search` agents with **all** the questions and — for a protocol review —
+    the protocol's concrete doses, thresholds and timings, so they pull the exact
+    recommendations. Split the guideline bodies between 2–3 agents so no single agent
+    becomes the bottleneck (one agent is enough for a narrow topic), typically:
+    1. UK bodies of the core specialty (e.g. BTS, UKKA, NHSBT for transplantation);
+    2. UK cross-specialty bodies the topic touches (e.g. NICE, BSH, UKHSA Green Book,
+       MHRA/SmPC, BSAC);
+    3. international bodies (e.g. KDIGO, TTS, ASFA, ESOT, AST).
+
+    Name each agent's bodies in its dispatch. Output:
+    `<workspace>/.clinical-evidence/ledger_parts/guidelines<N>.yaml`.
   - one `evidence-search` agent per cluster of related questions (2–4 clusters; one is
     fine for a single narrow question) for the primary literature. Output:
     `<workspace>/.clinical-evidence/ledger_parts/part<N>.yaml`.

@@ -54,11 +54,11 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
 
 3. **Get a verified evidence base.** Follow
    [`../../shared/references/consumer_integration.md`](../../shared/references/consumer_integration.md).
-   In one message, dispatch the `guideline-search` agent with all the questions and the
-   protocol's concrete doses, thresholds and timings (guidelines are the backbone of the
-   review: it reads the current guideline documents and copies each grade as printed),
-   and one `evidence-search` agent per cluster of 2–4 question clusters for the
-   literature. Merge, then check the references' identifiers (a quick PubMed ID
+   In one message, dispatch 2–3 `guideline-search` agents, split by guideline body, each
+   with all the questions and the protocol's concrete doses, thresholds and timings
+   (guidelines are the backbone of the review: they read the current guideline documents
+   and copy each grade as printed), and one `evidence-search` agent per cluster of 2–4
+   question clusters for the literature. Merge, then check the references' identifiers (a quick PubMed ID
    conversion — no extra agent).
 
 4. **Judge each statement.** Write `judgements.yaml`: for each statement (and any
@@ -75,16 +75,20 @@ scripts are in `[skill-path]/../../shared/scripts/`; working files go in
    — plus an actionable recommendation, the ledger `ref_id`s it rests on, the guideline
    grade (`grade.display` verbatim, only from a cited guideline whose grade the validator
    confirmed in its source text; leave it empty when no guideline grades the point), confidence (high/moderate/low), and flags for patient
-   safety and commissioning impact. Weigh conflicting sources explicitly. Where no
-   guideline covers a point, still recommend on consistent trends, observational data or
-   expert opinion — ungraded, with the evidence cited, its certainty stated plainly and
+   safety and commissioning impact. Weigh conflicting sources explicitly. An `aligned`
+   verdict needs the same scrutiny as a change: say which source supports the specific
+   value, or that none does. Where no guideline covers a point, still recommend on
+   consistent trends, observational data or expert opinion — ungraded, with the evidence cited, its certainty stated plainly and
    confidence set to match.
 
 5. **Second review — where it changes practice.** Dispatch the `second-reviewer`
    agent with the paths to the map, the judgements and the ledger, the list of judgement
    ids to review — every `major_update`, `new_addition` and `remove`, plus anything
    flagged for safety — and `.clinical-evidence/second_review.yaml` as its output.
-   Aligned and minor items are not sent; skip the step entirely if there are none.
+   Aligned and minor items are not sent; skip the step entirely if there are none. With
+   more than about eight items, split them between two reviewers dispatched in the same
+   message (`second_review_1.yaml`, `second_review_2.yaml`), keeping related items
+   together.
    Reconcile every `disagree` or `unsupported` into **one** recommendation, recording
    status, note, `outcome` and a written `resolution` in the judgement's `second_review`:
    - `revised` — the challenge holds; change the judgement.
