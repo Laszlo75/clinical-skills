@@ -57,6 +57,7 @@ a target titre ≤1:8 at transplantation (BTS Grade 1C) [4]"]
 
 **Assessment:** [Aligned | Minor update | Major update | New addition | Remove]
 · Confidence: [high | moderate | low] · [⚠ Patient safety] · [£ Commissioning]
+(an aligned item that only needs clearer wording reads "Aligned — clarify wording")
 
 **Recommendation:** [clear and actionable, with its basis — a guideline grade where one
 exists ("Update target titre to ≤1:8 IgG (BTS Grade 1C; supported by [4, 7]).");
@@ -68,8 +69,15 @@ opinion; no guideline or trial addresses this [5].")]
 Every subsection has a plain-English heading naming the topic and a **Current protocol
 position**, aligned items included; the guideline and evidence lines may be left out
 when there is nothing to report. The recommendation must match the assessment: "Retain"
-means no change — if anything should change, even optionally, it is at least a minor
-update.
+means no change — if the practice should change, even optionally, it is at least a
+minor update. Practice that is right but loosely worded stays **Aligned**, with the
+recommendation starting "Aligned — clarify wording: …", so the MDT can tell real
+changes from tidy-ups.
+
+When a UK guideline is older than newer guidance (UK or international) that says
+something different — e.g. NICE CG165 (2013) recommends lamivudine for HBV prophylaxis,
+where newer guidance prefers entecavir or tenofovir — present both, with dates and
+grades, and say which is newer. Don't quote the older one alone because it is UK.
 
 Every recommendation, "Retain" included, gives its reason in a sentence — never a bare
 "Retain [6]". Cite evidence for what it actually shows: if it bears on the statement

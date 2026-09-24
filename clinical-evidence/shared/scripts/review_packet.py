@@ -14,6 +14,10 @@ The packet holds, for the listed judgements only:
               reviewer checks: guideline recommendations with verbatim quotes and
               grades, or a paper's identifiers, design, population, size, certainty and
               key finding
+  other_evidence
+              every other ledger entry tagged with the same review questions but not
+              cited — so the reviewer can spot evidence that was overlooked or that
+              contradicts the judgement, not just check what was cited
   questions   the review questions those judgements answer
 
 Standard library + PyYAML. Exit codes: 0 — ok; 1 — unknown judgement id or cited
@@ -74,12 +78,7 @@ def build(ledger: dict, pmap: dict, judgements: list, ids: list[str]) -> tuple[d
         if j.get("question") and j["question"] not in qids:
             qids.append(j["question"])
 
-    evidence = []
-    for r in sorted(refs):
-        if r not in entries:
-            errors.append(f"cited ref_id {r} is not in the ledger")
-            continue
-        section, e = entries[r]
+    def trim(section: str, e: dict) -> dict:
         if section == "guidelines":
             item = {k: e[k] for k in GUIDELINE_FIELDS if e.get(k) is not None}
             item["type"] = "guideline"
@@ -88,10 +87,19 @@ def build(ledger: dict, pmap: dict, judgements: list, ids: list[str]) -> tuple[d
         else:
             item = {k: e[k] for k in PAPER_FIELDS if e.get(k) is not None}
             item["type"] = "preprint" if section == "preprints" else "paper"
-        evidence.append(item)
+        return item
+
+    evidence = []
+    for r in sorted(refs):
+        if r not in entries:
+            errors.append(f"cited ref_id {r} is not in the ledger")
+            continue
+        evidence.append(trim(*entries[r]))
+    other = [trim(section, e) for r, (section, e) in sorted(entries.items())
+             if r not in refs and set(e.get("questions") or []) & set(qids)]
 
     packet = {"questions": [questions[q] for q in qids if q in questions],
-              "judgements": picked, "evidence": evidence}
+              "judgements": picked, "evidence": evidence, "other_evidence": other}
     return packet, errors
 
 

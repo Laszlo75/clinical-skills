@@ -41,3 +41,13 @@ def test_errors_and_cli(tmp_path, capsys):
     assert rp.main(args) == 0
     assert len(yaml.safe_load(out.read_text())["judgements"]) == 2
     assert "Packet: 2 judgements" in capsys.readouterr().out
+
+
+def test_uncited_evidence_on_the_same_question_is_included():
+    """The reviewer must be able to see evidence the first reviewer left out."""
+    ledger, pmap, judgements = load()
+    judgements[1]["evidence"] = [1]                      # J2 (Q2) no longer cites ref 3
+    ledger["references"][1]["questions"] = ["Q2"]        # ref 3 answers Q2
+    packet, _ = rp.build(ledger, pmap, judgements, ["J2"])
+    assert [e["ref_id"] for e in packet["evidence"]] == [1]
+    assert 3 in [e["ref_id"] for e in packet["other_evidence"]]

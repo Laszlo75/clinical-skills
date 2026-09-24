@@ -79,7 +79,7 @@ the researcher).
 
    | Verdict | Meaning |
    |---|---|
-   | aligned | Matches current guidelines and evidence |
+   | aligned | Matches current guidelines and evidence — including when only the wording needs clarifying (say so in the recommendation: "Aligned — clarify wording: …") |
    | minor_update | Approach sound; wording, dose or detail needs adjusting |
    | major_update | Guidelines or evidence now support materially different practice |
    | new_addition | Not covered, but should be |
@@ -108,8 +108,10 @@ the researcher).
      --ids J3,J5,J9 --out "<workspace>/.clinical-evidence/review_packet.yaml"
    ```
 
-   Dispatch the `second-reviewer` agent with the packet path and
-   `.clinical-evidence/second_review.yaml` as its output. With more than about eight
+   The packet also carries uncited evidence on the same questions, so the reviewer can
+   spot what was overlooked. Dispatch the `second-reviewer` agent with the packet path,
+   the ledger path (for wider checks) and `.clinical-evidence/second_review.yaml` as its
+   output. With more than about eight
    items, split them (keeping related items together) into two packets
    (`review_packet_1.yaml`, `review_packet_2.yaml`) and two reviewers dispatched in the
    same message (`second_review_1.yaml`, `second_review_2.yaml`).

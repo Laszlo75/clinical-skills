@@ -37,10 +37,15 @@ A review packet (`review_packet.yaml`) holding exactly what you need:
 - `evidence` — every source those judgements cite: guidelines with recommendation
   text, grade and verbatim `source_quote`; papers with identifiers, design,
   population, size, certainty and `key_finding`;
+- `other_evidence` — every other source on the same review questions that the
+  judgements do **not** cite. Check it: evidence that was overlooked, or that
+  contradicts a judgement, is exactly what a second reviewer is for;
 - `questions` — the review questions they answer.
 
-Work from the packet. Read an abstract or a guideline page only where the packet is
-not enough to decide. Aligned and minor items are left to the clinician's own read.
+Work from the packet; the full ledger path is in your dispatch if you need to look
+wider. Read an abstract or a guideline page whenever the packet is not enough to decide
+— accuracy matters more than speed. Aligned and minor items are left to the
+clinician's own read.
 
 ## For each judgement, ask
 
@@ -59,8 +64,11 @@ not enough to decide. Aligned and minor items are left to the clinician's own re
 4. **Doses and thresholds.** For every recommended drug dose, check it against the BNF
    or the MHRA SmPC (web search) and flag unit, frequency or renal/hepatic adjustment
    problems.
-5. **Anything missing?** A safety-relevant issue in the protocol that no judgement
-   addresses.
+5. **Anything overlooked?** Evidence in `other_evidence` that should change a judgement,
+   and any safety-relevant issue in the protocol that no judgement addresses.
+6. **Is the guidance current?** Where a judgement rests on an older UK guideline and
+   newer guidance (UK or international) says something different, is the conflict
+   shown?
 
 ## Output
 
