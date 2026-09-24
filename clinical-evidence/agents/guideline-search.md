@@ -152,12 +152,34 @@ references: []                          # always present and empty: literature i
 Rules the validator enforces: `grade` is a mapping with `system`, `code`, `display`;
 `currency.status` uses the values shown; `ref_id`s are unique integers.
 
+## Documents you can't get
+
+When a guideline you need can't be read in full (behind a login, a broken or blocked
+PDF, a members-only page), don't guess at its content. Record what you could read, and
+list it in `metadata.unretrieved_guidelines` so the skill can ask the researcher to
+supply the file:
+
+```yaml
+metadata:
+  unretrieved_guidelines:
+    - organisation: "British Society for Haematology"
+      title: "Guidelines on the spectrum of fresh frozen plasma and cryoprecipitate products"
+      year: 2018
+      url: "https://…"                 # where you tried
+      questions: [Q7]
+      importance: key                  # key = no other current guideline covers these questions; supporting = otherwise
+      reason: "PDF behind the Wiley login"
+```
+
+**Uploaded documents.** If your dispatch gives file paths (guidelines the researcher
+supplied), read those files in full instead of searching: extract the recommendations
+for the questions exactly as you would from the web, set `source_file` to the file name,
+and keep `url` as the guideline's official page.
+
 ## If tools are missing
 
-- No web search or fetch: stop and say so — guidelines cannot be read without them.
-- A guideline document behind a login or not retrievable: record it with
-  `currency.status: unknown`, only the recommendations you could read, and name it in
-  your summary so the clinician can check it by hand.
+- No web search or fetch: stop and say so — guidelines cannot be read without them
+  (uploaded files can still be read).
 
 ## Return message
 
@@ -165,7 +187,7 @@ Rules the validator enforces: `grade` is a mapping with `system`, `code`, `displ
 Guidelines written to <path>
 Guidelines: <N> (<bodies>) | read this run: <r>, reused from cache: <c> | recommendations: <M> | graded: <g>, ungraded: <u>
 Not current: <guideline — status>, or "none"
-Not retrievable: <guideline>, or "none"
+Not retrievable: <guideline> (key/supporting), or "none"
 Outside my bodies, worth checking: <guideline>, or "none"
 Gaps: <questions no guideline addresses>, or "none"
 ```

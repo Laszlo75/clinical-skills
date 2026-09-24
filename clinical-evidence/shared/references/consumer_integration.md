@@ -76,6 +76,24 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   it before verification. If an agent reports a missing connector, explain in plain
   language what needs enabling.
 
+### Ask for guidelines that couldn't be read
+
+Guidelines are the backbone of the review, so don't quietly work around a missing one.
+After merging, if `metadata.unretrieved_guidelines` lists any `importance: key`
+guideline, ask the researcher **once**, in plain language — for each: organisation,
+title, year, the link, and which question it matters for — to download the PDF and
+add it to their folder (or attach it in the chat). Mention supporting ones in a line.
+Say they can reply "continue without" to go on.
+
+- **Files supplied:** dispatch one `guideline-search` agent with the file paths, the
+  questions they bear on and its own output (`ledger_parts/uploaded.yaml`); it reads
+  them in full. Merge again (all parts), so the new entries replace the gaps.
+- **"Continue without" (or no key gaps):** carry on. The document lists every guideline
+  that couldn't be read under "Guidance to check by hand".
+
+Supplied guidelines go into the guideline cache like any other, so each only needs
+supplying once per folder.
+
 ## 2. Verify the references (whenever any reference lacks an `integrity` block)
 
 A reused ledger that was already verified skips this step.

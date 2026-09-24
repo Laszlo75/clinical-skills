@@ -154,6 +154,24 @@ def _check_metadata(metadata: Any, issues: Issues) -> None:
         elif not isinstance(value, list):
             issues.error(f"metadata.{field}", "must be a list")
 
+    # guidelines the search could not read (schema 1.3, optional)
+    unretrieved = metadata.get("unretrieved_guidelines")
+    if unretrieved is not None:
+        if not isinstance(unretrieved, list) or not all(
+            isinstance(u, dict) and isinstance(u.get("title"), str) and isinstance(u.get("organisation"), str)
+            for u in unretrieved
+        ):
+            issues.error("metadata.unretrieved_guidelines",
+                         "must be a list of mappings with organisation and title")
+        else:
+            for u in unretrieved:
+                if u.get("importance") not in (None, "key", "supporting"):
+                    issues.error("metadata.unretrieved_guidelines",
+                                 f"importance must be key or supporting: {u.get('title')!r}")
+                elif u.get("importance") == "key":
+                    issues.warn("metadata.unretrieved_guidelines",
+                                f"key guideline not read: {u.get('organisation')} {u.get('year', '')} — {u.get('title')}")
+
     # review questions (schema 1.2, optional)
     questions = metadata.get("questions")
     if questions is not None:
@@ -206,7 +224,7 @@ def _check_guidelines(guidelines: Any, issues: Issues, seen_ref_ids: set[int]) -
         if not isinstance(g.get("year"), int):
             issues.error(f"{base}.year", "must be an integer")
         _check_questions_field(g, base, issues)
-        _check_optional_str(g, ("edition",), base, issues)
+        _check_optional_str(g, ("edition", "source_file"), base, issues)
         cached = g.get("cached_on")
         if cached is not None and not (isinstance(cached, date) or ISO_DATE_RE.match(str(cached))):
             issues.error(f"{base}.cached_on", f"not ISO 8601 YYYY-MM-DD: {cached!r}")

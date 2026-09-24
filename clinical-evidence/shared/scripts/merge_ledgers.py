@@ -15,6 +15,8 @@ ledger. This script combines them:
 - `questions` lists on duplicate entries are unioned, so an entry keeps every review
   question it was found for;
 - ref_ids are renumbered 1..N (guidelines, then references, then preprints);
+- `metadata.unretrieved_guidelines` unioned, dropping any guideline that another part
+  (e.g. one read from a file the researcher uploaded) now supplies;
 - metadata: topics and distinct model ids joined, mesh_terms / guideline_bodies / questions unioned, latest
   search_date, highest ledger_schema_version.
 
@@ -63,6 +65,10 @@ def _guideline_key(g: dict) -> str:
     return f"{str(g.get('organisation', '')).casefold()}|{norm_title(g.get('title'))}|{g.get('year')}"
 
 
+def _title_key(g: dict) -> str:
+    return f"{str(g.get('organisation', '')).casefold()}|{norm_title(g.get('title'))}"
+
+
 def _merge_entries(existing: dict, new: dict) -> None:
     existing["questions"] = _union(existing.get("questions"), new.get("questions"))
     if not existing["questions"]:
@@ -88,7 +94,7 @@ def merge(parts: list[dict]) -> dict:
         else:
             if m.get("topic") and m["topic"] not in str(meta.get("topic", "")):
                 meta["topic"] = f"{meta.get('topic')}; {m['topic']}" if meta.get("topic") else m["topic"]
-            for field in ("mesh_terms", "guideline_bodies", "questions"):
+            for field in ("mesh_terms", "guideline_bodies", "questions", "unretrieved_guidelines"):
                 if m.get(field):
                     meta[field] = _union(meta.get(field), m[field])
             if m.get("model_id") and m["model_id"] not in str(meta.get("model_id", "")):
@@ -109,6 +115,19 @@ def merge(parts: list[dict]) -> dict:
         for t in part.get("ongoing_trials") or []:
             if isinstance(t, dict) and t.get("nct_id") and t["nct_id"] not in trials:
                 trials[t["nct_id"]] = dict(t)
+
+    if meta.get("unretrieved_guidelines"):
+        have = {_title_key(g) for g in sections["guidelines"].values()}
+        seen, still = set(), []
+        for u in meta["unretrieved_guidelines"]:
+            k = _title_key(u) if isinstance(u, dict) else None
+            if k and k not in have and k not in seen:
+                seen.add(k)
+                still.append(u)
+        if still:
+            meta["unretrieved_guidelines"] = still
+        else:
+            meta.pop("unretrieved_guidelines")
 
     merged: dict[str, Any] = {"metadata": meta}
     next_id = 1

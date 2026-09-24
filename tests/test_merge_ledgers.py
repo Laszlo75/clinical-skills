@@ -56,3 +56,21 @@ def test_guideline_part_merges_with_literature_parts(tmp_path):
     out = tmp_path / "merged.yaml"
     out.write_text(yaml.safe_dump(merged, allow_unicode=True))
     assert vl.validate_ledger(out) == 0
+
+
+def test_unretrieved_guideline_dropped_once_supplied():
+    a, b = parts()
+    missing = {"organisation": "British Society for Haematology", "title": "FFP and cryoprecipitate",
+               "year": 2018, "importance": "key", "questions": ["Q2"]}
+    other = {"organisation": "ASFA", "title": "Apheresis guidelines", "importance": "supporting"}
+    a["metadata"]["unretrieved_guidelines"] = [missing, other]
+    merged = ml.merge([a, b])
+    assert [u["organisation"] for u in merged["metadata"]["unretrieved_guidelines"]] == [
+        "British Society for Haematology", "ASFA"]
+    uploaded = copy.deepcopy(b)
+    uploaded["references"] = []
+    uploaded["guidelines"] = [dict(b["guidelines"][0], organisation="British Society for Haematology",
+                                   title="FFP and Cryoprecipitate", year=2018, source_file="bsh_ffp.pdf")]
+    merged = ml.merge([a, b, uploaded])
+    assert [u["organisation"] for u in merged["metadata"]["unretrieved_guidelines"]] == ["ASFA"]
+    assert any(g.get("source_file") == "bsh_ffp.pdf" for g in merged["guidelines"])

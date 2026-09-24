@@ -4,6 +4,19 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.6.0] - 2026-09-24
+
+### Added
+
+- **Asking for guidelines that couldn't be read.** When a guideline agent can't read a document in full (behind a login, a blocked PDF, members only), it lists it in `metadata.unretrieved_guidelines` with the questions it matters for and its importance (`key` when no other current guideline covers those questions).
+  - After the search, the skill asks the researcher once to add the key PDFs to their folder or attach them, or to reply "continue without".
+  - A guideline agent reads supplied files in full, exactly as from the web: verbatim quotes and grades, with `source_file` recorded.
+  - Supplied guidelines go into the folder's guideline cache, so each is supplied once.
+  - Guidelines still unread are listed in the document under "Guidance to check by hand".
+  - `merge_ledgers.py` drops a gap once a supplied file fills it.
+  - `validate_ledger.py` warns about every key guideline not read.
+  - The timing log has a `guideline_help` stage for the wait.
+
 ## [2.5.3] - 2026-09-24
 
 ### Fixed (accuracy)
