@@ -46,7 +46,10 @@ The ledger lives at exactly `<workspace>/.literature_search_ledger.yaml`.
   ```
 
   The cache lives in the researcher's folder, the only place that persists between
-  sessions; give the guideline agents the `cache_hits.yaml` path. Then, in **one message**, so they run concurrently, dispatch:
+  sessions. The command prints one line per cached guideline (organisation, year,
+  sections covered, currency, age) — plan the guideline agents' bodies and gaps from
+  that summary; don't read `cache_hits.yaml` yourself (it is long, and the agents read
+  it). Give the guideline agents its path. Then, in **one message**, so they run concurrently, dispatch:
   - `guideline-search` agents with **all** the questions and — for a protocol review —
     the protocol's concrete doses, thresholds and timings, so they pull the exact
     recommendations. Split the guideline bodies between 2–3 agents so no single agent

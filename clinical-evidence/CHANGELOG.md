@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [2.6.1] - 2026-09-25
 
+### Changed
+
+- **Compact cache summary.** `guideline_cache.py get` prints one line per cached guideline: organisation, year, sections covered, currency and age. In the 2.6.0 test run, the lead read the 1,700-line cache file itself to plan which guidelines still needed searching. It now plans from the summary and leaves the file to the guideline agents.
+- The skills ask the lead to read files with the Read tool rather than shell pipelines. The shell may be zsh, where lines like `echo =====` fail, as seen twice in test runs.
+
 ### Fixed
 
 - **An unread guideline could be cached as "done".** Seeding the cache from the 2.5.1 search stored six guidelines with no recommendations: the ones that couldn't be read (BSH 2018/2024/2025, EASL 2025, two AST IDCOP). Reused as fresh, they would never have been tried again, or requested from the researcher. `guideline_cache.py` no longer stores entries without recommendations and never returns them from `get`, including from caches built before this fix.

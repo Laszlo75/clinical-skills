@@ -35,6 +35,15 @@ def test_round_trip_strips_run_fields_and_stamps_date(tmp_path):
     assert g["key_recommendations"][0]["source_quote"].startswith("We recommend")
 
 
+def test_get_prints_a_compact_summary(tmp_path, capsys):
+    put(tmp_path, ledger())
+    capsys.readouterr()
+    get(tmp_path)
+    line = [l for l in capsys.readouterr().out.splitlines() if l.startswith("  - ")][0]
+    assert "BTS 2016" in line and "1 recs" in line and "sections: ABOi desensitisation" in line
+    assert "read 0 d ago" in line
+
+
 def test_max_age_filters_stale_entries(tmp_path):
     put(tmp_path, ledger(), today=date(2026, 5, 1))
     assert get(tmp_path, max_age=90) == []                    # 146 days old

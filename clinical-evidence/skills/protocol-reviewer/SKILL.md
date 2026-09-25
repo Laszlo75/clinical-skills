@@ -46,7 +46,9 @@ run in parallel; this conversation sees only their short summaries.
   files written there are invisible to the researcher and lost after the session. Use
   its absolute path and quote it.
 
-The commands below and in the shared reference files use these two folders. If the two
+Read files with the Read tool rather than shell pipelines (the shell may be zsh, where
+lines such as `echo =====` fail). The commands below and in the shared reference files
+use these two folders. If the two
 folders above still read as placeholders rather than real paths, use the absolute path
 of the folder holding this SKILL.md, and the plugin folder two levels above it.
 

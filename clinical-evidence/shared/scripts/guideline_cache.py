@@ -79,6 +79,22 @@ def _entries(cache: Path) -> list[tuple[Path, dict]]:
     return out
 
 
+def _summary_line(g: dict, today: date) -> str:
+    """One line per guideline: enough for the lead to plan which gaps still need searching,
+    without reading the (long) cache file into its own context."""
+    recs = g.get("key_recommendations") or []
+    sections = []
+    for r in recs:
+        s = str(r.get("section") or "").strip()
+        if s and s not in sections:
+            sections.append(s)
+    shown = "; ".join(x[:40] for x in sections[:6]) + (" …" if len(sections) > 6 else "")
+    age = (today - _as_date(g["cached_on"])).days
+    status = (g.get("currency") or {}).get("status", "unknown")
+    return (f"- {g.get('organisation')} {g.get('year')} — {str(g.get('title'))[:80]} | {len(recs)} recs"
+            + (f" | sections: {shown}" if shown else "") + f" | {status} | read {age} d ago")
+
+
 def get(cache: Path, out: Path, max_age_days: int, today: date) -> int:
     cutoff = today - timedelta(days=max_age_days)
     fresh = [g for _, g in _entries(cache)
@@ -88,6 +104,8 @@ def get(cache: Path, out: Path, max_age_days: int, today: date) -> int:
         yaml.safe_dump({"cache_date": today.isoformat(), "max_age_days": max_age_days,
                         "guidelines": fresh}, f, sort_keys=False, allow_unicode=True, width=100)
     print(f"{len(fresh)} cached guideline(s) checked within {max_age_days} days -> {out}")
+    for g in fresh:
+        print("  " + _summary_line(g, today))
     return 0
 
 
