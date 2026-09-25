@@ -4,6 +4,12 @@ All notable changes to the `clinical-evidence` plugin are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.6.1] - 2026-09-25
+
+### Fixed
+
+- **An unread guideline could be cached as "done".** Seeding the cache from the 2.5.1 search stored six guidelines with no recommendations: the ones that couldn't be read (BSH 2018/2024/2025, EASL 2025, two AST IDCOP). Reused as fresh, they would never have been tried again, or requested from the researcher. `guideline_cache.py` no longer stores entries without recommendations and never returns them from `get`, including from caches built before this fix.
+
 ## [2.6.0] - 2026-09-24
 
 ### Added

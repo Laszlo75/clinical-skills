@@ -21,6 +21,9 @@ currency, and every recommendation extracted so far with its verbatim quote, gra
   agent re-read this run (no `cached_on` in the ledger) is stamped with today's date;
   one it reused unread keeps its original date, so reuse never makes an entry look
   fresher than it is.
+- A guideline with no extracted recommendations (typically one that couldn't be read)
+  is never stored, and never returned by `get`: reusing an empty entry would stop the
+  agents from trying it again and from asking the researcher to supply it.
 - `list` shows what is cached; `clear` empties it (or only entries older than N days),
   e.g. to force a fresh check of every guideline.
 
@@ -78,7 +81,8 @@ def _entries(cache: Path) -> list[tuple[Path, dict]]:
 
 def get(cache: Path, out: Path, max_age_days: int, today: date) -> int:
     cutoff = today - timedelta(days=max_age_days)
-    fresh = [g for _, g in _entries(cache) if _as_date(g["cached_on"]) >= cutoff]
+    fresh = [g for _, g in _entries(cache)
+             if _as_date(g["cached_on"]) >= cutoff and g.get("key_recommendations")]
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8") as f:
         yaml.safe_dump({"cache_date": today.isoformat(), "max_age_days": max_age_days,
@@ -89,7 +93,7 @@ def get(cache: Path, out: Path, max_age_days: int, today: date) -> int:
 
 def put(cache: Path, ledger: dict, today: date) -> int:
     cache.mkdir(parents=True, exist_ok=True)
-    stored = refreshed = 0
+    stored = refreshed = skipped = 0
     for g in ledger.get("guidelines") or []:
         if not isinstance(g, dict) or not g.get("title"):
             continue
@@ -102,6 +106,9 @@ def put(cache: Path, ledger: dict, today: date) -> int:
                 old = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
             except (OSError, yaml.YAMLError):
                 old = {}
+        if not entry.get("key_recommendations") and not old.get("key_recommendations"):
+            skipped += 1                       # nothing read: leave it for the next run to try
+            continue
         texts = {r.get("text") for r in entry.get("key_recommendations") or []}
         merged_recs = list(entry.get("key_recommendations") or [])
         merged_recs += [r for r in old.get("key_recommendations") or [] if r.get("text") not in texts]
@@ -115,7 +122,8 @@ def put(cache: Path, ledger: dict, today: date) -> int:
         with path.open("w", encoding="utf-8") as f:
             yaml.safe_dump(entry, f, sort_keys=False, allow_unicode=True, width=100)
         stored += 1
-    print(f"Cached {stored} guideline(s) ({refreshed} read this run) in {cache}")
+    print(f"Cached {stored} guideline(s) ({refreshed} read this run) in {cache}"
+          + (f"; {skipped} with no recommendations not cached" if skipped else ""))
     return 0
 
 
