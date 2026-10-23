@@ -1,5 +1,16 @@
 # Clinical Skills
 
+> [!IMPORTANT]
+> **This repository has moved.** The `clinical-evidence` plugin now lives in [Laszlo75/clinical-research-toolkit](https://github.com/Laszlo75/clinical-research-toolkit), in the `clinical-research` marketplace, alongside the data-science and clinical-writing plugins. This repository is no longer maintained; version 2.6.1 here is its last release.
+>
+> To switch, run:
+>
+> ```text
+> /plugin marketplace remove clinical-skills
+> /plugin marketplace add Laszlo75/clinical-research-toolkit
+> /plugin install clinical-evidence@clinical-research
+> ```
+
 A Claude Code plugin marketplace hosting AI-assisted tools for clinical evidence synthesis and protocol review. Designed for the UK NHS context and shipped with ISO 42001 transparency disclaimers baked into every output.
 
 ## Plugins
@@ -8,22 +19,9 @@ A Claude Code plugin marketplace hosting AI-assisted tools for clinical evidence
 |--------|---------|
 | [`clinical-evidence`](./clinical-evidence/) | Systematic literature search + clinical protocol review. Bundles two co-designed skills that share a verified reference ledger. |
 
-More clinical plugins may land here over time (audit tooling, a narrative literature-review skill, etc.). Each plugin in this marketplace is scoped to clinical use and is safe to install independently of the others.
-
 ## Installation
 
-In Claude Code:
-
-```text
-/plugin marketplace add Laszlo75/clinical-skills
-/plugin install clinical-evidence
-```
-
-Or add the marketplace by URL:
-
-```text
-/plugin marketplace add https://github.com/Laszlo75/clinical-skills
-```
+Install from the new marketplace (see the notice above). The commands that used to be here installed this archived copy.
 
 ## Requirements
 

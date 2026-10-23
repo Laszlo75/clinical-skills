@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "clinical-skills",
-  "description": "Clinical skills for evidence synthesis and protocol review. UK NHS context. ISO 42001 compliant.",
+  "description": "Moved to Laszlo75/clinical-research-toolkit (marketplace clinical-research). This marketplace is no longer maintained. Clinical skills for evidence synthesis and protocol review. UK NHS context. ISO 42001 compliant.",
   "owner": {
     "name": "Laszlo Szabo",
     "url": "https://github.com/Laszlo75"
